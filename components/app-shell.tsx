@@ -20,11 +20,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <header className="bg-background/70 sticky top-0 z-50 border-b border-transparent backdrop-blur-[40px] transition-colors [.scrolled_&]:border-border">
         <div className="mx-auto flex h-12 max-w-screen-xl items-center justify-between px-4 md:px-6">
           {/* Logo */}
-          <Link
-            href="/dashboard"
-            className="font-sans text-sm font-extralight uppercase tracking-[0.25em]"
-          >
-            Zad
+          <Link href="/dashboard" className="flex items-center gap-2">
+            {/* Dark mode: light mark, Light mode: dark mark */}
+            <img
+              src="/icon_light.svg"
+              alt="Zad"
+              className="hidden h-5 w-5 dark:block"
+            />
+            <img
+              src="/icon_dark.svg"
+              alt="Zad"
+              className="block h-5 w-5 dark:hidden"
+            />
+            <span className="font-sans text-sm font-extralight uppercase tracking-[0.25em]">
+              Zad
+            </span>
           </Link>
 
           {/* Nav pill */}

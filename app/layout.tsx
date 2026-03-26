@@ -8,6 +8,10 @@ export const metadata: Metadata = {
   title: "Zad",
   description: "Personal finance dashboard powered by Google Sheets",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon-192.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -22,7 +26,7 @@ export const viewport: Viewport = {
   userScalable: false,
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#fafafa" },
-    { media: "(prefers-color-scheme: dark)", color: "#0e0e0e" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
   ],
 }
 
