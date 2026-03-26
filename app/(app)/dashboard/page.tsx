@@ -30,8 +30,8 @@ export default function DashboardPage() {
   return (
     <div className="space-y-4">
       {/* Hero card: income + donut */}
-      <div className="shadow-card flex items-center justify-between gap-4 rounded-xl bg-card p-6">
-        <div className="flex flex-col gap-5">
+      <div className="shadow-card grid grid-cols-2 rounded-xl bg-card">
+        <div className="flex flex-col gap-5 p-6">
           {/* Income header */}
           <div>
             <p className="text-text-secondary text-xs font-medium uppercase tracking-wider">
@@ -73,14 +73,15 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Donut chart */}
-        <DonutChart
-          segments={donutSegments}
-          size={200}
-          formatValue={formatK}
-          centerSubtitle={`of ${formatK(income)}`}
-          className="shrink-0"
-        />
+        {/* Donut chart — centered in its own half */}
+        <div className="flex items-center justify-center p-6">
+          <DonutChart
+            segments={donutSegments}
+            size={200}
+            formatValue={formatK}
+            centerSubtitle={`of ${formatK(income)}`}
+          />
+        </div>
       </div>
 
       {/* Stat cards row */}
