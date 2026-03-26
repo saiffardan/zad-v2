@@ -19,67 +19,51 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-4">
-      {/* Hero card */}
-      <div className="shadow-card flex flex-col items-center gap-6 rounded-xl bg-card p-6 sm:flex-row sm:items-start sm:justify-between">
-        {/* Left: income summary */}
-        <div className="flex flex-col gap-4">
-          <div>
-            <p className="text-text-secondary text-xs font-medium uppercase tracking-wider">
-              Monthly Income
-            </p>
-            <p
-              className="font-mono text-3xl font-semibold leading-tight"
-              style={{ color: "var(--financial-green)" }}
-            >
-              {income.toLocaleString()} <span className="text-text-tertiary text-base font-normal">AED</span>
-            </p>
-          </div>
-
-          {/* Pills */}
-          <div className="flex flex-wrap gap-2">
-            <div className="flex items-center gap-2 rounded-full bg-secondary px-3 py-1.5">
-              <span className="text-text-secondary text-[11px] uppercase tracking-wider">
-                Savings Rate
-              </span>
-              <span
-                className="font-mono text-sm font-medium"
-                style={{ color: "var(--financial-blue)" }}
-              >
-                {savingsRate.toFixed(1)}%
-              </span>
-            </div>
-            <div className="flex items-center gap-2 rounded-full bg-secondary px-3 py-1.5">
-              <span className="text-text-secondary text-[11px] uppercase tracking-wider">
-                Total Out
-              </span>
-              <span
-                className="font-mono text-sm font-medium"
-                style={{ color: "var(--financial-red)" }}
-              >
-                {totalOut.toLocaleString()}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 rounded-full bg-secondary px-3 py-1.5">
-              <span className="text-text-secondary text-[11px] uppercase tracking-wider">
-                Remaining
-              </span>
-              <span
-                className="font-mono text-sm font-medium"
-                style={{
-                  color:
-                    remaining >= 0
-                      ? "var(--financial-green)"
-                      : "var(--financial-red)",
-                }}
-              >
-                {remaining.toLocaleString()}
-              </span>
-            </div>
-          </div>
+      {/* Hero card: income + donut */}
+      <div className="shadow-card flex flex-col items-center gap-6 rounded-xl bg-card p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-text-secondary text-xs font-medium uppercase tracking-wider">
+            Monthly Income
+          </p>
+          <p
+            className="font-mono text-3xl font-semibold leading-tight"
+            style={{ color: "var(--financial-green)" }}
+          >
+            {income.toLocaleString()}{" "}
+            <span className="text-text-tertiary text-base font-normal">
+              AED
+            </span>
+          </p>
         </div>
 
-        {/* Right: donut chart */}
         <DonutChart segments={donutSegments} size={180} strokeWidth={12} />
+      </div>
+
+      {/* Stat pills row */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="shadow-card flex flex-col gap-1 rounded-xl bg-card p-4">
+          <span className="text-text-secondary text-[11px] font-medium uppercase tracking-wider">
+            Savings Rate
+          </span>
+          <span
+            className="font-mono text-2xl font-semibold leading-tight"
+            style={{ color: "var(--financial-blue)" }}
+          >
+            {savingsRate.toFixed(1)}%
+          </span>
+        </div>
+        <div className="shadow-card flex flex-col gap-1 rounded-xl bg-card p-4">
+          <span className="text-text-secondary text-[11px] font-medium uppercase tracking-wider">
+            Total Out
+          </span>
+          <span
+            className="font-mono text-2xl font-semibold leading-tight"
+            style={{ color: "var(--financial-red)" }}
+          >
+            {totalOut.toLocaleString()}{" "}
+            <span className="text-text-tertiary text-sm font-normal">AED</span>
+          </span>
+        </div>
       </div>
     </div>
   )
