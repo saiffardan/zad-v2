@@ -14,7 +14,7 @@ export default function DashboardPage() {
     { label: "Expenses", value: Math.abs(expenses), color: "var(--financial-red)" },
     { label: "Savings", value: Math.abs(savings), color: "var(--financial-blue)" },
     { label: "Debt", value: Math.abs(debt), color: "var(--financial-amber)" },
-    { label: "Remaining", value: Math.max(0, remaining), color: "var(--financial-green)" },
+    { label: "Remaining", value: Math.max(0, remaining), color: "var(--muted-foreground)" },
   ]
 
   return (
