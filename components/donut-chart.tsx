@@ -67,7 +67,7 @@ export function DonutChart({
     const segment = segments[i]
     const sliceAngle = total > 0 ? (Math.abs(segment.value) / total) * 360 : 0
     // Leave a tiny gap between segments
-    const gap = segments.length > 1 ? 2 : 0
+    const gap = segments.length > 1 ? 4 : 0
     arcs.push({
       segment,
       startAngle: currentAngle + gap / 2,
@@ -79,9 +79,15 @@ export function DonutChart({
 
   // Center display
   const activeSegment = activeIndex !== null ? segments[activeIndex] : null
-  const centerLabel = activeSegment ? activeSegment.label : "Total"
-  const centerValue = activeSegment ? Math.abs(activeSegment.value) : total
-  const centerColor = activeSegment ? activeSegment.color : "var(--text-primary)"
+  // Default center shows last segment (Remaining) when nothing is hovered
+  const lastSegment = segments[segments.length - 1]
+  const defaultLabel = lastSegment?.label ?? "Total"
+  const defaultValue = lastSegment ? Math.abs(lastSegment.value) : total
+  const defaultColor = lastSegment?.color ?? "var(--text-primary)"
+
+  const centerLabel = activeSegment ? activeSegment.label : defaultLabel
+  const centerValue = activeSegment ? Math.abs(activeSegment.value) : defaultValue
+  const centerColor = activeSegment ? activeSegment.color : defaultColor
 
   const handleHover = useCallback((index: number | null) => {
     setActiveIndex(index)
@@ -121,7 +127,7 @@ export function DonutChart({
               fill="none"
               stroke={segment.color}
               strokeWidth={isActive ? strokeWidth + 2 : strokeWidth}
-              strokeLinecap="round"
+              strokeLinecap="butt"
               style={{
                 transform: `translate(${offset.x}px, ${offset.y}px)`,
                 transition:

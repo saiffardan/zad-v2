@@ -11,10 +11,10 @@ export default function DashboardPage() {
   const savingsRate = income > 0 ? (Math.abs(savings) / income) * 100 : 0
 
   const donutSegments = [
-    { label: "Income", value: income, color: "var(--financial-green)" },
     { label: "Expenses", value: Math.abs(expenses), color: "var(--financial-red)" },
     { label: "Savings", value: Math.abs(savings), color: "var(--financial-blue)" },
     { label: "Debt", value: Math.abs(debt), color: "var(--financial-amber)" },
+    { label: "Remaining", value: Math.max(0, remaining), color: "var(--financial-green)" },
   ]
 
   return (
