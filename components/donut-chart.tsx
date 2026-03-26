@@ -139,10 +139,14 @@ export function DonutChart({
         })}
       </svg>
 
-      {/* Center text */}
+      {/* Center text — sized to fit inside the donut hole only */}
       <button
         type="button"
-        className="absolute inset-0 flex flex-col items-center justify-center"
+        className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full"
+        style={{
+          width: `${size * 0.52}px`,
+          height: `${size * 0.52}px`,
+        }}
         onClick={handleCenterTap}
         aria-label="Reset chart selection"
       >
