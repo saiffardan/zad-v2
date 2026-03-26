@@ -30,7 +30,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-4">
       {/* Hero card: income + donut */}
-      <div className="shadow-card flex items-start justify-between gap-4 rounded-xl bg-card p-6">
+      <div className="shadow-card flex items-center justify-between gap-4 rounded-xl bg-card p-6">
         <div className="flex flex-col gap-5">
           {/* Income header */}
           <div>
