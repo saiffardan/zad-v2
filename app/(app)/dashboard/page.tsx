@@ -1,7 +1,8 @@
 "use client"
 
 import { DonutChart } from "@/components/donut-chart"
-import { aggregateMockByType } from "@/lib/mock-data"
+import { BudgetProgress } from "@/components/budget-progress"
+import { aggregateMockByType, MOCK_BUDGETS } from "@/lib/mock-data"
 import { formatK } from "@/lib/format"
 
 export default function DashboardPage() {
@@ -114,6 +115,16 @@ export default function DashboardPage() {
           </span>
         </div>
       </div>
+
+      {/* Budget Progress */}
+      <BudgetProgress
+        rows={[
+          { label: "Income", tracked: income, budget: MOCK_BUDGETS.INCOME, color: "var(--financial-green)" },
+          { label: "Expenses", tracked: Math.abs(expenses), budget: MOCK_BUDGETS.EXPENSES, color: "var(--financial-red)", invertStatus: true },
+          { label: "Savings", tracked: Math.abs(savings), budget: MOCK_BUDGETS.SAVINGS, color: "var(--financial-blue)" },
+          { label: "Debt", tracked: Math.abs(debt), budget: MOCK_BUDGETS.DEBT, color: "var(--financial-amber)", invertStatus: true },
+        ]}
+      />
     </div>
   )
 }

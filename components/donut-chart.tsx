@@ -185,6 +185,7 @@ export function DonutChart({
 
   const onTouchEnd = useCallback(() => {
     touchActiveRef.current = false
+    setActiveIndex(null)
   }, [])
 
   return (

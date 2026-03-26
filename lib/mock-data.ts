@@ -27,6 +27,15 @@ export const MOCK_TRANSACTIONS: Transaction[] = [
   { date: "05/03/2026", type: "DEBT", category: "Credit Card", account: "FAB", amount: -1500, description: "CC balance", sheetRow: 16 },
 ]
 
+/* ─── Mock budgets per type ─── */
+
+export const MOCK_BUDGETS = {
+  INCOME: 30000,
+  EXPENSES: 10000,
+  SAVINGS: 9000,
+  DEBT: 4000,
+}
+
 /** Aggregate mock data by type */
 export function aggregateMockByType() {
   const totals = { income: 0, expenses: 0, savings: 0, debt: 0 }
