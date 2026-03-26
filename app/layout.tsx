@@ -1,15 +1,30 @@
-import { Geist, Geist_Mono, Roboto } from "next/font/google"
+import type { Metadata, Viewport } from "next"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
-const roboto = Roboto({subsets:['latin'],variable:'--font-sans'})
+export const metadata: Metadata = {
+  title: "Zad",
+  description: "Personal finance dashboard powered by Google Sheets",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Zad",
+  },
+}
 
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-})
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e0e0e" },
+  ],
+}
 
 export default function RootLayout({
   children,
@@ -17,11 +32,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", roboto.variable)}
-    >
+    <html lang="en" suppressHydrationWarning className={cn("antialiased")}>
       <body>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
