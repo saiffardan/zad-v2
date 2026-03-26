@@ -91,7 +91,7 @@ export function DonutChart({
     const segment = segments[i]
     const sliceAngle =
       total > 0 ? (Math.abs(segment.value) / total) * 360 : 0
-    const gap = segments.length > 1 ? 4 : 0
+    const gap = segments.length > 1 ? 6 : 0
     arcs.push({
       segment,
       startAngle: currentAngle + gap / 2,
@@ -210,7 +210,7 @@ export function DonutChart({
               fill="none"
               stroke={segment.color}
               strokeWidth={isActive ? strokeWidth + 2 : strokeWidth}
-              strokeLinecap="butt"
+              strokeLinecap="round"
               style={{
                 transform: `translate(${offset.x}px, ${offset.y}px)`,
                 transition:
