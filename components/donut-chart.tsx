@@ -12,11 +12,10 @@ export interface DonutSegment {
 
 interface DonutChartProps {
   segments: DonutSegment[]
-  size?: number
   className?: string
   formatValue?: (value: number) => string
-  /** Subtitle shown below the center value, e.g. "of 32.9K" */
-  centerSubtitle?: string
+  /** Total income — used to compute "X% of income" subtitle */
+  income?: number
 }
 
 const INNER_RADIUS = 34
@@ -72,10 +71,9 @@ function getSegmentIndexAtAngle(
 
 export function DonutChart({
   segments,
-  size = 200,
   className,
   formatValue,
-  centerSubtitle,
+  income,
 }: DonutChartProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
@@ -120,6 +118,15 @@ export function DonutChart({
   const centerColor = activeSegment
     ? (activeSegment.centerColor ?? activeSegment.color)
     : defaultCenterColor
+
+  // Subtitle: "X.X% of income" when hovering, "of {incomeK}" at rest
+  const incomeBase = income ?? total
+  const pct =
+    incomeBase > 0 ? ((centerValue / incomeBase) * 100).toFixed(1) : "0.0"
+  const centerSubtitle =
+    activeSegment || !formatValue
+      ? `${pct}% of income`
+      : `of ${formatValue(incomeBase)}`
 
   const handleHover = useCallback((index: number | null) => {
     setActiveIndex(index)
@@ -183,16 +190,14 @@ export function DonutChart({
   return (
     <div
       className={cn(
-        "relative inline-flex items-center justify-center",
+        "relative inline-flex aspect-square w-full max-w-[220px] items-center justify-center",
         className
       )}
     >
       <svg
         ref={svgRef}
         viewBox="0 0 100 100"
-        width={size}
-        height={size}
-        className="overflow-visible touch-none"
+        className="h-full w-full touch-none overflow-visible"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -242,11 +247,7 @@ export function DonutChart({
       {/* Center text */}
       <button
         type="button"
-        className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full"
-        style={{
-          width: `${size * 0.52}px`,
-          height: `${size * 0.52}px`,
-        }}
+        className="absolute inset-[28%] flex flex-col items-center justify-center rounded-full"
         onClick={handleCenterTap}
         aria-label="Reset chart selection"
       >
@@ -267,16 +268,14 @@ export function DonutChart({
         >
           {formatValue ? formatValue(centerValue) : centerValue.toLocaleString()}
         </span>
-        {centerSubtitle && (
-          <span
-            className="text-text-tertiary text-[9px] transition-all duration-300"
-            style={{
-              transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-            }}
-          >
-            {centerSubtitle}
-          </span>
-        )}
+        <span
+          className="text-text-tertiary text-[9px] transition-all duration-300"
+          style={{
+            transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+          }}
+        >
+          {centerSubtitle}
+        </span>
       </button>
     </div>
   )

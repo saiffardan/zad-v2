@@ -77,9 +77,8 @@ export default function DashboardPage() {
         <div className="flex items-center justify-center p-4">
           <DonutChart
             segments={donutSegments}
-            size={220}
             formatValue={formatK}
-            centerSubtitle={`of ${formatK(income)}`}
+            income={income}
           />
         </div>
       </div>
