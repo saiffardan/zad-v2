@@ -87,13 +87,16 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 gap-4">
         <div className="shadow-card flex flex-col gap-1 rounded-xl bg-card p-4">
           <span className="text-text-secondary text-[11px] font-medium uppercase tracking-wider">
-            Savings Rate
+            Unallocated
           </span>
           <span
             className="font-mono text-2xl font-semibold leading-tight"
             style={{ color: "var(--financial-blue)" }}
           >
             {savingsRate.toFixed(1)}%
+          </span>
+          <span className="text-text-tertiary text-[11px]">
+            of gross income
           </span>
         </div>
         <div className="shadow-card flex flex-col gap-1 rounded-xl bg-card p-4">
@@ -105,6 +108,9 @@ export default function DashboardPage() {
             style={{ color: "var(--financial-red)" }}
           >
             {formatK(totalOut)}
+          </span>
+          <span className="text-text-tertiary text-[11px]">
+            Exp + Sav + Debt
           </span>
         </div>
       </div>
