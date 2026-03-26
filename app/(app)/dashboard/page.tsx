@@ -52,18 +52,18 @@ export default function DashboardPage() {
           </div>
 
           {/* Breakdown column */}
-          <div className="flex flex-col gap-3">
+          <div className="flex w-full max-w-[240px] flex-col gap-3">
             {breakdownRows.map((row) => (
               <div key={row.label} className="flex items-center">
                 <span
                   className="mr-2.5 h-2.5 w-2.5 shrink-0 rounded-sm"
                   style={{ backgroundColor: row.color }}
                 />
-                <span className="text-text-secondary min-w-[72px] text-sm">
+                <span className="text-text-secondary w-20 text-sm">
                   {row.label}
                 </span>
                 <span
-                  className="ml-6 font-mono text-sm font-medium tabular-nums"
+                  className="ml-auto min-w-[56px] text-right font-mono text-sm font-medium tabular-nums"
                   style={{ color: row.color }}
                 >
                   {formatK(row.value)}
@@ -76,7 +76,7 @@ export default function DashboardPage() {
         {/* Donut chart */}
         <DonutChart
           segments={donutSegments}
-          size={160}
+          size={200}
           formatValue={formatK}
           centerSubtitle={`of ${formatK(income)}`}
           className="shrink-0"
