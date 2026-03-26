@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { ThemeToggle } from "@/components/theme-provider"
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard" },
@@ -52,8 +53,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          {/* User area placeholder */}
-          <div className="w-8" />
+          {/* Theme toggle */}
+          <ThemeToggle />
         </div>
       </header>
 
