@@ -7,16 +7,16 @@ export interface DonutSegment {
   label: string
   value: number
   color: string
-  /** Optional override for the center text color when this segment is active */
   centerColor?: string
 }
 
 interface DonutChartProps {
   segments: DonutSegment[]
   size?: number
-  strokeWidth?: number
   className?: string
   formatValue?: (value: number) => string
+  /** Subtitle shown below the center value, e.g. "of 32.9K" */
+  centerSubtitle?: string
 }
 
 const INNER_RADIUS = 34
@@ -37,7 +37,6 @@ function polarToCartesian(
   }
 }
 
-/** Filled annular sector (wedge between inner and outer radius) */
 function describeAnnularSector(
   startAngle: number,
   endAngle: number,
@@ -59,10 +58,6 @@ function describeAnnularSector(
   ].join(" ")
 }
 
-function formatAED(value: number): string {
-  return `${value.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })} AED`
-}
-
 function getSegmentIndexAtAngle(
   angle: number,
   arcs: { startAngle: number; endAngle: number }[]
@@ -79,7 +74,8 @@ export function DonutChart({
   segments,
   size = 200,
   className,
-  formatValue = formatAED,
+  formatValue,
+  centerSubtitle,
 }: DonutChartProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
@@ -201,7 +197,6 @@ export function DonutChart({
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        {/* Filter for rounded corners on filled shapes */}
         <defs>
           <filter id="donut-round">
             <feMorphology operator="erode" radius={CORNER_RADIUS} />
@@ -256,7 +251,7 @@ export function DonutChart({
         aria-label="Reset chart selection"
       >
         <span
-          className="text-text-secondary text-[10px] font-medium uppercase tracking-wider transition-all duration-300"
+          className="text-text-secondary text-[9px] font-medium uppercase tracking-wider transition-all duration-300"
           style={{
             transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
           }}
@@ -264,14 +259,24 @@ export function DonutChart({
           {centerLabel}
         </span>
         <span
-          className="font-mono text-lg font-medium leading-tight transition-all duration-300"
+          className="font-mono text-lg font-semibold leading-tight transition-all duration-300"
           style={{
             color: centerColor,
             transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
           }}
         >
-          {formatValue(centerValue)}
+          {formatValue ? formatValue(centerValue) : centerValue.toLocaleString()}
         </span>
+        {centerSubtitle && (
+          <span
+            className="text-text-tertiary text-[9px] transition-all duration-300"
+            style={{
+              transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+            }}
+          >
+            {centerSubtitle}
+          </span>
+        )}
       </button>
     </div>
   )

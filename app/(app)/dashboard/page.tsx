@@ -2,6 +2,7 @@
 
 import { DonutChart } from "@/components/donut-chart"
 import { aggregateMockByType } from "@/lib/mock-data"
+import { formatK } from "@/lib/format"
 
 export default function DashboardPage() {
   const { income, expenses, savings, debt } = aggregateMockByType()
@@ -10,14 +11,14 @@ export default function DashboardPage() {
   const remaining = income - totalOut
   const savingsRate = income > 0 ? (Math.abs(savings) / income) * 100 : 0
 
-  const remainingColor =
+  const remainingCenterColor =
     remaining >= 0 ? "var(--financial-green)" : "var(--financial-red)"
 
   const donutSegments = [
     { label: "Expenses", value: Math.abs(expenses), color: "var(--financial-red)" },
     { label: "Savings", value: Math.abs(savings), color: "var(--financial-blue)" },
     { label: "Debt", value: Math.abs(debt), color: "var(--financial-amber)" },
-    { label: "Remaining", value: Math.abs(remaining), color: "var(--muted-foreground)", centerColor: remainingColor },
+    { label: "Remaining", value: Math.abs(remaining), color: "var(--muted-foreground)", centerColor: remainingCenterColor },
   ]
 
   const breakdownRows = [
@@ -29,49 +30,60 @@ export default function DashboardPage() {
   return (
     <div className="space-y-4">
       {/* Hero card: income + donut */}
-      <div className="shadow-card flex flex-col items-center gap-6 rounded-xl bg-card p-6 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-col gap-4">
+      <div className="shadow-card flex items-start justify-between gap-4 rounded-xl bg-card p-6">
+        <div className="flex flex-col gap-5">
+          {/* Income header */}
           <div>
             <p className="text-text-secondary text-xs font-medium uppercase tracking-wider">
               Monthly Income
             </p>
             <p
-              className="font-mono text-3xl font-semibold leading-tight"
+              className="font-mono text-sm font-medium leading-relaxed"
               style={{ color: "var(--financial-green)" }}
             >
-              {income.toLocaleString()}{" "}
-              <span className="text-text-tertiary text-base font-normal">
-                AED
-              </span>
+              AED
+            </p>
+            <p
+              className="font-mono text-4xl font-semibold leading-none tracking-tight"
+              style={{ color: "var(--financial-green)" }}
+            >
+              {formatK(income)}
             </p>
           </div>
 
           {/* Breakdown column */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             {breakdownRows.map((row) => (
-              <div key={row.label} className="flex items-center gap-2">
+              <div key={row.label} className="flex items-center">
                 <span
-                  className="h-2 w-2 shrink-0 rounded-full"
+                  className="mr-2.5 h-2.5 w-2.5 shrink-0 rounded-sm"
                   style={{ backgroundColor: row.color }}
                 />
-                <span className="text-text-secondary text-xs">
+                <span className="text-text-secondary min-w-[72px] text-sm">
                   {row.label}
                 </span>
                 <span
-                  className="ml-auto font-mono text-sm font-medium tabular-nums"
+                  className="ml-6 font-mono text-sm font-medium tabular-nums"
                   style={{ color: row.color }}
                 >
-                  {row.value.toLocaleString()}
+                  {formatK(row.value)}
                 </span>
               </div>
             ))}
           </div>
         </div>
 
-        <DonutChart segments={donutSegments} size={180} strokeWidth={12} />
+        {/* Donut chart */}
+        <DonutChart
+          segments={donutSegments}
+          size={160}
+          formatValue={formatK}
+          centerSubtitle={`of ${formatK(income)}`}
+          className="shrink-0"
+        />
       </div>
 
-      {/* Stat pills row */}
+      {/* Stat cards row */}
       <div className="grid grid-cols-2 gap-4">
         <div className="shadow-card flex flex-col gap-1 rounded-xl bg-card p-4">
           <span className="text-text-secondary text-[11px] font-medium uppercase tracking-wider">
@@ -92,8 +104,7 @@ export default function DashboardPage() {
             className="font-mono text-2xl font-semibold leading-tight"
             style={{ color: "var(--financial-red)" }}
           >
-            {totalOut.toLocaleString()}{" "}
-            <span className="text-text-tertiary text-sm font-normal">AED</span>
+            {formatK(totalOut)}
           </span>
         </div>
       </div>
