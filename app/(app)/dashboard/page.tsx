@@ -17,7 +17,7 @@ export default function DashboardPage() {
     { label: "Expenses", value: Math.abs(expenses), color: "var(--financial-red)" },
     { label: "Savings", value: Math.abs(savings), color: "var(--financial-blue)" },
     { label: "Debt", value: Math.abs(debt), color: "var(--financial-amber)" },
-    { label: "Remaining", value: Math.abs(remaining), color: remainingColor },
+    { label: "Remaining", value: Math.abs(remaining), color: "var(--muted-foreground)", centerColor: remainingColor },
   ]
 
   const breakdownRows = [
@@ -51,14 +51,14 @@ export default function DashboardPage() {
             {breakdownRows.map((row) => (
               <div key={row.label} className="flex items-center gap-2">
                 <span
-                  className="h-2 w-2 rounded-full"
+                  className="h-2 w-2 shrink-0 rounded-full"
                   style={{ backgroundColor: row.color }}
                 />
                 <span className="text-text-secondary text-xs">
                   {row.label}
                 </span>
                 <span
-                  className="font-mono text-sm font-medium"
+                  className="ml-auto font-mono text-sm font-medium tabular-nums"
                   style={{ color: row.color }}
                 >
                   {row.value.toLocaleString()}

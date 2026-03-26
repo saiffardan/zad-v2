@@ -7,6 +7,8 @@ export interface DonutSegment {
   label: string
   value: number
   color: string
+  /** Optional override for the center text color when this segment is active */
+  centerColor?: string
 }
 
 interface DonutChartProps {
@@ -17,20 +19,10 @@ interface DonutChartProps {
   formatValue?: (value: number) => string
 }
 
-const RADIUS = 40
+const INNER_RADIUS = 34
+const OUTER_RADIUS = 46
 const CENTER = 50
-
-function describeArc(
-  startAngle: number,
-  endAngle: number,
-  radius: number
-): string {
-  const start = polarToCartesian(CENTER, CENTER, radius, endAngle)
-  const end = polarToCartesian(CENTER, CENTER, radius, startAngle)
-  const largeArc = endAngle - startAngle > 180 ? 1 : 0
-
-  return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArc} 0 ${end.x} ${end.y}`
-}
+const CORNER_RADIUS = 1.2
 
 function polarToCartesian(
   cx: number,
@@ -45,19 +37,36 @@ function polarToCartesian(
   }
 }
 
+/** Filled annular sector (wedge between inner and outer radius) */
+function describeAnnularSector(
+  startAngle: number,
+  endAngle: number,
+  innerR: number,
+  outerR: number
+): string {
+  const outerStart = polarToCartesian(CENTER, CENTER, outerR, startAngle)
+  const outerEnd = polarToCartesian(CENTER, CENTER, outerR, endAngle)
+  const innerEnd = polarToCartesian(CENTER, CENTER, innerR, endAngle)
+  const innerStart = polarToCartesian(CENTER, CENTER, innerR, startAngle)
+  const largeArc = endAngle - startAngle > 180 ? 1 : 0
+
+  return [
+    `M ${outerStart.x} ${outerStart.y}`,
+    `A ${outerR} ${outerR} 0 ${largeArc} 1 ${outerEnd.x} ${outerEnd.y}`,
+    `L ${innerEnd.x} ${innerEnd.y}`,
+    `A ${innerR} ${innerR} 0 ${largeArc} 0 ${innerStart.x} ${innerStart.y}`,
+    "Z",
+  ].join(" ")
+}
+
 function formatAED(value: number): string {
   return `${value.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })} AED`
 }
 
-/**
- * Given a touch point relative to the SVG, figure out which arc segment
- * the finger is over by computing the angle from center.
- */
 function getSegmentIndexAtAngle(
   angle: number,
   arcs: { startAngle: number; endAngle: number }[]
 ): number | null {
-  // Normalize angle to 0-360
   const normalized = ((angle % 360) + 360) % 360
   for (let i = 0; i < arcs.length; i++) {
     const { startAngle, endAngle } = arcs[i]
@@ -69,7 +78,6 @@ function getSegmentIndexAtAngle(
 export function DonutChart({
   segments,
   size = 200,
-  strokeWidth = 10,
   className,
   formatValue = formatAED,
 }: DonutChartProps) {
@@ -91,7 +99,7 @@ export function DonutChart({
     const segment = segments[i]
     const sliceAngle =
       total > 0 ? (Math.abs(segment.value) / total) * 360 : 0
-    const gap = segments.length > 1 ? 6 : 0
+    const gap = segments.length > 1 ? 4 : 0
     arcs.push({
       segment,
       startAngle: currentAngle + gap / 2,
@@ -106,13 +114,16 @@ export function DonutChart({
   const lastSegment = segments[segments.length - 1]
   const defaultLabel = lastSegment?.label ?? "Total"
   const defaultValue = lastSegment ? Math.abs(lastSegment.value) : total
-  const defaultColor = lastSegment?.color ?? "var(--text-primary)"
+  const defaultCenterColor =
+    lastSegment?.centerColor ?? lastSegment?.color ?? "var(--text-primary)"
 
   const centerLabel = activeSegment ? activeSegment.label : defaultLabel
   const centerValue = activeSegment
     ? Math.abs(activeSegment.value)
     : defaultValue
-  const centerColor = activeSegment ? activeSegment.color : defaultColor
+  const centerColor = activeSegment
+    ? (activeSegment.centerColor ?? activeSegment.color)
+    : defaultCenterColor
 
   const handleHover = useCallback((index: number | null) => {
     setActiveIndex(index)
@@ -123,7 +134,6 @@ export function DonutChart({
   }, [])
 
   // ─── Touch handling ───
-  // Resolve which segment is under the finger by angle from center
   const resolveTouch = useCallback(
     (clientX: number, clientY: number) => {
       const svg = svgRef.current
@@ -134,16 +144,14 @@ export function DonutChart({
       const dx = clientX - cx
       const dy = clientY - cy
 
-      // Check if touch is within the donut ring (not too close to center, not too far)
       const dist = Math.sqrt(dx * dx + dy * dy)
       const outerRadius = rect.width / 2
-      const innerRadius = outerRadius * 0.45
+      const innerRadius = outerRadius * 0.4
       if (dist < innerRadius || dist > outerRadius * 1.15) {
         setActiveIndex(null)
         return
       }
 
-      // atan2 gives angle from positive-x axis. Rotate so 0° = top (12 o'clock)
       let angle = (Math.atan2(dy, dx) * 180) / Math.PI + 90
       if (angle < 0) angle += 360
 
@@ -165,7 +173,6 @@ export function DonutChart({
   const onTouchMove = useCallback(
     (e: React.TouchEvent) => {
       if (!touchActiveRef.current) return
-      // Prevent scrolling while dragging over chart
       e.preventDefault()
       const t = e.touches[0]
       resolveTouch(t.clientX, t.clientY)
@@ -175,7 +182,6 @@ export function DonutChart({
 
   const onTouchEnd = useCallback(() => {
     touchActiveRef.current = false
-    // Keep the last selected segment visible (tap to select behavior)
   }, [])
 
   return (
@@ -195,10 +201,18 @@ export function DonutChart({
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
+        {/* Filter for rounded corners on filled shapes */}
+        <defs>
+          <filter id="donut-round">
+            <feMorphology operator="erode" radius={CORNER_RADIUS} />
+            <feMorphology operator="dilate" radius={CORNER_RADIUS} />
+          </filter>
+        </defs>
+
         {arcs.map(({ segment, startAngle, endAngle, index }) => {
           const isActive = activeIndex === index
           const midAngle = (startAngle + endAngle) / 2
-          const expandDistance = 3
+          const expandDistance = 2.5
           const offset = isActive
             ? polarToCartesian(0, 0, expandDistance, midAngle)
             : { x: 0, y: 0 }
@@ -206,19 +220,22 @@ export function DonutChart({
           return (
             <path
               key={segment.label}
-              d={describeArc(startAngle, endAngle, RADIUS)}
-              fill="none"
-              stroke={segment.color}
-              strokeWidth={isActive ? strokeWidth + 2 : strokeWidth}
-              strokeLinecap="round"
+              d={describeAnnularSector(
+                startAngle,
+                endAngle,
+                INNER_RADIUS,
+                isActive ? OUTER_RADIUS + 1.5 : OUTER_RADIUS
+              )}
+              fill={segment.color}
+              filter="url(#donut-round)"
               style={{
                 transform: `translate(${offset.x}px, ${offset.y}px)`,
                 transition:
-                  "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), stroke-width 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+                  "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), d 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
                 cursor: "pointer",
                 filter: isActive
-                  ? `drop-shadow(0 0 6px ${segment.color}40)`
-                  : "none",
+                  ? `url(#donut-round) drop-shadow(0 0 4px ${segment.color}50)`
+                  : "url(#donut-round)",
               }}
               onMouseEnter={() => handleHover(index)}
               onMouseLeave={() => handleHover(null)}
@@ -227,7 +244,7 @@ export function DonutChart({
         })}
       </svg>
 
-      {/* Center text — sized to fit inside the donut hole only */}
+      {/* Center text */}
       <button
         type="button"
         className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full"
