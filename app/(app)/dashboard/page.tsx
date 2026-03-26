@@ -30,7 +30,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-4">
       {/* Hero card: income + donut */}
-      <div className="shadow-card grid grid-cols-2 rounded-xl bg-card">
+      <div className="shadow-card grid grid-cols-2 overflow-hidden rounded-xl bg-card">
         <div className="flex flex-col gap-5 p-6">
           {/* Income header */}
           <div>
@@ -52,18 +52,18 @@ export default function DashboardPage() {
           </div>
 
           {/* Breakdown column */}
-          <div className="flex w-full max-w-[240px] flex-col gap-3">
+          <div className="flex flex-col gap-3">
             {breakdownRows.map((row) => (
               <div key={row.label} className="flex items-center">
                 <span
                   className="mr-2.5 h-2.5 w-2.5 shrink-0 rounded-sm"
                   style={{ backgroundColor: row.color }}
                 />
-                <span className="text-text-secondary w-20 text-sm">
+                <span className="text-text-secondary text-sm">
                   {row.label}
                 </span>
                 <span
-                  className="ml-auto min-w-[56px] text-right font-mono text-sm font-medium tabular-nums"
+                  className="ml-auto font-mono text-sm font-medium tabular-nums"
                   style={{ color: row.color }}
                 >
                   {formatK(row.value)}
@@ -74,10 +74,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Donut chart — centered in its own half */}
-        <div className="flex items-center justify-center p-6">
+        <div className="flex items-center justify-center p-4">
           <DonutChart
             segments={donutSegments}
-            size={200}
+            size={220}
             formatValue={formatK}
             centerSubtitle={`of ${formatK(income)}`}
           />
