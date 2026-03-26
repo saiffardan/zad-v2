@@ -2,10 +2,9 @@
 
 import { useState, useMemo } from "react"
 import { MOCK_CATEGORIES, MOCK_BUDGET_ENTRIES, MOCK_BUDGETS, MOCK_NET_WORTH, aggregateMockByType } from "@/lib/mock-data"
-import { formatK, formatCurrency, formatNumber } from "@/lib/format"
-import { CATEGORY_COLORS, CATEGORY_TYPES, TICK_COUNT } from "@/lib/constants"
+import { formatK } from "@/lib/format"
 import { FilterBar } from "@/components/filter-bar"
-import type { CategoryType, Category } from "@/lib/types"
+import type { CategoryType } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 type PlannerTab = "budget" | "categories" | "networth"
@@ -16,14 +15,14 @@ const TAB_OPTIONS: { value: PlannerTab; label: string }[] = [
   { value: "networth", label: "Net Worth" },
 ]
 
-function MiniBar({ pct, color }: { pct: number; color: string }) {
+function MiniBar({ pct }: { pct: number }) {
   return (
-    <div className="h-1.5 w-full rounded-full bg-muted">
+    <div className="h-1.5 w-full rounded-full bg-foreground/5">
       <div
-        className="h-full rounded-full transition-all duration-500"
+        className="h-full rounded-full bg-foreground transition-all duration-500"
         style={{
           width: `${Math.min(pct, 100)}%`,
-          backgroundColor: color,
+          opacity: 0.7,
           transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       />
@@ -44,15 +43,16 @@ function NetWorthChart({ data }: { data: typeof MOCK_NET_WORTH }) {
 
   const netWorthPoints = data.map((d, i) => {
     const x = (i / (data.length - 1)) * width
-    const y = getY(d.netWorth)
-    return `${x},${y}`
+    return `${x},${getY(d.netWorth)}`
   }).join(" ")
 
   const assetsPoints = data.map((d, i) => {
     const x = (i / (data.length - 1)) * width
-    const y = getY(d.assets)
-    return `${x},${y}`
+    return `${x},${getY(d.assets)}`
   }).join(" ")
+
+  // Fill area under net worth line
+  const fillPoints = `0,${height} ${netWorthPoints} ${width},${height}`
 
   const latest = data[data.length - 1]
   const prev = data[data.length - 2]
@@ -61,18 +61,17 @@ function NetWorthChart({ data }: { data: typeof MOCK_NET_WORTH }) {
 
   return (
     <div className="space-y-4">
-      {/* Summary */}
       <div className="grid grid-cols-3 gap-4">
         <div className="flex flex-col gap-1">
-          <span className="text-text-secondary text-[11px] font-medium uppercase tracking-wider">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-text-tertiary">
             Net Worth
           </span>
-          <span className="font-mono text-xl font-semibold" style={{ color: "var(--financial-green)" }}>
+          <span className="font-mono text-xl font-semibold text-zad-accent">
             {formatK(latest.netWorth)}
           </span>
         </div>
         <div className="flex flex-col gap-1">
-          <span className="text-text-secondary text-[11px] font-medium uppercase tracking-wider">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-text-tertiary">
             Assets
           </span>
           <span className="font-mono text-xl font-semibold">
@@ -80,19 +79,24 @@ function NetWorthChart({ data }: { data: typeof MOCK_NET_WORTH }) {
           </span>
         </div>
         <div className="flex flex-col gap-1">
-          <span className="text-text-secondary text-[11px] font-medium uppercase tracking-wider">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-text-tertiary">
             Liabilities
           </span>
-          <span className="font-mono text-xl font-semibold" style={{ color: "var(--financial-red)" }}>
+          <span className="font-mono text-xl font-semibold text-text-secondary">
             {formatK(latest.liabilities)}
           </span>
         </div>
       </div>
 
-      {/* Chart */}
       <div className="relative">
         <svg viewBox={`0 0 ${width} ${height}`} className="h-40 w-full" preserveAspectRatio="none">
-          {/* Assets line */}
+          {/* Fill area */}
+          <polygon
+            points={fillPoints}
+            fill="var(--zad-accent)"
+            opacity="0.08"
+          />
+          {/* Assets dashed line */}
           <polyline
             points={assetsPoints}
             fill="none"
@@ -101,32 +105,26 @@ function NetWorthChart({ data }: { data: typeof MOCK_NET_WORTH }) {
             strokeDasharray="2 2"
             vectorEffect="non-scaling-stroke"
           />
-          {/* Net worth line */}
+          {/* Net worth solid line */}
           <polyline
             points={netWorthPoints}
             fill="none"
-            stroke="var(--financial-green)"
+            stroke="var(--zad-accent)"
             strokeWidth="1.5"
             vectorEffect="non-scaling-stroke"
           />
-          {/* Dots on net worth */}
-          {data.map((d, i) => {
-            const x = (i / (data.length - 1)) * width
-            const y = getY(d.netWorth)
-            return (
-              <circle
-                key={d.month}
-                cx={x}
-                cy={y}
-                r="1.5"
-                fill="var(--financial-green)"
-                vectorEffect="non-scaling-stroke"
-              />
-            )
-          })}
+          {data.map((d, i) => (
+            <circle
+              key={d.month}
+              cx={(i / (data.length - 1)) * width}
+              cy={getY(d.netWorth)}
+              r="1.5"
+              fill="var(--zad-accent)"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
         </svg>
 
-        {/* X-axis labels */}
         <div className="mt-1 flex justify-between">
           {data.map((d) => (
             <span key={d.month} className="text-[10px] text-text-tertiary">
@@ -136,12 +134,11 @@ function NetWorthChart({ data }: { data: typeof MOCK_NET_WORTH }) {
         </div>
       </div>
 
-      {/* Month-over-month change */}
       <div className="flex items-center gap-2 text-xs text-text-secondary">
         <span>MoM change:</span>
         <span
           className="font-mono font-medium"
-          style={{ color: change >= 0 ? "var(--financial-green)" : "var(--financial-red)" }}
+          style={{ color: change >= 0 ? "var(--zad-accent)" : "var(--muted-foreground)" }}
         >
           {change >= 0 ? "+" : ""}{formatK(change)} ({changePct}%)
         </span>
@@ -180,15 +177,13 @@ export default function PlannerPage() {
       {/* Budget tab */}
       {tab === "budget" && (
         <div className="space-y-4">
-          {/* Budget overview card */}
-          <div className="shadow-card rounded-xl bg-card p-6">
-            <h2 className="mb-4 text-text-secondary text-xs font-medium uppercase tracking-wider">
+          <div className="glass rounded-2xl p-6">
+            <h2 className="mb-4 text-xs font-medium uppercase tracking-wider text-text-tertiary">
               Monthly Budget
             </h2>
 
             <div className="flex flex-col gap-5">
               {budgetSummary.map((row) => {
-                const color = CATEGORY_COLORS[row.type]
                 const pct = row.budget > 0 ? (row.tracked / row.budget) * 100 : 0
                 const isExpanded = expandedType === row.type
                 const entries = categoriesByType.get(row.type) ?? []
@@ -218,27 +213,25 @@ export default function PlannerPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-xs tabular-nums">
-                            <span style={{ color }}>{formatK(row.tracked)}</span>
+                            <span>{formatK(row.tracked)}</span>
                             <span className="text-text-tertiary"> / {formatK(row.budget)}</span>
                           </span>
                           <span
-                            className="rounded-md px-1.5 py-0.5 text-[10px] font-medium"
+                            className="rounded-full px-2 py-0.5 text-[10px] font-medium"
                             style={{
-                              color,
-                              backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)`,
+                              color: pct >= 75 ? "var(--zad-accent)" : "var(--muted-foreground)",
+                              backgroundColor: pct >= 75 ? "var(--zad-accent-dim)" : "var(--muted)",
                             }}
                           >
                             {pct.toFixed(0)}%
                           </span>
                         </div>
                       </div>
-
-                      <MiniBar pct={pct} color={color} />
+                      <MiniBar pct={pct} />
                     </button>
 
-                    {/* Expanded category entries */}
                     {isExpanded && entries.length > 0 && (
-                      <div className="mt-3 flex flex-col gap-2 pl-4">
+                      <div className="mt-3 flex flex-col gap-2.5 pl-4">
                         {entries.map((entry) => {
                           const entryPct = entry.budgetAmount > 0
                             ? (entry.trackedAmount / entry.budgetAmount) * 100
@@ -248,11 +241,11 @@ export default function PlannerPage() {
                               <div className="flex items-center justify-between">
                                 <span className="text-xs text-text-secondary">{entry.category}</span>
                                 <span className="font-mono text-[11px] tabular-nums">
-                                  <span style={{ color }}>{formatK(entry.trackedAmount)}</span>
+                                  <span>{formatK(entry.trackedAmount)}</span>
                                   <span className="text-text-tertiary"> / {formatK(entry.budgetAmount)}</span>
                                 </span>
                               </div>
-                              <MiniBar pct={entryPct} color={color} />
+                              <MiniBar pct={entryPct} />
                             </div>
                           )
                         })}
@@ -264,34 +257,34 @@ export default function PlannerPage() {
             </div>
           </div>
 
-          {/* Allocation donut summary */}
-          <div className="shadow-card rounded-xl bg-card p-6">
-            <h2 className="mb-3 text-text-secondary text-xs font-medium uppercase tracking-wider">
+          {/* Allocation bar */}
+          <div className="glass rounded-2xl p-6">
+            <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-text-tertiary">
               Budget Allocation
             </h2>
             <div className="flex h-3 overflow-hidden rounded-full">
-              {budgetSummary.filter(r => r.type !== "INCOME").map((row) => {
+              {budgetSummary.filter(r => r.type !== "INCOME").map((row, i) => {
                 const total = budgetSummary
                   .filter(r => r.type !== "INCOME")
                   .reduce((s, r) => s + r.budget, 0)
                 return (
                   <div
                     key={row.type}
-                    className="transition-all duration-500"
+                    className="bg-foreground transition-all duration-500"
                     style={{
                       width: `${(row.budget / total) * 100}%`,
-                      backgroundColor: CATEGORY_COLORS[row.type],
+                      opacity: 1 - i * 0.25,
                     }}
                   />
                 )
               })}
             </div>
             <div className="mt-3 flex gap-4">
-              {budgetSummary.filter(r => r.type !== "INCOME").map((row) => (
+              {budgetSummary.filter(r => r.type !== "INCOME").map((row, i) => (
                 <div key={row.type} className="flex items-center gap-1.5">
                   <span
-                    className="h-2 w-2 rounded-sm"
-                    style={{ backgroundColor: CATEGORY_COLORS[row.type] }}
+                    className="h-2 w-2 rounded-sm bg-foreground"
+                    style={{ opacity: 1 - i * 0.25 }}
                   />
                   <span className="text-xs text-text-secondary">{row.label}</span>
                   <span className="font-mono text-xs text-text-tertiary">{formatK(row.budget)}</span>
@@ -304,31 +297,33 @@ export default function PlannerPage() {
 
       {/* Categories tab */}
       {tab === "categories" && (
-        <div className="shadow-card rounded-xl bg-card p-6">
-          <h2 className="mb-4 text-text-secondary text-xs font-medium uppercase tracking-wider">
+        <div className="glass rounded-2xl p-6">
+          <h2 className="mb-4 text-xs font-medium uppercase tracking-wider text-text-tertiary">
             Categories ({MOCK_CATEGORIES.length})
           </h2>
 
           <div className="flex flex-col">
-            {(["INCOME", "EXPENSES", "SAVINGS", "DEBT"] as CategoryType[]).map((type) => {
+            {(["INCOME", "EXPENSES", "SAVINGS", "DEBT"] as CategoryType[]).map((type, i) => {
               const cats = MOCK_CATEGORIES.filter((c) => c.type === type)
-              const color = CATEGORY_COLORS[type]
               return (
-                <div key={type} className="border-b border-border/50 py-3 last:border-0">
+                <div key={type} className="border-b border-border/50 py-3.5 last:border-0">
                   <div className="mb-2 flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: color }} />
+                    <span
+                      className="h-2.5 w-2.5 rounded-sm bg-foreground"
+                      style={{ opacity: 1 - i * 0.2 }}
+                    />
                     <span className="text-sm font-medium">{type}</span>
-                    <span className="text-text-tertiary text-xs">({cats.length})</span>
+                    <span className="text-xs text-text-tertiary">({cats.length})</span>
                   </div>
                   <div className="flex flex-wrap gap-2 pl-5">
                     {cats.map((cat) => (
                       <span
                         key={cat.name}
-                        className="rounded-full border border-border px-2.5 py-1 text-xs text-text-secondary"
+                        className="glass rounded-full px-3 py-1 text-xs text-text-secondary"
                       >
                         {cat.name}
                         {cat.budget !== undefined && (
-                          <span className="ml-1 font-mono text-text-tertiary">{formatK(cat.budget)}</span>
+                          <span className="ml-1.5 font-mono text-text-tertiary">{formatK(cat.budget)}</span>
                         )}
                       </span>
                     ))}
@@ -342,8 +337,8 @@ export default function PlannerPage() {
 
       {/* Net Worth tab */}
       {tab === "networth" && (
-        <div className="shadow-card rounded-xl bg-card p-6">
-          <h2 className="mb-4 text-text-secondary text-xs font-medium uppercase tracking-wider">
+        <div className="glass rounded-2xl p-6">
+          <h2 className="mb-4 text-xs font-medium uppercase tracking-wider text-text-tertiary">
             Net Worth Trend
           </h2>
           <NetWorthChart data={MOCK_NET_WORTH} />

@@ -21,16 +21,16 @@ export function FilterBar<T extends string>({
   className,
 }: FilterBarProps<T>) {
   return (
-    <div className={cn("flex items-center gap-1 rounded-full bg-secondary p-1", className)}>
+    <div className={cn("glass flex items-center gap-0.5 rounded-full p-1", className)}>
       {options.map((opt) => (
         <button
           key={opt.value}
           type="button"
           onClick={() => onChange(opt.value)}
           className={cn(
-            "rounded-full px-3 py-1 text-xs font-medium transition-all duration-300",
+            "rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-300",
             value === opt.value
-              ? "bg-background text-foreground shadow-sm"
+              ? "bg-foreground/10 text-foreground"
               : "text-muted-foreground hover:text-foreground"
           )}
           style={{
@@ -44,35 +44,12 @@ export function FilterBar<T extends string>({
   )
 }
 
-interface YearSelectorProps {
-  years: number[]
-  value: number
-  onChange: (year: number) => void
-}
-
-export function YearSelector({ years, value, onChange }: YearSelectorProps) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(Number(e.target.value))}
-      className="rounded-lg border border-border bg-secondary px-2 py-1 text-xs font-medium text-foreground outline-none transition-colors focus:ring-1 focus:ring-ring"
-    >
-      {years.map((y) => (
-        <option key={y} value={y}>{y}</option>
-      ))}
-    </select>
-  )
-}
-
 interface MonthSelectorProps {
   value: number
   onChange: (month: number) => void
 }
 
-const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-]
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 export function MonthSelector({ value, onChange }: MonthSelectorProps) {
   return (

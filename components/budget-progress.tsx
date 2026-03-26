@@ -8,8 +8,6 @@ interface BudgetRow {
   label: string
   tracked: number
   budget: number
-  color: string
-  /** For income/savings: being ahead is good. For expenses/debt: being behind is good. */
   invertStatus?: boolean
 }
 
@@ -17,33 +15,18 @@ interface BudgetProgressProps {
   rows: BudgetRow[]
 }
 
-function getStatus(
-  pct: number,
-  invert: boolean
-): { label: string; color: string } {
+function getStatus(pct: number, invert: boolean): { label: string; isGood: boolean } {
   if (invert) {
-    // Expenses/Debt: lower is better
-    if (pct >= 100) return { label: "Over budget", color: "var(--financial-red)" }
-    if (pct >= 85) return { label: "Near limit", color: "var(--financial-amber)" }
-    if (pct >= 50) return { label: "On track", color: "var(--financial-green)" }
-    return { label: "Well under", color: "var(--financial-green)" }
+    if (pct >= 100) return { label: "Over budget", isGood: false }
+    if (pct >= 85) return { label: "Near limit", isGood: false }
+    return { label: "On track", isGood: true }
   }
-  // Income/Savings: higher is better
-  if (pct >= 100) return { label: "Complete", color: "var(--financial-green)" }
-  if (pct >= 75) return { label: "On track", color: "var(--financial-green)" }
-  if (pct >= 50) return { label: "Behind", color: "var(--financial-amber)" }
-  return { label: "Behind", color: "var(--financial-red)" }
+  if (pct >= 100) return { label: "Complete", isGood: true }
+  if (pct >= 75) return { label: "On track", isGood: true }
+  return { label: "Behind", isGood: false }
 }
 
-function TickBar({
-  pct,
-  color,
-  animate,
-}: {
-  pct: number
-  color: string
-  animate: boolean
-}) {
+function TickBar({ pct, animate }: { pct: number; animate: boolean }) {
   const filledCount = Math.round((Math.min(pct, 100) / 100) * TICK_COUNT)
 
   return (
@@ -55,8 +38,8 @@ function TickBar({
             key={i}
             className="h-2 flex-1 rounded-[1px]"
             style={{
-              backgroundColor: isFilled ? color : "var(--muted)",
-              opacity: animate && isFilled ? 1 : isFilled ? 1 : 0.4,
+              backgroundColor: isFilled ? "var(--foreground)" : "var(--muted)",
+              opacity: animate && isFilled ? 0.9 : isFilled ? 0.9 : 0.2,
               transition: animate
                 ? `opacity ${TICK_STAGGER_MS}ms ease ${i * TICK_STAGGER_MS}ms, background-color ${TICK_STAGGER_MS}ms ease ${i * TICK_STAGGER_MS}ms`
                 : "none",
@@ -89,11 +72,8 @@ export function BudgetProgress({ rows }: BudgetProgressProps) {
   }, [])
 
   return (
-    <div
-      ref={ref}
-      className="shadow-card flex flex-col gap-4 rounded-xl bg-card p-6"
-    >
-      <h2 className="text-text-secondary text-xs font-medium uppercase tracking-wider">
+    <div ref={ref} className="glass flex flex-col gap-4 rounded-2xl p-6">
+      <h2 className="text-xs font-medium uppercase tracking-wider text-text-tertiary">
         Budget Progress
       </h2>
 
@@ -104,33 +84,25 @@ export function BudgetProgress({ rows }: BudgetProgressProps) {
 
           return (
             <div key={row.label} className="flex flex-col gap-1.5">
-              {/* Header row */}
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{row.label}</span>
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs tabular-nums">
-                    <span style={{ color: row.color }}>
-                      {formatK(row.tracked)}
-                    </span>
-                    <span className="text-text-tertiary">
-                      {" "}
-                      / {formatK(row.budget)}
-                    </span>
+                    <span className="text-foreground">{formatK(row.tracked)}</span>
+                    <span className="text-text-tertiary"> / {formatK(row.budget)}</span>
                   </span>
                   <span
-                    className="rounded-md px-1.5 py-0.5 text-[10px] font-medium"
+                    className="rounded-full px-2 py-0.5 text-[10px] font-medium"
                     style={{
-                      color: status.color,
-                      backgroundColor: `color-mix(in srgb, ${status.color} 12%, transparent)`,
+                      color: status.isGood ? "var(--zad-accent)" : "var(--muted-foreground)",
+                      backgroundColor: status.isGood ? "var(--zad-accent-dim)" : "var(--muted)",
                     }}
                   >
                     {pct.toFixed(0)}%
                   </span>
                 </div>
               </div>
-
-              {/* Tick bar */}
-              <TickBar pct={pct} color={row.color} animate={animate} />
+              <TickBar pct={pct} animate={animate} />
             </div>
           )
         })}

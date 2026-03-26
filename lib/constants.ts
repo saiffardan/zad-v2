@@ -34,16 +34,16 @@ export const CATEGORY_TYPES = [
   "LIABILITIES",
 ] as const
 
-/* ─── Category Colors ─── */
+/* ─── Category Colors (monochrome — accent for income, dimming for others) ─── */
 
 export const CATEGORY_COLORS: Record<string, string> = {
-  INCOME: "var(--financial-green)",
-  EXPENSES: "var(--financial-red)",
-  SAVINGS: "var(--financial-blue)",
-  DEBT: "var(--financial-amber)",
+  INCOME: "var(--zad-accent)",
+  EXPENSES: "var(--foreground)",
+  SAVINGS: "var(--foreground)",
+  DEBT: "var(--foreground)",
   TRANSFER: "var(--muted-foreground)",
-  ASSETS: "var(--financial-green)",
-  LIABILITIES: "var(--financial-red)",
+  ASSETS: "var(--zad-accent)",
+  LIABILITIES: "var(--foreground)",
 }
 
 /* ─── Tick Bar ─── */

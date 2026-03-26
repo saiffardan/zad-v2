@@ -3,8 +3,8 @@
 import { useState } from "react"
 import type { Transaction, CategoryType } from "@/lib/types"
 import { formatK } from "@/lib/format"
-import { CATEGORY_COLORS, TICK_COUNT, TICK_STAGGER_MS } from "@/lib/constants"
 import { aggregateByCategory } from "@/lib/mock-data"
+import { TICK_COUNT } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 
 interface CategoryBreakdownProps {
@@ -19,7 +19,7 @@ const SECTIONS: { type: CategoryType; label: string }[] = [
   { type: "INCOME", label: "Income" },
 ]
 
-function MiniTickBar({ pct, color }: { pct: number; color: string }) {
+function MiniTickBar({ pct }: { pct: number }) {
   const filledCount = Math.round((Math.min(pct, 100) / 100) * TICK_COUNT)
   return (
     <div className="flex gap-[1px]">
@@ -28,8 +28,8 @@ function MiniTickBar({ pct, color }: { pct: number; color: string }) {
           key={i}
           className="h-1.5 flex-1 rounded-[0.5px]"
           style={{
-            backgroundColor: i < filledCount ? color : "var(--muted)",
-            opacity: i < filledCount ? 1 : 0.4,
+            backgroundColor: i < filledCount ? "var(--foreground)" : "var(--muted)",
+            opacity: i < filledCount ? 0.7 : 0.2,
           }}
         />
       ))}
@@ -50,41 +50,30 @@ export function CategoryBreakdown({ transactions, budgetMap }: CategoryBreakdown
   }
 
   return (
-    <div className="shadow-card flex flex-col gap-2 rounded-xl bg-card p-6">
-      <h2 className="text-text-secondary text-xs font-medium uppercase tracking-wider">
+    <div className="glass flex flex-col gap-2 rounded-2xl p-6">
+      <h2 className="text-xs font-medium uppercase tracking-wider text-text-tertiary">
         Breakdown by Category
       </h2>
 
       <div className="flex flex-col">
         {SECTIONS.map(({ type, label }) => {
           const categories = aggregateByCategory(transactions, type)
-          const typeColor = CATEGORY_COLORS[type]
           const typeTotal = categories.reduce((s, c) => s + Math.abs(c.amount), 0)
           const isOpen = openSections.has(type)
 
           return (
             <div key={type} className="border-b border-border/50 last:border-0">
-              {/* Section header */}
               <button
                 type="button"
-                className="flex w-full items-center justify-between py-3 text-left"
+                className="flex w-full items-center justify-between py-3.5 text-left"
                 onClick={() => toggle(type)}
               >
-                <div className="flex items-center gap-2">
-                  <span
-                    className="h-2.5 w-2.5 rounded-sm"
-                    style={{ backgroundColor: typeColor }}
-                  />
+                <div className="flex items-center gap-2.5">
                   <span className="text-sm font-medium">{label}</span>
-                  <span className="text-text-tertiary text-xs">
-                    ({categories.length})
-                  </span>
+                  <span className="text-xs text-text-tertiary">({categories.length})</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span
-                    className="font-mono text-sm font-medium tabular-nums"
-                    style={{ color: typeColor }}
-                  >
+                  <span className="font-mono text-sm font-medium tabular-nums">
                     {formatK(typeTotal)}
                   </span>
                   <svg
@@ -103,9 +92,8 @@ export function CategoryBreakdown({ transactions, budgetMap }: CategoryBreakdown
                 </div>
               </button>
 
-              {/* Category rows */}
               {isOpen && (
-                <div className="flex flex-col gap-3 pb-3 pl-5">
+                <div className="flex flex-col gap-3 pb-4 pl-0">
                   {categories.map(({ category, amount }) => {
                     const absAmount = Math.abs(amount)
                     const budget = budgetMap?.get(category)
@@ -116,22 +104,17 @@ export function CategoryBreakdown({ transactions, budgetMap }: CategoryBreakdown
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-text-secondary">{category}</span>
                           <div className="flex items-center gap-2">
-                            <span
-                              className="font-mono text-xs font-medium tabular-nums"
-                              style={{ color: typeColor }}
-                            >
+                            <span className="font-mono text-xs font-medium tabular-nums">
                               {formatK(absAmount)}
                             </span>
                             {budget !== undefined && (
-                              <span className="font-mono text-[10px] text-text-tertiary tabular-nums">
+                              <span className="font-mono text-[10px] tabular-nums text-text-tertiary">
                                 / {formatK(budget)}
                               </span>
                             )}
                           </div>
                         </div>
-                        {pct !== null && (
-                          <MiniTickBar pct={pct} color={typeColor} />
-                        )}
+                        {pct !== null && <MiniTickBar pct={pct} />}
                       </div>
                     )
                   })}

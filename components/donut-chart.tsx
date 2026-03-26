@@ -6,15 +6,14 @@ import { cn } from "@/lib/utils"
 export interface DonutSegment {
   label: string
   value: number
-  color: string
-  centerColor?: string
+  /** Optional override — defaults to monochrome shades */
+  opacity?: number
 }
 
 interface DonutChartProps {
   segments: DonutSegment[]
   className?: string
   formatValue?: (value: number) => string
-  /** Total income — used to compute "X% of income" subtitle */
   income?: number
 }
 
@@ -23,25 +22,12 @@ const OUTER_RADIUS = 46
 const CENTER = 50
 const CORNER_RADIUS = 1.2
 
-function polarToCartesian(
-  cx: number,
-  cy: number,
-  r: number,
-  angleDeg: number
-) {
+function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
   const rad = ((angleDeg - 90) * Math.PI) / 180
-  return {
-    x: cx + r * Math.cos(rad),
-    y: cy + r * Math.sin(rad),
-  }
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) }
 }
 
-function describeAnnularSector(
-  startAngle: number,
-  endAngle: number,
-  innerR: number,
-  outerR: number
-): string {
+function describeAnnularSector(startAngle: number, endAngle: number, innerR: number, outerR: number): string {
   const outerStart = polarToCartesian(CENTER, CENTER, outerR, startAngle)
   const outerEnd = polarToCartesian(CENTER, CENTER, outerR, endAngle)
   const innerEnd = polarToCartesian(CENTER, CENTER, innerR, endAngle)
@@ -57,42 +43,26 @@ function describeAnnularSector(
   ].join(" ")
 }
 
-function getSegmentIndexAtAngle(
-  angle: number,
-  arcs: { startAngle: number; endAngle: number }[]
-): number | null {
+function getSegmentIndexAtAngle(angle: number, arcs: { startAngle: number; endAngle: number }[]): number | null {
   const normalized = ((angle % 360) + 360) % 360
   for (let i = 0; i < arcs.length; i++) {
-    const { startAngle, endAngle } = arcs[i]
-    if (normalized >= startAngle && normalized <= endAngle) return i
+    if (normalized >= arcs[i].startAngle && normalized <= arcs[i].endAngle) return i
   }
   return null
 }
 
-export function DonutChart({
-  segments,
-  className,
-  formatValue,
-  income,
-}: DonutChartProps) {
+export function DonutChart({ segments, className, formatValue, income }: DonutChartProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const touchActiveRef = useRef(false)
 
   const total = segments.reduce((sum, s) => sum + Math.abs(s.value), 0)
 
-  // Build arcs
-  const arcs: {
-    segment: DonutSegment
-    startAngle: number
-    endAngle: number
-    index: number
-  }[] = []
+  const arcs: { segment: DonutSegment; startAngle: number; endAngle: number; index: number }[] = []
   let currentAngle = 0
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i]
-    const sliceAngle =
-      total > 0 ? (Math.abs(segment.value) / total) * 360 : 0
+    const sliceAngle = total > 0 ? (Math.abs(segment.value) / total) * 360 : 0
     const gap = segments.length > 1 ? 4 : 0
     arcs.push({
       segment,
@@ -108,35 +78,23 @@ export function DonutChart({
   const lastSegment = segments[segments.length - 1]
   const defaultLabel = lastSegment?.label ?? "Total"
   const defaultValue = lastSegment ? Math.abs(lastSegment.value) : total
-  const defaultCenterColor =
-    lastSegment?.centerColor ?? lastSegment?.color ?? "var(--text-primary)"
 
   const centerLabel = activeSegment ? activeSegment.label : defaultLabel
-  const centerValue = activeSegment
-    ? Math.abs(activeSegment.value)
-    : defaultValue
-  const centerColor = activeSegment
-    ? (activeSegment.centerColor ?? activeSegment.color)
-    : defaultCenterColor
+  const centerValue = activeSegment ? Math.abs(activeSegment.value) : defaultValue
 
-  // Subtitle: "X.X% of income" when hovering, "of {incomeK}" at rest
   const incomeBase = income ?? total
-  const pct =
-    incomeBase > 0 ? ((centerValue / incomeBase) * 100).toFixed(1) : "0.0"
+  const pct = incomeBase > 0 ? ((centerValue / incomeBase) * 100).toFixed(1) : "0.0"
   const centerSubtitle =
     activeSegment || !formatValue
       ? `${pct}% of income`
       : `of ${formatValue(incomeBase)}`
 
-  const handleHover = useCallback((index: number | null) => {
-    setActiveIndex(index)
-  }, [])
+  // Is the center value the "remaining" (last segment at rest)?
+  const isRemaining = !activeSegment
 
-  const handleCenterTap = useCallback(() => {
-    setActiveIndex(null)
-  }, [])
+  const handleHover = useCallback((index: number | null) => setActiveIndex(index), [])
+  const handleCenterTap = useCallback(() => setActiveIndex(null), [])
 
-  // ─── Touch handling ───
   const resolveTouch = useCallback(
     (clientX: number, clientY: number) => {
       const svg = svgRef.current
@@ -146,7 +104,6 @@ export function DonutChart({
       const cy = rect.top + rect.height / 2
       const dx = clientX - cx
       const dy = clientY - cy
-
       const dist = Math.sqrt(dx * dx + dy * dy)
       const outerRadius = rect.width / 2
       const innerRadius = outerRadius * 0.4
@@ -154,47 +111,41 @@ export function DonutChart({
         setActiveIndex(null)
         return
       }
-
       let angle = (Math.atan2(dy, dx) * 180) / Math.PI + 90
       if (angle < 0) angle += 360
-
-      const idx = getSegmentIndexAtAngle(angle, arcs)
-      setActiveIndex(idx)
+      setActiveIndex(getSegmentIndexAtAngle(angle, arcs))
     },
     [arcs]
   )
 
-  const onTouchStart = useCallback(
-    (e: React.TouchEvent) => {
-      touchActiveRef.current = true
-      const t = e.touches[0]
-      resolveTouch(t.clientX, t.clientY)
-    },
-    [resolveTouch]
-  )
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    touchActiveRef.current = true
+    resolveTouch(e.touches[0].clientX, e.touches[0].clientY)
+  }, [resolveTouch])
 
-  const onTouchMove = useCallback(
-    (e: React.TouchEvent) => {
-      if (!touchActiveRef.current) return
-      e.preventDefault()
-      const t = e.touches[0]
-      resolveTouch(t.clientX, t.clientY)
-    },
-    [resolveTouch]
-  )
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!touchActiveRef.current) return
+    e.preventDefault()
+    resolveTouch(e.touches[0].clientX, e.touches[0].clientY)
+  }, [resolveTouch])
 
   const onTouchEnd = useCallback(() => {
     touchActiveRef.current = false
     setActiveIndex(null)
   }, [])
 
+  // Monochrome opacity levels for segments
+  const getSegmentOpacity = (index: number, total: number) => {
+    if (total <= 1) return 1
+    // Last segment (Remaining) is always dimmest
+    if (index === total - 1) return 0.15
+    // Spread from 1.0 down to 0.4 across other segments
+    const t = index / (total - 2 || 1)
+    return 1 - t * 0.5
+  }
+
   return (
-    <div
-      className={cn(
-        "relative inline-flex aspect-square w-full max-w-[220px] items-center justify-center",
-        className
-      )}
-    >
+    <div className={cn("relative inline-flex aspect-square w-full max-w-[220px] items-center justify-center", className)}>
       <svg
         ref={svgRef}
         viewBox="0 0 100 100"
@@ -214,28 +165,23 @@ export function DonutChart({
           const isActive = activeIndex === index
           const midAngle = (startAngle + endAngle) / 2
           const expandDistance = 2.5
-          const offset = isActive
-            ? polarToCartesian(0, 0, expandDistance, midAngle)
-            : { x: 0, y: 0 }
+          const offset = isActive ? polarToCartesian(0, 0, expandDistance, midAngle) : { x: 0, y: 0 }
+          const segOpacity = segment.opacity ?? getSegmentOpacity(index, segments.length)
 
           return (
             <path
               key={segment.label}
-              d={describeAnnularSector(
-                startAngle,
-                endAngle,
-                INNER_RADIUS,
-                isActive ? OUTER_RADIUS + 1.5 : OUTER_RADIUS
-              )}
-              fill={segment.color}
+              d={describeAnnularSector(startAngle, endAngle, INNER_RADIUS, isActive ? OUTER_RADIUS + 1.5 : OUTER_RADIUS)}
+              fill="currentColor"
+              className="text-foreground"
               filter="url(#donut-round)"
               style={{
+                opacity: isActive ? 1 : segOpacity,
                 transform: `translate(${offset.x}px, ${offset.y}px)`,
-                transition:
-                  "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), d 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+                transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease",
                 cursor: "pointer",
                 filter: isActive
-                  ? `url(#donut-round) drop-shadow(0 0 4px ${segment.color}50)`
+                  ? "url(#donut-round) drop-shadow(0 0 8px rgba(255,255,255,0.15))"
                   : "url(#donut-round)",
               }}
               onMouseEnter={() => handleHover(index)}
@@ -252,29 +198,18 @@ export function DonutChart({
         onClick={handleCenterTap}
         aria-label="Reset chart selection"
       >
-        <span
-          className="text-text-secondary text-[9px] font-medium uppercase tracking-wider transition-all duration-300"
-          style={{
-            transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-          }}
-        >
+        <span className="text-[9px] font-medium uppercase tracking-wider text-text-tertiary transition-all duration-300">
           {centerLabel}
         </span>
         <span
-          className="font-mono text-lg font-semibold leading-tight transition-all duration-300"
-          style={{
-            color: centerColor,
-            transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-          }}
+          className={cn(
+            "font-mono text-lg font-semibold leading-tight transition-all duration-300",
+            isRemaining ? "text-zad-accent" : "text-foreground"
+          )}
         >
           {formatValue ? formatValue(centerValue) : centerValue.toLocaleString()}
         </span>
-        <span
-          className="text-text-tertiary text-[9px] transition-all duration-300"
-          style={{
-            transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-          }}
-        >
+        <span className="text-[9px] text-text-tertiary transition-all duration-300">
           {centerSubtitle}
         </span>
       </button>
