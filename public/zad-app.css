@@ -5134,6 +5134,45 @@
     @media (hover: none) {
       .heatmap-tooltip { font-size: 12px; padding: 6px 12px; border-radius: 10px; }
     }
+
+    /* ── Shared external chart tooltip ── */
+    .chart-ext-tip {
+      position: fixed;
+      background: #2c2c2e;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 8px 12px;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity var(--duration-fast) ease;
+      white-space: nowrap;
+      box-shadow: var(--shadow-lg);
+    }
+    .chart-ext-tip.visible { opacity: 1; }
+    .chart-tip-title {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 2px;
+    }
+    .chart-tip-line {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+    }
+    [data-theme="light"] .chart-ext-tip {
+      background: #fff;
+      border-color: rgba(0,0,0,0.1);
+    }
+    [data-theme="light"] .chart-tip-title { color: rgba(0,0,0,0.85); }
+    [data-theme="light"] .chart-tip-line { color: rgba(0,0,0,0.6); }
+    @media (hover: none) {
+      .chart-ext-tip { padding: 10px 16px; border-radius: 14px; }
+      .chart-tip-title { font-size: 14px; }
+      .chart-tip-line { font-size: 14px; }
+    }
     .heatmap-labels {
       display: flex;
       flex-direction: column;

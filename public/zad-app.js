@@ -3815,6 +3815,46 @@
     };
   }
 
+  // ── Shared external tooltip for all Chart.js charts ──
+  let _chartTipEl = null;
+  function getChartTipEl() {
+    if (!_chartTipEl) {
+      _chartTipEl = document.createElement('div');
+      _chartTipEl.className = 'chart-ext-tip';
+      document.body.appendChild(_chartTipEl);
+    }
+    return _chartTipEl;
+  }
+
+  function externalTooltipHandler(context) {
+    const { chart, tooltip } = context;
+    const tip = getChartTipEl();
+    if (tooltip.opacity === 0) {
+      tip.classList.remove('visible');
+      return;
+    }
+    let html = '';
+    if (tooltip.title && tooltip.title.length) {
+      html += `<div class="chart-tip-title">${tooltip.title.join('<br>')}</div>`;
+    }
+    const before = tooltip.beforeBody || [];
+    const bodyLines = tooltip.body ? tooltip.body.map(b => b.lines).flat().filter(Boolean) : [];
+    const allLines = [...before, ...bodyLines].filter(Boolean);
+    if (allLines.length) {
+      html += allLines.map(l => `<div class="chart-tip-line">${l}</div>`).join('');
+    }
+    tip.innerHTML = html;
+    // Position above touch/hover point, clamped to viewport
+    const canvasRect = chart.canvas.getBoundingClientRect();
+    const tipX = canvasRect.left + tooltip.caretX;
+    const tipY = canvasRect.top + tooltip.caretY;
+    tip.classList.add('visible');
+    const tipW = tip.offsetWidth;
+    const tipH = tip.offsetHeight;
+    tip.style.left = Math.max(8, Math.min(window.innerWidth - tipW - 8, tipX - tipW / 2)) + 'px';
+    tip.style.top = Math.max(8, tipY - tipH - 24) + 'px';
+  }
+
   function loadChartJS() {
     return new Promise((resolve) => {
       if (window.Chart) { resolve(); return; }
@@ -3989,19 +4029,12 @@
         maintainAspectRatio: false,
         indexAxis: 'y',
         interaction: { mode: 'nearest', axis: 'y', intersect: false },
-        events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
+        events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove', 'touchend'],
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: tc.tooltipBg,
-            titleColor: tc.tooltipText,
-            bodyColor: tc.tooltipBody,
-            borderColor: tc.tooltipBorder,
-            borderWidth: 1,
-            cornerRadius: 12,
-            padding: 12,
-            titleFont: { size: 12, weight: '500', family: "'Outfit', sans-serif" },
-            bodyFont: { size: 13, weight: '400', family: "'DM Mono', monospace" },
+            enabled: false,
+            external: externalTooltipHandler,
             displayColors: false,
             callbacks: {
               label: (ctx) => {
@@ -4011,7 +4044,7 @@
                 const val = Math.abs(raw).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 const roi = roiValues[ctx.dataIndex];
                 const roiSign = roi >= 0 ? '+' : '\u2212';
-                return ` ${sign}${sym}${val} (${roiSign}${Math.abs(roi).toFixed(1)}%)`;
+                return `${sign}${sym}${val} (${roiSign}${Math.abs(roi).toFixed(1)}%)`;
               }
             }
           }
@@ -4301,19 +4334,12 @@
           mode: 'index',
           intersect: false
         },
-        events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
+        events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove', 'touchend'],
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: tc.tooltipBg,
-            titleColor: tc.tooltipText,
-            bodyColor: tc.tooltipBody,
-            borderColor: tc.tooltipBorder,
-            borderWidth: 1,
-            cornerRadius: 12,
-            padding: 12,
-            titleFont: { size: 12, weight: '500', family: "'Outfit', sans-serif" },
-            bodyFont: { size: 13, weight: '400', family: "'DM Mono', monospace" },
+            enabled: false,
+            external: externalTooltipHandler,
             displayColors: false,
             callbacks: {
               title: (items) => items[0]?.label || '',
@@ -4322,9 +4348,9 @@
                   const val = ctx.parsed.y;
                   const sign = val >= 0 ? '' : '\u2212';
                   const abs = Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                  return ` ${label}: ${sign}${sym}${abs}`;
+                  return `${label}: ${sign}${sym}${abs}`;
                 }
-                return ` ${label}: ${ctx.parsed.y.toFixed(1)}%`;
+                return `${label}: ${ctx.parsed.y.toFixed(1)}%`;
               }
             }
           }
@@ -7268,7 +7294,7 @@
     });
 
     // Donut hover + touch-and-drag tooltips
-    function showAllocSliceTip(slice) {
+    function showAllocSliceTip(slice, touchX, touchY) {
       if (!slice) return;
       const donutId = slice.getAttribute('data-donut');
       const tip = document.getElementById(donutId + '-tip');
@@ -7276,6 +7302,19 @@
       tip.innerHTML = `<div class="bd-donut-tip-label">${slice.getAttribute('data-label')}</div>
         <div class="bd-donut-tip-row"><span class="bd-donut-tip-amount">${slice.getAttribute('data-amount')}</span><span class="bd-donut-tip-pct">${slice.getAttribute('data-pct')}</span></div>`;
       tip.classList.add('visible');
+      // Clamp tooltip to viewport if touch coordinates provided
+      if (touchX !== undefined) {
+        const wrap = document.getElementById(donutId);
+        if (wrap) {
+          const wrapRect = wrap.getBoundingClientRect();
+          const tipW = tip.offsetWidth;
+          const rawLeft = touchX - wrapRect.left - tipW / 2;
+          const maxLeft = window.innerWidth - wrapRect.left - tipW - 8;
+          const minLeft = -wrapRect.left + 8;
+          tip.style.left = Math.max(minLeft, Math.min(maxLeft, rawLeft)) + 'px';
+          tip.style.transform = 'translateY(0)';
+        }
+      }
       const siblings = document.querySelectorAll(`.bd-donut-slice[data-donut="${donutId}"]`);
       siblings.forEach(s => { s.style.opacity = s === slice ? '' : '0.35'; });
     }
@@ -7295,22 +7334,24 @@
     let allocTouching = false;
     let allocLastSlice = null;
     container.addEventListener('touchstart', (e) => {
-      const slice = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+      const tx = e.touches[0].clientX, ty = e.touches[0].clientY;
+      const slice = document.elementFromPoint(tx, ty);
       if (slice && slice.classList.contains('bd-donut-slice')) {
         e.preventDefault();
         allocTouching = true;
         allocLastSlice = slice;
-        showAllocSliceTip(slice);
+        showAllocSliceTip(slice, tx, ty);
       }
     }, { passive: false });
     container.addEventListener('touchmove', (e) => {
       if (!allocTouching) return;
       e.preventDefault();
-      const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+      const tx = e.touches[0].clientX, ty = e.touches[0].clientY;
+      const el = document.elementFromPoint(tx, ty);
       if (el && el.classList.contains('bd-donut-slice') && el !== allocLastSlice) {
         if (allocLastSlice) hideAllocSliceTip(allocLastSlice);
         allocLastSlice = el;
-        showAllocSliceTip(el);
+        showAllocSliceTip(el, tx, ty);
       }
     }, { passive: false });
     container.addEventListener('touchend', () => {
@@ -7844,7 +7885,7 @@
         responsive: true,
         maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
-        events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
+        events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove', 'touchend'],
         plugins: {
           legend: {
             position: 'bottom',
@@ -7857,20 +7898,13 @@
             }
           },
           tooltip: {
-            backgroundColor: tc.tooltipBg,
-            titleColor: tc.tooltipText,
-            bodyColor: tc.tooltipBody,
-            borderColor: tc.tooltipBorder,
-            borderWidth: 1,
-            cornerRadius: 12,
-            padding: 12,
-            titleFont: { size: 12, weight: '500', family: "'Outfit', sans-serif" },
-            bodyFont: { size: 11, weight: '400', family: "'DM Mono', monospace" },
+            enabled: false,
+            external: externalTooltipHandler,
             callbacks: {
               label: (ctx) => {
                 const val = ctx.parsed.y;
                 if (val === 0) return null;
-                return ` ${ctx.dataset.label}: ${curSymbol}${val.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+                return `${ctx.dataset.label}: ${curSymbol}${val.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
               }
             }
           }
@@ -8069,19 +8103,12 @@
         responsive: true,
         maintainAspectRatio: false,
         interaction: { mode: 'nearest', axis: 'x', intersect: false },
-        events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
+        events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove', 'touchend'],
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: tc.tooltipBg,
-            titleColor: tc.tooltipText,
-            bodyColor: tc.tooltipBody,
-            borderColor: tc.tooltipBorder,
-            borderWidth: 1,
-            cornerRadius: 12,
-            padding: 12,
-            titleFont: { size: 12, weight: '500', family: "'Outfit', sans-serif" },
-            bodyFont: { size: 11, weight: '400', family: "'DM Mono', monospace" },
+            enabled: false,
+            external: externalTooltipHandler,
             callbacks: {
               beforeBody: (items) => {
                 if (!items.length) return [];
@@ -8215,7 +8242,7 @@
           backgroundColor: colors,
           borderColor: isDark ? 'rgba(22,22,22,1)' : 'rgba(255,255,255,1)',
           borderWidth: 3,
-          hoverOffset: 4,
+          hoverOffset: 8,
           spacing: 1,
         }]
       },
@@ -8246,6 +8273,80 @@
 
     const centerEl = document.getElementById(cfg.centerId);
     if (centerEl) centerEl.textContent = curSymbol + total.toLocaleString('en-US', { maximumFractionDigits: 0 });
+
+    // Touch-drag interaction for pie charts
+    const chartInstance = sectionPieCharts[cfg.type];
+    let pieTouching = false;
+    let pieLastIdx = -1;
+
+    function showPieTooltip(touchX, touchY, idx) {
+      const tip = getChartTipEl();
+      const val = values[idx];
+      const pct = total > 0 ? (val / total * 100).toFixed(1) : '0';
+      tip.innerHTML = `<div class="chart-tip-title">${labels[idx]}</div><div class="chart-tip-line">${curSymbol}${val.toLocaleString('en-US', { maximumFractionDigits: 0 })} (${pct}%)</div>`;
+      tip.classList.add('visible');
+      const tipW = tip.offsetWidth;
+      const tipH = tip.offsetHeight;
+      tip.style.left = Math.max(8, Math.min(window.innerWidth - tipW - 8, touchX - tipW / 2)) + 'px';
+      tip.style.top = Math.max(8, touchY - tipH - 40) + 'px';
+    }
+
+    function updatePieHover(idx) {
+      const cEl = document.getElementById(cfg.centerId);
+      const sEl = cEl ? cEl.previousElementSibling : null;
+      if (idx >= 0) {
+        const val = values[idx];
+        const pct = total > 0 ? (val / total * 100).toFixed(1) : '0';
+        if (cEl) cEl.textContent = curSymbol + val.toLocaleString('en-US', { maximumFractionDigits: 0 });
+        if (sEl) sEl.textContent = pct + '%';
+        chartInstance.setActiveElements([{ datasetIndex: 0, index: idx }]);
+      } else {
+        if (cEl) cEl.textContent = curSymbol + total.toLocaleString('en-US', { maximumFractionDigits: 0 });
+        if (sEl) sEl.textContent = cfg.label.toUpperCase();
+        chartInstance.setActiveElements([]);
+      }
+      chartInstance.update('none');
+    }
+
+    function clearPieTouch() {
+      pieTouching = false;
+      pieLastIdx = -1;
+      updatePieHover(-1);
+      getChartTipEl().classList.remove('visible');
+    }
+
+    canvas.addEventListener('touchstart', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.touches[0].clientX - rect.left;
+      const y = e.touches[0].clientY - rect.top;
+      const els = chartInstance.getElementsAtEventForMode({ x, y }, 'nearest', { intersect: true }, false);
+      if (els.length > 0) {
+        e.preventDefault();
+        pieTouching = true;
+        pieLastIdx = els[0].index;
+        updatePieHover(pieLastIdx);
+        showPieTooltip(e.touches[0].clientX, e.touches[0].clientY, pieLastIdx);
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (e) => {
+      if (!pieTouching) return;
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const x = e.touches[0].clientX - rect.left;
+      const y = e.touches[0].clientY - rect.top;
+      const els = chartInstance.getElementsAtEventForMode({ x, y }, 'nearest', { intersect: true }, false);
+      if (els.length > 0 && els[0].index !== pieLastIdx) {
+        pieLastIdx = els[0].index;
+        updatePieHover(pieLastIdx);
+        showPieTooltip(e.touches[0].clientX, e.touches[0].clientY, pieLastIdx);
+      } else if (els.length > 0) {
+        showPieTooltip(e.touches[0].clientX, e.touches[0].clientY, pieLastIdx);
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', clearPieTouch);
+    canvas.addEventListener('touchcancel', clearPieTouch);
 
     const maxVal = Math.max(...values);
     let legendHTML = '';
