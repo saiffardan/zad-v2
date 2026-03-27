@@ -31,20 +31,33 @@ export function StickyHeader({ title, subtitle }: StickyHeaderProps) {
       {/* Invisible sentinel — when this scrolls out of view, mini header appears */}
       <div ref={sentinelRef} className="h-0 w-0" />
 
-      {/* Fixed mini header — no container, just floating text */}
+      {/* Fixed mini header — floating text with blur mask behind */}
       <div
-        className="fixed top-0 inset-x-0 z-40 pointer-events-none flex justify-center"
+        className="fixed top-0 inset-x-0 z-40 pointer-events-none"
         aria-hidden={!scrolled}
       >
-        <p
-          className="text-sm font-semibold pt-3 pb-2 transition-all duration-300 ease-out"
+        {/* Blur mask */}
+        <div
+          className="absolute inset-0 h-12 transition-opacity duration-300"
           style={{
             opacity: scrolled ? 1 : 0,
-            transform: scrolled ? "translateY(0)" : "translateY(-8px)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            maskImage: "linear-gradient(to bottom, black 60%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to bottom, black 60%, transparent 100%)",
           }}
-        >
-          {title}
-        </p>
+        />
+        <div className="relative flex justify-center">
+          <p
+            className="text-sm font-semibold pt-3 pb-2 transition-all duration-300 ease-out"
+            style={{
+              opacity: scrolled ? 1 : 0,
+              transform: scrolled ? "translateY(0)" : "translateY(-8px)",
+            }}
+          >
+            {title}
+          </p>
+        </div>
       </div>
 
       {/* Full header — hides when scrolled */}
