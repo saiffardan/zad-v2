@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
+import { StickyHeader } from "@/components/sticky-header"
 
 const budgets = [
   {
@@ -63,12 +64,7 @@ function getStatusBadge(spent: number, budget: number) {
 export default function BudgetsPage() {
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Budgets</h1>
-          <p className="text-sm text-muted-foreground">Manage your spending limits</p>
-        </div>
-      </div>
+      <StickyHeader title="Budgets" subtitle="Manage your spending limits" />
 
       <div className="space-y-3">
         {budgets.map((budget) => {

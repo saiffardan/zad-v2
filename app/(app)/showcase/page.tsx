@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { StickyHeader } from "@/components/sticky-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -84,11 +85,7 @@ export default function ShowcasePage() {
 
   return (
     <div className="space-y-10">
-      {/* ── Header ── */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-gradient-primary">Design System</h1>
-        <p className="text-sm text-muted-foreground mt-1">Zad component library &amp; design language</p>
-      </div>
+      <StickyHeader title="Design System" subtitle="Zad component library & design language" />
 
       {/* ══════════════════════════════════════════════
           SECTION: DESIGN FOUNDATIONS

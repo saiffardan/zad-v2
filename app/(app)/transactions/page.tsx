@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { StickyHeader } from "@/components/sticky-header"
 
 const transactions = [
   { name: "Carrefour", category: "Groceries", subcategory: "Food", amount: -245.50, date: "Mar 27" },
@@ -17,10 +18,7 @@ const transactions = [
 export default function TransactionsPage() {
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Transactions</h1>
-        <p className="text-sm text-muted-foreground">Your recent spending activity</p>
-      </div>
+      <StickyHeader title="Transactions" subtitle="Your recent spending activity" />
 
       <Card>
         <CardHeader>

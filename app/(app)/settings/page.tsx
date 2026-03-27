@@ -3,14 +3,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { ThemeToggle } from "@/components/theme-provider"
+import { StickyHeader } from "@/components/sticky-header"
 
 export default function SettingsPage() {
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground">Manage your preferences</p>
-      </div>
+      <StickyHeader title="Settings" subtitle="Manage your preferences" />
 
       <Card>
         <CardHeader>

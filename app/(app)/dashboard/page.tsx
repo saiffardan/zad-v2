@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { StickyHeader } from "@/components/sticky-header"
 
 const stats = [
   { label: "Total Budget", value: "AED 15,000", badge: "Monthly", badgeVariant: "secondary" as const },
@@ -28,10 +29,7 @@ const recentTransactions = [
 export default function DashboardPage() {
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">Your financial overview</p>
-      </div>
+      <StickyHeader title="Dashboard" subtitle="Your financial overview" />
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 gap-3">
