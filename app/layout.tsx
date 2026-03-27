@@ -1,11 +1,8 @@
 import type { Metadata, Viewport } from "next"
 
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-
 export const metadata: Metadata = {
   title: "Zad",
-  description: "Personal budgeting app",
+  description: "Personal finance dashboard",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon.svg",
@@ -24,10 +21,8 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FBFBFB" },
-    { media: "(prefers-color-scheme: dark)", color: "#151419" },
-  ],
+  colorScheme: "dark light",
+  themeColor: "#141414",
 }
 
 export default function RootLayout({
@@ -36,10 +31,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className="antialiased">
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
-      </body>
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&family=Inter:wght@200&display=swap"
+          rel="stylesheet"
+        />
+        <link rel="stylesheet" href="/zad-app.css" />
+      </head>
+      <body>{children}</body>
     </html>
   )
 }

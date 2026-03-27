@@ -1,0 +1,898 @@
+<!-- Shader background -->
+<!-- shader bg removed -->
+
+<!-- V3 Sidebar (desktop only) -->
+<aside class="sidebar hidden" id="appSidebar">
+  <div class="sidebar-logo" id="sidebarLogo"></div>
+  <div class="sidebar-nav">
+    <button class="sidebar-item active" data-page="transactions" onclick="sidebarNav('transactions', this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      Dashboard
+    </button>
+    <button class="sidebar-item" data-page="portfolio" onclick="sidebarNav('portfolio', this)">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      Portfolio
+    </button>
+  </div>
+  <div class="sidebar-bottom">
+    <button class="sidebar-item" data-page="settings" onclick="sidebarNav('settings', this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      Settings
+    </button>
+    <button class="sidebar-item" onclick="handleSignOut()">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      Sign out
+    </button>
+  </div>
+</aside>
+
+<!-- Sign In Screen -->
+<div id="signInScreen" class="sign-in-container">
+  <div class="sign-in-brand">
+    <div class="brand-mark" id="signInLogo"></div>
+  </div>
+  <div class="sign-in-bottom">
+    <button class="btn btn-glass" onclick="handleSignIn()">Sign in</button>
+    <button class="btn-demo" onclick="handleDemoLogin()">Try Demo</button>
+  </div>
+</div>
+
+<!-- Loading Screen -->
+<div id="loadingScreen" class="loading hidden">
+  <div class="loading-logo" id="loadingLogo"></div>
+  <p id="loadingText">Loading your portfolio...</p>
+</div>
+
+<!-- Main App -->
+<main id="mainApp" class="hidden">
+  <div class="header" id="portfolioHeader">
+    <div class="header-top">
+      <div class="header-left">
+        <span class="mobile-header-logo" id="mobileLogoPort" style="display:none"></span>
+        <h1 class="header-title page-switcher" onclick="openPageSwitcher(this)">Portfolio<span class="header-tab-indicator" id="portTabIndicator"></span> <svg class="page-switcher-chevron" viewBox="0 0 12 12" width="14" height="14"><polyline points="3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></h1>
+        <div class="header-tabs-anchor" id="portfolioTabsAnchor"></div>
+      </div>
+      <div id="portfolioNavAnchor" class="header-collapse-hide"></div>
+      <div class="header-right">
+        <button class="mobile-settings-btn" style="display:none" onclick="openMobileSettings()" aria-label="Settings">
+          <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="controls-pill">
+          <button class="ctrl-btn" id="refreshBtn" onclick="refreshData()" data-tip="Refresh">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          </button>
+          <div class="ctrl-divider"></div>
+          <button class="ctrl-btn" id="privacyToggle" onclick="toggleDemoMode()" data-tip="Demo mode">
+            <svg class="icon-eye-open" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg class="icon-eye-closed" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </button>
+          <div class="ctrl-divider"></div>
+          <button class="ctrl-btn" id="themeToggle" data-tip="Theme">
+            <div class="theme-icon-wrap">
+              <svg class="theme-sun-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+              <svg class="theme-moon-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="header-spacer"></div>
+
+  <!-- Portfolio filters (moved to content) -->
+  <div class="txn-filters content-filters" id="headerFilterRow" style="display:none">
+    <div class="txn-select-wrap txn-filter-item" id="filterPortYear">
+      <select class="txn-select" id="portYearSelect" onchange="applyPortfolioFilters()">
+        <option value="all">All Years</option>
+      </select>
+    </div>
+    <div class="txn-select-wrap txn-filter-item" id="filterPortPeriod">
+      <select class="txn-select" id="portPeriodSelect" onchange="applyPortfolioFilters()">
+        <option value="all">All Year</option>
+        <option value="ytd">YTD</option>
+        <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+        <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+        <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+        <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+      </select>
+    </div>
+    <div class="txn-select-wrap txn-filter-item filter-hidden" id="tradeFilterWrap">
+      <select class="txn-select" id="tradeFilterSelect" onchange="filterTradesSelect(this.value)">
+        <option value="all">All Trades</option>
+        <option value="buy">Buys</option>
+        <option value="sell">Sells</option>
+      </select>
+    </div>
+    <div class="txn-select-wrap txn-filter-item port-right-filters filter-hidden" id="portTypeWrap">
+      <select class="txn-select" id="portTypeSelect" onchange="applyPortfolioTypeFilter(this.value)">
+        <option value="all">All Types</option>
+      </select>
+    </div>
+  </div>
+  <div class="filters-spacer" id="portFiltersSpacer"></div>
+  <!-- Hidden elements for backward compat -->
+  <div style="display:none"><div id="typeFilters"><div id="filterPill"></div></div></div>
+
+  <!-- Summary Cards + Best/Worst -->
+  <!-- Desktop: original grid layout -->
+  <div class="summary-grid desktop-only" id="summaryCardsDesktop">
+    <div class="summary-card">
+      <div class="summary-label">Total Invested</div>
+      <div class="summary-value" id="totalInvestedD">--</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Current Value</div>
+      <div class="summary-value" id="portfolioValueD">--</div>
+    </div>
+    <div class="summary-card" id="pnlCardD">
+      <div class="summary-label">Total P&L</div>
+      <div class="summary-value" id="totalPnlD">--</div>
+    </div>
+    <div class="summary-card" id="roiCardD">
+      <div class="summary-label">Return</div>
+      <div class="summary-value" id="totalRoiD">--</div>
+    </div>
+  </div>
+  <div class="summary-wl-row desktop-only" id="summaryWLDesktop">
+    <div class="summary-card wl-card" id="winnerCardD"></div>
+    <div class="summary-card wl-card" id="loserCardD"></div>
+  </div>
+
+  <!-- Mobile: hero card -->
+  <div class="port-hero mobile-only" id="summaryHero">
+    <div class="port-hero-label">Current Value</div>
+    <div class="port-hero-value" id="heroValue">--</div>
+    <div class="port-hero-pnl" id="heroPnl"></div>
+    <div class="port-hero-invested" id="heroInvested"></div>
+    <div class="port-hero-wl" id="heroWL"></div>
+  </div>
+
+  <!-- Tabs placeholder (actual tabs moved to bottom) -->
+
+  <!-- Holdings Tab -->
+  <div id="holdingsTab">
+    <div class="holdings-controls mobile-only" id="holdingsSortBar">
+      <div class="holdings-sort-bar">
+        <span class="holdings-sort-label">Type</span>
+        <button class="holdings-sort-btn active" onclick="filterHoldingsType('all', this)">All</button>
+        <span class="holdings-type-pills" id="holdingsTypePills"></span>
+      </div>
+      <div class="holdings-sort-bar">
+        <span class="holdings-sort-label">Sort</span>
+        <button class="holdings-sort-btn sort-btn active" onclick="sortHoldingsBy('currentValue', this)">Value</button>
+        <button class="holdings-sort-btn sort-btn" onclick="sortHoldingsBy('pnl', this)">P&L</button>
+        <button class="holdings-sort-btn sort-btn" onclick="sortHoldingsBy('roi', this)">ROI</button>
+        <button class="holdings-sort-btn sort-btn" onclick="sortHoldingsBy('weight', this)">Weight</button>
+      </div>
+    </div>
+    <div class="table-container" id="holdingsTableContainer">
+      <table class="holdings-table" id="holdingsTable"></table>
+    </div>
+    <div class="fab-stack">
+      <button class="fab-add-txn fab-buy" onclick="openAddTradeModal()" aria-label="Buy">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <button class="fab-add-txn fab-sell" onclick="openSellModal('')" aria-label="Sell">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Trades Tab -->
+  <div id="tradesTab" class="hidden">
+    <div class="table-container" id="tradesTableContainer">
+      <table class="holdings-table" id="tradesTable"></table>
+    </div>
+    <div class="fab-stack">
+      <button class="fab-add-txn fab-buy" onclick="openAddTradeModal()" aria-label="Buy">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <button class="fab-add-txn fab-sell" onclick="openSellModal('')" aria-label="Sell">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Charts Tab -->
+  <div id="chartsTab" class="hidden">
+    <div class="charts-section">
+      <!-- Segment Control -->
+      <div class="chart-segment-control" id="chartSegmentControl">
+        <button class="chart-seg-btn active" onclick="switchChartView('allocation', this)">Allocation</button>
+        <button class="chart-seg-btn" onclick="switchChartView('performance', this)">Performance</button>
+        <button class="chart-seg-btn" onclick="switchChartView('pnl', this)">P&L</button>
+      </div>
+
+      <!-- Allocation View -->
+      <div class="chart-view" id="chartViewAllocation">
+        <div class="alloc-stacked-bar" id="portfolioAllocBar"></div>
+        <div class="alloc-total-row" id="portfolioAllocTotal"></div>
+        <div class="alloc-ranked-list" id="portfolioAllocList"></div>
+      </div>
+      <!-- Hidden canvas for backward compat -->
+      <div style="display:none"><canvas id="pieChart"></canvas><span id="pieCenterAmount"></span><span id="pieLegend"></span></div>
+
+      <!-- Performance View -->
+      <div class="chart-view hidden" id="chartViewPerformance">
+        <div class="chart-hero-metric" id="perfHeroMetric"></div>
+        <div class="chart-wrapper chart-wrapper-hist">
+          <canvas id="histChart"></canvas>
+        </div>
+        <div class="chart-pills-row">
+          <div class="chart-toggle-row pill-track" id="rangeTrack" style="margin-bottom:0;">
+            <div class="sliding-pill" id="rangePill"></div>
+            <button class="pill-track-btn chart-toggle-btn" onclick="setHistRange('1m', this)">1M</button>
+            <button class="pill-track-btn chart-toggle-btn" onclick="setHistRange('3m', this)">3M</button>
+            <button class="pill-track-btn chart-toggle-btn" onclick="setHistRange('6m', this)">6M</button>
+            <button class="pill-track-btn chart-toggle-btn" onclick="setHistRange('ytd', this)">YTD</button>
+            <button class="pill-track-btn chart-toggle-btn" onclick="setHistRange('1y', this)">1Y</button>
+            <button class="pill-track-btn chart-toggle-btn active" onclick="setHistRange('all', this)">All</button>
+          </div>
+        </div>
+        <div class="chart-pills-row">
+          <div class="chart-toggle-row pill-track" id="metricTrack">
+            <div class="sliding-pill" id="metricPill"></div>
+            <button class="pill-track-btn chart-toggle-btn active" onclick="setHistMetric('value', this)">Value</button>
+            <button class="pill-track-btn chart-toggle-btn" onclick="setHistMetric('pnl', this)">P&L</button>
+            <button class="pill-track-btn chart-toggle-btn" onclick="setHistMetric('roi', this)">ROI %</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- P&L View -->
+      <div class="chart-view hidden" id="chartViewPnl">
+        <div class="chart-hero-metric" id="pnlHeroMetric"></div>
+        <div class="chart-wrapper chart-wrapper-pnl">
+          <canvas id="waterfallChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Allocation Tab -->
+  <div id="allocationTab" class="hidden">
+    <div class="section-title">By Type (Current Value)</div>
+    <div class="allocation-list" id="typeAllocation"></div>
+    <div class="section-title">By Ticker (Current Value)</div>
+    <div class="allocation-list" id="tickerAllocation"></div>
+  </div>
+
+  <!-- Advisor Tab (v2) -->
+  <div id="advisorTab" class="hidden">
+    <!-- Hero Input Area -->
+    <div class="advisor-hero" id="advisorHeroArea">
+      <div class="advisor-hero-label">Monthly DCA</div>
+      <div class="advisor-hero-input-wrap">
+        <span class="advisor-currency-label" id="advisorCurrLabel">AED</span>
+        <input type="number" class="advisor-input advisor-hero-amount" id="advisorAmountInput" placeholder="1,000" min="0" step="100">
+      </div>
+      <button class="advisor-ticker-pill" onclick="toggleAdvisorSelector()">
+        <span id="advisorSelectorPreview">Select tickers</span>
+        <span id="advisorSelCount" style="color:var(--emerald);font-size:11px;"></span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="advisor-selector-body hidden" id="advisorSelectorBody">
+        <input type="text" class="advisor-search" id="advisorSearch" placeholder="Search tickers..." oninput="filterAdvisorTickers()">
+        <div class="advisor-actions-row">
+          <button class="advisor-action-btn" onclick="advisorSelectAll()">Select All</button>
+          <button class="advisor-action-btn" onclick="advisorClearAll()">Clear</button>
+        </div>
+        <div class="advisor-ticker-list" id="advisorTickerList"></div>
+      </div>
+      <button class="advisor-calc-btn" onclick="runAdvisor()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        Analyze &amp; Recommend
+      </button>
+    </div>
+
+    <!-- Hidden: old advisor-selector wrapper for backward compat -->
+    <div style="display:none"><div class="advisor-selector" id="advisorSelector"><div class="advisor-selector-header"><svg class="advisor-selector-chevron" id="advisorChevron" viewBox="0 0 24 24"></svg></div></div></div>
+
+    <!-- Settings: hidden behind gear icon in header area -->
+    <div class="advisor-section" style="padding:0;">
+      <div class="advisor-settings-header" onclick="toggleAdvisorSettings()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Engine Settings</span>
+        <span class="advisor-settings-toggle" id="advisorSettingsToggle"></span>
+      </div>
+      <div class="advisor-settings-panel collapsed" id="advisorSettingsPanel">
+        <!-- Data Proxy -->
+        <div class="advisor-settings-group">
+          <div class="advisor-settings-group-title">Data Proxy (Enhanced)</div>
+          <div style="font-size:9px;color:var(--text-3);margin-bottom:6px;line-height:1.3;">Deploy <code>enhanced-proxy.gs</code> as a Google Apps Script Web App, then paste the URL below. This unlocks MA200, RSI, P/E, dividend yield, and auto fair values.</div>
+          <div id="proxyStatus" style="font-size:10px;margin-bottom:6px;"></div>
+          <div style="display:flex;gap:6px;">
+            <input type="text" class="advisor-config-input" id="enhancedProxyInput"
+              style="flex:1;width:auto;text-align:left;font-size:10px;padding:8px;"
+              placeholder="https://script.google.com/macros/s/…/exec">
+            <button class="advisor-action-btn" style="white-space:nowrap;" onclick="saveEnhancedProxy()">Save & Test</button>
+          </div>
+        </div>
+        <!-- Fair Values -->
+        <div class="advisor-settings-group">
+          <div class="advisor-settings-group-title">Fair Values (per share, original currency)</div>
+          <div style="font-size:9px;color:var(--text-3);margin-bottom:8px;line-height:1.3;">Set your estimated intrinsic value per ticker. Leave blank for auto-calculation. Cost basis fallback has 50% confidence cap. Extreme ratios (&gt;2x or &lt;0.5x) are capped at 30%.</div>
+          <div id="advisorFairValueList"></div>
+        </div>
+        <!-- Conviction (auto + manual override) -->
+        <div class="advisor-settings-group">
+          <div class="advisor-settings-group-title">Conviction (Auto-Calculated)</div>
+          <div style="font-size:9px;color:var(--text-3);margin-bottom:8px;line-height:1.3;">Auto-scored from holding duration and portfolio weight. Tap stars to set an optional manual override (35% influence). Tap active star again to clear override.</div>
+          <div id="advisorConvictionList"></div>
+        </div>
+        <!-- Asset Class Targets -->
+        <div class="advisor-settings-group">
+          <div class="advisor-settings-group-title">Asset Class Targets (%)</div>
+          <div style="font-size:9px;color:var(--text-3);margin-bottom:8px;line-height:1.3;">Your ideal portfolio split by asset class. Must sum to 100%.</div>
+          <div id="advisorClassTargetList"></div>
+          <div id="advisorClassTargetSum"></div>
+        </div>
+        <!-- Factor Weights -->
+        <div class="advisor-settings-group">
+          <div class="advisor-settings-group-title">Factor Weights (%)</div>
+          <div style="font-size:9px;color:var(--text-3);margin-bottom:8px;line-height:1.3;">How much each scoring factor matters. Must sum to 100%.</div>
+          <div id="advisorFactorWeightList"></div>
+          <div id="advisorFactorWeightSum"></div>
+          <div class="advisor-weight-bar" id="advisorWeightBar"></div>
+        </div>
+        <!-- Focus & Recency -->
+        <div class="advisor-settings-group">
+          <div class="advisor-settings-group-title">Focus & Recency</div>
+          <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px;">
+            <div class="advisor-input-row" style="flex:1;padding:8px 12px;">
+              <span style="font-size:10px;color:var(--text-3);white-space:nowrap;">Max picks</span>
+              <select class="advisor-input" id="advisorMaxPicks" style="font-size:14px;text-align:center;-webkit-appearance:none;">
+                <option value="3">3</option>
+                <option value="5" selected>5</option>
+                <option value="7">7</option>
+                <option value="10">10</option>
+                <option value="0">All</option>
+              </select>
+            </div>
+            <div class="advisor-input-row" style="flex:1;padding:8px 12px;">
+              <span style="font-size:10px;color:var(--text-3);white-space:nowrap;">Min alloc</span>
+              <select class="advisor-input" id="advisorMinAlloc" style="font-size:14px;text-align:center;-webkit-appearance:none;">
+                <option value="0">None</option>
+                <option value="50">50</option>
+                <option value="100" selected>100</option>
+                <option value="200">200</option>
+              </select>
+            </div>
+          </div>
+          <div class="advisor-settings-group-title" style="margin-top:8px;">Recency Lookback (days per class)</div>
+          <div style="font-size:9px;color:var(--text-3);margin-bottom:8px;line-height:1.3;">0 = disabled. Penalizes recent buys to spread purchases over time.</div>
+          <div id="advisorRecencyList"></div>
+          <div class="advisor-settings-group-title" style="margin-top:12px;">Allocation Controls</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="advisor-config-row" style="flex:1;min-width:120px;">
+              <div><div class="label" style="font-size:10px;">Aggressiveness</div><div class="sublabel">1=linear 3=cubic</div></div>
+              <select class="advisor-config-input" id="advisorConcentrationExp" style="width:56px;">
+                <option value="1.0">1.0</option>
+                <option value="1.5">1.5</option>
+                <option value="2.0" selected>2.0</option>
+                <option value="2.5">2.5</option>
+                <option value="3.0">3.0</option>
+              </select>
+            </div>
+            <div class="advisor-config-row" style="flex:1;min-width:120px;">
+              <div><div class="label" style="font-size:10px;">Max per ticker</div><div class="sublabel">% of budget</div></div>
+              <div style="display:flex;align-items:center;gap:2px;">
+                <input type="number" class="advisor-config-input" id="advisorMaxCap" value="35" min="10" max="100" style="width:50px;">
+                <span style="font-size:10px;color:var(--text-3);">%</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+            <div class="advisor-config-row" style="flex:1;min-width:130px;">
+              <div><div class="label" style="font-size:10px;">Contrast Stretch</div><div class="sublabel">1.0=off 2.0+=aggressive</div></div>
+              <select class="advisor-config-input" id="advisorContrastStrength" style="width:56px;">
+                <option value="1.0">1.0</option>
+                <option value="1.25">1.25</option>
+                <option value="1.5" selected>1.5</option>
+                <option value="1.75">1.75</option>
+                <option value="2.0">2.0</option>
+                <option value="2.5">2.5</option>
+              </select>
+            </div>
+            <div class="advisor-config-row" style="flex:1;min-width:130px;">
+              <div><div class="label" style="font-size:10px;">Adaptive exponent</div><div class="sublabel">Auto-boost when scores cluster</div></div>
+              <select class="advisor-config-input" id="advisorAdaptiveExp" style="width:56px;">
+                <option value="true" selected>On</option>
+                <option value="false">Off</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <!-- Valuation Parameters -->
+        <div class="advisor-settings-group">
+          <div class="advisor-settings-group-title">Valuation Parameters</div>
+          <div style="font-size:9px;color:var(--text-3);margin-bottom:8px;line-height:1.3;">Sector P/E multiples for stock fair value. ETF historical P/E and REIT target yield.</div>
+          <div id="advisorSectorPEList"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+            <div class="advisor-config-row" style="flex:1;min-width:130px;">
+              <div><div class="label" style="font-size:10px;">ETF Historical P/E</div><div class="sublabel">Broad market median</div></div>
+              <input type="number" class="advisor-config-input" id="advisorEtfPE" value="20" min="5" max="50" step="1" style="width:50px;">
+            </div>
+            <div class="advisor-config-row" style="flex:1;min-width:130px;">
+              <div><div class="label" style="font-size:10px;">REIT Target Yield</div><div class="sublabel">Dubai REITs: 5-7%</div></div>
+              <div style="display:flex;align-items:center;gap:2px;">
+                <input type="number" class="advisor-config-input" id="advisorReitYield" value="6.0" min="3" max="12" step="0.5" style="width:50px;">
+                <span style="font-size:10px;color:var(--text-3);">%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Manual Fundamentals -->
+        <div class="advisor-settings-group">
+          <div class="advisor-settings-group-title">Manual Fundamentals</div>
+          <div style="font-size:9px;color:var(--text-3);margin-bottom:8px;line-height:1.3;">Enter EPS, P/E, or dividend yield manually. Used when Yahoo data is unavailable. Auto-expires after 180 days.</div>
+          <div id="advisorManualFundamentalsList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Segment Control -->
+    <div class="advisor-section" id="advisorViewToggle" style="display:none;">
+      <div class="chart-segment-control">
+        <button class="chart-seg-btn active" onclick="setAdvisorView('cards', this)">Picks</button>
+        <button class="chart-seg-btn" onclick="setAdvisorView('table', this)">Table</button>
+        <button class="chart-seg-btn" onclick="setAdvisorView('split', this)">By Class</button>
+      </div>
+    </div>
+    <!-- Keep old pill-track hidden for JS compat -->
+    <div style="display:none"><div class="pill-track" id="advisorViewTrack"><div class="sliding-pill" id="advisorViewPill"></div></div></div>
+    <div id="advisorResults"></div>
+
+    <div class="advisor-section advisor-suggestions-section">
+      <div class="section-title" style="font-size:11px;color:var(--text-3);">Consider Adding</div>
+      <div class="advisor-suggestions" id="advisorSuggestions"></div>
+    </div>
+  </div>
+
+  <!-- Tabs (fixed bottom bar) -->
+  <div class="tabs txn-tabs txn-bottom-tabs" id="tabRow" role="tablist" aria-label="Portfolio tabs">
+    <div class="tab-underline" id="tabUnderline"></div>
+    <div class="tab active" role="tab" aria-selected="true" onclick="switchTab('holdings', this)">
+      <svg class="tab-icon" viewBox="0 0 24 24"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      <span class="tab-label">Holdings</span>
+    </div>
+    <div class="tab" role="tab" aria-selected="false" onclick="switchTab('trades', this)">
+      <svg class="tab-icon" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="17 6 23 6 23 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="tab-label">Trades</span>
+    </div>
+    <div class="tab" role="tab" aria-selected="false" onclick="switchTab('charts', this)">
+      <svg class="tab-icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="20" x2="12" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="6" y1="20" x2="6" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="tab-label">Charts</span>
+    </div>
+    <div class="tab" role="tab" aria-selected="false" onclick="switchTab('allocation', this)">
+      <svg class="tab-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 2a10 10 0 0 1 10 10h-10z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      <span class="tab-label">Allocation</span>
+    </div>
+    <div class="tab" role="tab" aria-selected="false" onclick="switchTab('advisor', this)">
+      <svg class="tab-icon" viewBox="0 0 24 24"><path d="M12 20V10M6 20V4M18 20v-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="tab-label">Advisor</span>
+    </div>
+  </div>
+  <div class="portfolio-tab-spacer"></div>
+
+</main>
+
+<!-- Transactions Screen -->
+<main id="transactionsApp" class="hidden">
+  <div class="header">
+    <div class="header-top">
+      <div class="header-left">
+        <span class="mobile-header-logo" id="mobileLogoDash" style="display:none"></span>
+        <h1 class="header-title page-switcher" onclick="openPageSwitcher(this)">Dashboard<span class="header-tab-indicator" id="dashTabIndicator"></span> <svg class="page-switcher-chevron" viewBox="0 0 12 12" width="14" height="14"><polyline points="3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></h1>
+        <div class="header-tabs-anchor" id="headerTabsAnchor"></div>
+      </div>
+      <div id="txnNavAnchor" class="header-collapse-hide">
+        <nav id="bottomNav" class="bottom-nav hidden">
+          <div class="nav-items-wrapper" id="navItemsWrapper">
+            <div class="nav-active-pill" id="navActivePill"></div>
+            <button class="nav-item active" onclick="switchNav('transactions', this)">
+              <div class="nav-item-content">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span class="nav-label">Dashboard</span>
+              </div>
+            </button>
+            <button class="nav-item" onclick="switchNav('portfolio', this)">
+              <div class="nav-item-content">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                <span class="nav-label">Portfolio</span>
+              </div>
+            </button>
+          </div>
+        </nav>
+      </div>
+      <div class="header-right">
+        <button class="mobile-settings-btn" style="display:none" onclick="openMobileSettings()" aria-label="Settings">
+          <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="controls-pill">
+          <button class="ctrl-btn" id="txnRefreshBtn" onclick="refreshDashboardData()" data-tip="Refresh">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          </button>
+          <div class="ctrl-divider"></div>
+          <button class="ctrl-btn" id="txnDemoToggle" onclick="toggleTxnDemoMode()" data-tip="Demo mode">
+            <svg class="icon-eye-open" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg class="icon-eye-closed" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </button>
+          <div class="ctrl-divider"></div>
+          <button class="ctrl-btn" id="themeToggle2" data-tip="Theme">
+            <div class="theme-icon-wrap">
+              <svg class="theme-sun-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+              <svg class="theme-moon-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="header-spacer" id="txnHeaderSpacer"></div>
+
+  <!-- Filters (moved to content area, above first card) -->
+  <div class="txn-filters content-filters" id="txnFiltersRow">
+    <div class="txn-select-wrap txn-filter-item" id="filterYear">
+      <select class="txn-select" id="txnYearSelect" onchange="applyTxnFilters()">
+        <option value="all">All Years</option>
+      </select>
+    </div>
+    <div class="txn-select-wrap txn-filter-item" id="filterPeriod">
+      <select class="txn-select" id="txnPeriodSelect" onchange="applyTxnFilters()">
+        <option value="all">All Year</option>
+        <option value="ytd">YTD</option>
+        <option value="1">January</option>
+        <option value="2">February</option>
+        <option value="3">March</option>
+        <option value="4">April</option>
+        <option value="5">May</option>
+        <option value="6">June</option>
+        <option value="7">July</option>
+        <option value="8">August</option>
+        <option value="9">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+      </select>
+    </div>
+    <div class="txn-select-wrap txn-filter-item txn-filter-extra filter-hidden" id="filterView">
+      <select class="txn-select" id="txnViewSelect" onchange="applyTxnFilters()">
+        <option value="all">All</option>
+        <option value="budget">Budget</option>
+        <option value="tracked" selected>Tracked</option>
+        <option value="bt">B&T</option>
+      </select>
+    </div>
+    <div class="txn-select-wrap txn-filter-item txn-filter-extra filter-hidden" id="filterDetail">
+      <select class="txn-select" id="txnDetailSelect" onchange="applyTxnFilters()">
+        <option value="granule">Granule</option>
+        <option value="category">Category</option>
+      </select>
+    </div>
+    <div class="txn-search-wrap txn-filter-item filter-hidden" id="filterTxnSearch" style="margin-left:auto">
+      <svg class="txn-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="txn-search" id="txnSearchInput" type="text" placeholder="Search transactions..." oninput="filterTxnSearch()">
+    </div>
+    <div class="txn-cal-wrap txn-filter-item filter-hidden" id="filterTxnCal">
+      <button class="txn-cal-btn" id="txnCalBtn" onclick="toggleCalendar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span id="txnCalLabel">Date</span>
+      </button>
+      <div class="txn-cal-popup" id="txnCalPopup"></div>
+    </div>
+    <div class="txn-select-wrap txn-filter-item filter-hidden" id="filterTxnType">
+      <select class="txn-select" id="txnTypeSelect" onchange="filterTxnTypeSelect(this.value)">
+        <option value="all">All Types</option>
+        <option value="INCOME">Income</option>
+        <option value="EXPENSES">Expenses</option>
+        <option value="SAVINGS">Savings</option>
+        <option value="DEBT">Debt</option>
+        <option value="TRANSFER">Transfer</option>
+      </select>
+    </div>
+    <div class="txn-select-wrap txn-filter-item filter-hidden" id="filterBdType">
+      <select class="txn-select" id="bdTypeSelect" onchange="filterBreakdownTypeSelect(this.value)">
+        <option value="all">All Types</option>
+        <option value="INCOME">Income</option>
+        <option value="EXPENSES">Expenses</option>
+        <option value="SAVINGS">Savings</option>
+        <option value="DEBT">Debt</option>
+      </select>
+    </div>
+  </div>
+  <div class="filters-spacer" id="filtersSpacer"></div>
+
+  <!-- Overview Tab -->
+  <div id="txnOverviewTab">
+    <!-- Hero Card v2 -->
+    <div class="hero-section" id="txnHeroSection">
+      <div class="hero-card">
+        <div class="hero-split">
+          <!-- Left half: Income + Legend -->
+          <div class="hero-card-left">
+            <div class="hero-income-label">Monthly Income</div>
+            <div class="hero-income-currency" id="heroIncomeCurrency">AED</div>
+            <div class="hero-income-value" id="heroIncomeValue">--</div>
+            <div class="hero-legend" id="heroLegend"></div>
+          </div>
+          <!-- Right half: Donut -->
+          <div class="hero-card-right">
+            <div class="hero-donut-wrap">
+              <svg id="heroDonut" width="160" height="160" viewBox="0 0 160 160"></svg>
+              <div class="hero-donut-center">
+                <div class="hero-center-label">Remaining</div>
+                <div class="hero-center-value" id="heroRemainingValue">--</div>
+                <div class="hero-center-sub" id="heroRemainingOfTotal"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-metrics">
+        <div class="metric-pill">
+          <div class="metric-pill-label">Savings Rate</div>
+          <div class="metric-pill-value" id="heroSavingsRate">--</div>
+          <div class="metric-pill-sub">of gross income</div>
+        </div>
+        <div class="metric-pill">
+          <div class="metric-pill-label">Total Out</div>
+          <div class="metric-pill-value" id="heroTotalOut">--</div>
+          <div class="metric-pill-sub" id="heroOutBreakdown">Exp + Sav + Debt</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Insight Cards (dynamically rendered based on filter state) -->
+    <div class="insight-cards-row" id="insightCardsRow"></div>
+  </div>
+
+  <!-- Full Tab (Breakdown + Summary side by side) -->
+  <!-- Breakdown Tab -->
+  <div id="txnBreakdownTab" class="hidden" style="padding-top:16px">
+    <div id="breakdownContent"></div>
+  </div>
+
+  <!-- Summary Tab -->
+  <div id="txnSummaryTab" class="hidden">
+    <!-- Row 1: Three metric insight cards -->
+    <div class="insights-metrics-row">
+      <div class="insight-metric-card" id="insightSavingsRate">
+        <div class="insight-metric-label">SAVINGS RATE</div>
+        <div class="insight-metric-value" id="insightSrValue">--</div>
+        <div class="insight-metric-sub" id="insightSrSub"></div>
+        <div class="insight-metric-sparkline" id="insightSrSparkline"></div>
+      </div>
+      <div class="insight-metric-card" id="insightNetFlow">
+        <div class="insight-metric-label">NET CASH FLOW</div>
+        <div class="insight-metric-value" id="insightNfValue">--</div>
+        <div class="insight-metric-sub" id="insightNfSub"></div>
+        <div class="insight-metric-sparkline" id="insightNfSparkline"></div>
+      </div>
+      <div class="insight-metric-card" id="insightBudgetHealth">
+        <div class="insight-metric-label">BUDGET ADHERENCE</div>
+        <div class="insight-metric-value" id="insightBhValue">--</div>
+        <div class="insight-metric-sub" id="insightBhSub"></div>
+        <div class="insight-metric-bar" id="insightBhBar"></div>
+      </div>
+    </div>
+
+    <!-- Row 2: Monthly Tracked vs Budget bar chart -->
+    <div class="charts-section">
+      <div class="chart-card full-width">
+        <div class="chart-card-title" style="display:flex;align-items:center;justify-content:space-between;">
+          <span><strong>Monthly</strong> Tracked vs Budget</span>
+          <div id="summaryChartToggles" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+        </div>
+        <div style="position:relative;height:320px;"><canvas id="summaryBarChart"></canvas></div>
+        <div style="display:flex;justify-content:center;gap:16px;padding-top:8px;">
+          <span style="display:flex;align-items:center;gap:5px;font-size:9px;color:var(--text-3);font-family:'SF Mono','DM Mono',monospace;">
+            <span style="width:10px;height:10px;border-radius:2px;background:var(--text-2);display:inline-block;"></span> Tracked
+          </span>
+          <span style="display:flex;align-items:center;gap:5px;font-size:9px;color:var(--text-3);font-family:'SF Mono','DM Mono',monospace;">
+            <span style="width:10px;height:10px;border-radius:2px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);display:inline-block;"></span> Budget
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Spending Heatmap -->
+    <div class="charts-section">
+      <div class="chart-card full-width">
+        <div class="chart-card-title"><strong>Spending</strong> Heatmap</div>
+        <div class="heatmap-wrap" id="spendingHeatmap"></div>
+      </div>
+    </div>
+
+    <!-- Row 4: Spending Trends + Top Movers -->
+    <div class="insights-bottom-row">
+      <div class="chart-card insights-trends-card">
+        <div class="chart-card-title"><strong>Spending</strong> Trends (Top 5 Categories)</div>
+        <div style="position:relative;height:240px;"><canvas id="insightsTrendsChart"></canvas></div>
+      </div>
+      <div class="chart-card insights-movers-card">
+        <div class="chart-card-title"><strong>Top</strong> Movers vs Last Month</div>
+        <div id="insightsMoversList"></div>
+      </div>
+    </div>
+
+    <!-- Row 4: Allocation card with tab selector -->
+    <div class="charts-section" style="padding-bottom:16px;">
+      <div class="chart-card full-width">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div class="chart-card-title" style="margin-bottom:0"><strong>Where It</strong> Goes</div>
+          <div class="alloc-tabs" id="allocTabs">
+            <button class="alloc-tab active" onclick="switchAllocTab('INCOME', this)">Income</button>
+            <button class="alloc-tab" onclick="switchAllocTab('EXPENSES', this)">Expenses</button>
+            <button class="alloc-tab" onclick="switchAllocTab('SAVINGS', this)">Savings</button>
+            <button class="alloc-tab" onclick="switchAllocTab('DEBT', this)">Debt</button>
+          </div>
+        </div>
+        <div class="alloc-stacked-bar" id="allocStackedBar"></div>
+        <div class="alloc-total-row" id="allocTotalRow"></div>
+        <div class="alloc-ranked-list" id="allocRankedList"></div>
+      </div>
+    </div>
+    <!-- Hidden elements for backward compat with renderAllSectionPies -->
+    <div style="display:none">
+      <canvas id="incomePieChart"></canvas><span id="incomePieCenterAmount"></span><span id="incomePieLegend"></span>
+      <canvas id="expensesPieChart"></canvas><span id="expensesPieCenterAmount"></span><span id="expensesPieLegend"></span>
+      <canvas id="savingsPieChart"></canvas><span id="savingsPieCenterAmount"></span><span id="savingsPieLegend"></span>
+      <canvas id="debtPieChart"></canvas><span id="debtPieCenterAmount"></span><span id="debtPieLegend"></span>
+    </div>
+  </div>
+
+  <!-- All Transactions Tab -->
+  <div id="txnListTab" class="hidden">
+    <div class="txn-list-container" id="txnListContainer"></div>
+    <button class="fab-add-txn" onclick="openAddTxnModal()" aria-label="Add transaction" style="position:fixed;bottom:calc(80px + env(safe-area-inset-bottom, 0px));right:20px;z-index:90;">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
+
+  <!-- Tabs (fixed bottom bar) -->
+  <div class="tabs txn-tabs txn-bottom-tabs" id="txnTabRow" role="tablist" aria-label="Dashboard tabs">
+    <div class="tab-underline" id="txnTabUnderline"></div>
+    <div class="tab active" role="tab" aria-selected="true" onclick="switchTxnTab('overview', this)">
+      <svg class="tab-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>
+      <span class="tab-label">Overview</span>
+    </div>
+    <div class="tab" role="tab" aria-selected="false" onclick="switchTxnTab('breakdown', this)">
+      <svg class="tab-icon" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+      <span class="tab-label">Breakdown</span>
+    </div>
+    <div class="tab" role="tab" aria-selected="false" onclick="switchTxnTab('summary', this)">
+      <svg class="tab-icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      <span class="tab-label">Insights</span>
+    </div>
+    <div class="tab" role="tab" aria-selected="false" onclick="switchTxnTab('list', this)">
+      <svg class="tab-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+      <span class="tab-label">All Txns</span>
+    </div>
+  </div>
+  <div class="txn-tab-spacer"></div>
+
+</main>
+
+<!-- Detail Modal (shared by transactions & holdings) -->
+<div class="txn-modal-overlay" id="txnModalOverlay" onclick="closeTxnModal()" role="dialog" aria-modal="true" aria-label="Transaction detail">
+  <div class="txn-modal" onclick="event.stopPropagation()">
+    <div class="txn-modal-handle"></div>
+    <div id="txnModalContent"></div>
+  </div>
+</div>
+
+<!-- Bottom Navigation — Liquid Glass -->
+<div id="errorContainer"></div>
+
+<!-- Categories Page -->
+<main id="categoriesApp" class="hidden">
+  <div class="header" id="categoriesHeader">
+    <div class="header-top">
+      <div class="header-left">
+        <span class="mobile-header-logo" id="mobileLogoCat" style="display:none"></span>
+        <h1 class="header-title page-switcher" onclick="openPageSwitcher(this)">Categories<span class="header-tab-indicator" id="catTabIndicator"></span> <svg class="page-switcher-chevron" viewBox="0 0 12 12" width="14" height="14"><polyline points="3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></h1>
+      </div>
+      <div class="header-right">
+        <button class="mobile-settings-btn" style="display:none" onclick="openMobileSettings()" aria-label="Settings">
+          <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="header-spacer"></div>
+  <div class="categories-content" id="categoriesContent"></div>
+</main>
+
+<!-- Budget Page -->
+<main id="budgetApp" class="hidden">
+  <div class="header" id="budgetHeader">
+    <div class="header-top">
+      <div class="header-left">
+        <span class="mobile-header-logo" id="mobileLogoBudget" style="display:none"></span>
+        <h1 class="header-title page-switcher" onclick="openPageSwitcher(this)">Planner<span class="header-tab-indicator" id="budgetTabIndicator"></span> <svg class="page-switcher-chevron" viewBox="0 0 12 12" width="14" height="14"><polyline points="3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></h1>
+      </div>
+      <div class="header-right">
+        <button class="mobile-settings-btn" style="display:none" onclick="openMobileSettings()" aria-label="Settings">
+          <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="header-spacer"></div>
+  <div class="budget-content" id="budgetContent">
+    <div id="budgetOverviewContent"></div>
+    <div id="budgetEditContent" class="hidden"></div>
+    <div id="budgetCategoriesContent" class="hidden"></div>
+  </div>
+  <div class="tabs txn-tabs txn-bottom-tabs" id="budgetTabRow" role="tablist" aria-label="Budget tabs">
+    <div class="tab-underline" id="budgetTabUnderline"></div>
+    <div class="tab active" role="tab" aria-selected="true" onclick="switchBudgetTab('overview', this)">
+      <svg class="tab-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>
+      <span class="tab-label">Overview</span>
+    </div>
+    <div class="tab" role="tab" aria-selected="false" onclick="switchBudgetTab('budgets', this)">
+      <svg class="tab-icon" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+      <span class="tab-label">Budgets</span>
+    </div>
+    <div class="tab" role="tab" aria-selected="false" onclick="switchBudgetTab('categories', this)">
+      <svg class="tab-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      <span class="tab-label">Categories</span>
+    </div>
+  </div>
+  <div class="txn-tab-spacer"></div>
+</main>
+
+
+
+<!-- Mobile Settings Popover -->
+<!-- Page Switcher Dropdown -->
+<div class="page-switcher-dropdown" id="pageSwitcherDropdown">
+  <div class="page-switcher-overlay" onclick="closePageSwitcher()"></div>
+  <div class="page-switcher-menu" id="pageSwitcherMenu">
+    <button class="page-switcher-item active" id="psSwitchDash" onclick="pageSwitchTo('transactions')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>
+      Dashboard
+      <svg class="page-switcher-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="page-switcher-item" id="psSwitchPort" onclick="pageSwitchTo('portfolio')">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      Portfolio
+      <svg class="page-switcher-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="page-switcher-item" id="psSwitchBudget" onclick="pageSwitchTo('budget')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+      Planner
+      <svg class="page-switcher-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="mobile-settings-popup" id="mobileSettingsPopup">
+  <div class="mobile-settings-overlay" onclick="closeMobileSettings()"></div>
+  <div class="mobile-settings-bubble">
+    <button class="settings-sheet-item" onclick="document.getElementById('themeToggle').click(); document.getElementById('settingsThemeLabel').textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? 'Dark' : 'Light';">
+      <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span class="settings-item-label">Appearance</span>
+      <span class="settings-item-value" id="settingsThemeLabel">Dark</span>
+    </button>
+    <button class="settings-sheet-item" id="settingsDemoBtn" onclick="if(typeof toggleTxnDemoMode==='function') toggleTxnDemoMode(); else if(typeof toggleDemoMode==='function') toggleDemoMode(); setTimeout(()=>{ document.getElementById('settingsDemoLabel').textContent = (typeof txnDemoMode !== 'undefined' && txnDemoMode) ? 'On' : 'Off'; }, 50);">
+      <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+      <span class="settings-item-label">Demo Mode</span>
+      <span class="settings-item-value" id="settingsDemoLabel">Off</span>
+    </button>
+    <button class="settings-sheet-item" onclick="toggleCurrency(); document.getElementById('settingsCurrLabel').textContent = currentCurrency;">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+      <span class="settings-item-label">Currency</span>
+      <span class="settings-item-value" id="settingsCurrLabel">AED</span>
+    </button>
+    <button class="settings-sheet-item" onclick="closeMobileSettings(); if(typeof refreshDashboardData==='function') refreshDashboardData(); if(typeof refreshData==='function') refreshData();">
+      <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+      <span class="settings-item-label">Refresh Data</span>
+    </button>
+    <button class="settings-sheet-item danger" onclick="closeMobileSettings(); handleSignOut();">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      <span class="settings-item-label">Sign Out</span>
+    </button>
+  </div>
+</div>
