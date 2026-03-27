@@ -2711,7 +2711,7 @@
       const cvListEl = document.getElementById('advisorConvictionList');
       if (cvListEl) {
         cvListEl.insertAdjacentHTML('afterbegin',
-          `<div style="background:rgba(255,159,10,0.08);border:1px solid rgba(255,159,10,0.2);border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:10px;color:#ff9f0a;line-height:1.4;">
+          `<div style="background:rgba(255,159,10,0.08);border:1px solid rgba(255,159,10,0.2);border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:10px;color:#ff9f0a;line-height:1.4;">
             ⚠ Auto-decayed (not reviewed in ${config.convictionDecayDays}d): ${decayMsg}
           </div>`);
       }
@@ -3312,22 +3312,22 @@
 
     let verdict;
     if (r.focusSkip) {
-      verdict = `<div style="background:rgba(255,159,10,0.08);border:1px solid rgba(255,159,10,0.2);border-radius:10px;padding:10px 14px;margin-bottom:12px;">
+      verdict = `<div style="background:rgba(255,159,10,0.08);border:1px solid rgba(255,159,10,0.2);border-radius:12px;padding:10px 14px;margin-bottom:12px;">
           <div style="font-size:12px;font-weight:700;color:#ff9f0a;">🎯 Cut by Focus Mode</div>
           <div style="font-size:12px;color:var(--text-2);margin-top:4px;">Score ${r.composite.toFixed(0)}/100 is solid, but it didn't make the top picks cut. Your capital is better concentrated on fewer, stronger positions this month.</div>
         </div>`;
     } else if (r.floorSkip) {
-      verdict = `<div style="background:rgba(255,159,10,0.08);border:1px solid rgba(255,159,10,0.2);border-radius:10px;padding:10px 14px;margin-bottom:12px;">
+      verdict = `<div style="background:rgba(255,159,10,0.08);border:1px solid rgba(255,159,10,0.2);border-radius:12px;padding:10px 14px;margin-bottom:12px;">
           <div style="font-size:12px;font-weight:700;color:#ff9f0a;">📏 Below Minimum Floor</div>
           <div style="font-size:12px;color:var(--text-2);margin-top:4px;">Allocation was too small for a practical order. Capital redistributed to stronger picks.</div>
         </div>`;
     } else if (r.skip) {
-      verdict = `<div style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:10px;padding:10px 14px;margin-bottom:12px;">
+      verdict = `<div style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:12px;padding:10px 14px;margin-bottom:12px;">
           <div style="font-size:12px;font-weight:700;color:var(--red);">⛔ Not recommended this month</div>
           <div style="font-size:12px;color:var(--text-2);margin-top:4px;">Composite score ${r.composite.toFixed(0)}/100 is below the ${SKIP_THRESHOLD} threshold. Consider waiting for better entry conditions.</div>
         </div>`;
     } else {
-      verdict = `<div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:10px;padding:10px 14px;margin-bottom:12px;">
+      verdict = `<div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:12px;padding:10px 14px;margin-bottom:12px;">
           <div style="font-size:12px;font-weight:700;color:var(--emerald);">✅ Recommended: ${sym}${fmtP(r.allocationAmt)} (${r.allocationPct.toFixed(1)}%)</div>
           <div style="font-size:12px;color:var(--text-2);margin-top:4px;">Composite score ${r.composite.toFixed(0)}/100. ${r.composite >= 65 ? 'Strong buy signal.' : r.composite >= 45 ? 'Moderate buy signal.' : 'Weak buy signal — proceed with caution.'}</div>
         </div>`;
@@ -3471,7 +3471,7 @@
     const classColors = { 'Stock': '#30d158', 'ETF': '#0a84ff', 'Crypto': '#ff9f0a', 'REIT': '#a78bfa', 'Bond': '#22d3ee', 'Other': '#818cf8' };
 
     // Recommended split bar
-    let splitBarHTML = '<div style="display:flex;height:28px;border-radius:10px;overflow:hidden;margin-bottom:16px;">';
+    let splitBarHTML = '<div style="display:flex;height:28px;border-radius:12px;overflow:hidden;margin-bottom:16px;">';
     classEntries.forEach(([type, data]) => {
       const pct = (data.amount / totalAmt * 100);
       const color = classColors[type] || '#818cf8';
