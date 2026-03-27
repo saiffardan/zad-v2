@@ -38,7 +38,7 @@ export function StickyHeader({ title, subtitle }: StickyHeaderProps) {
         <div
           className="absolute inset-x-0 top-0 transition-opacity duration-300"
           style={{
-            height: "calc(env(safe-area-inset-top, 0px) + 5rem)",
+            height: "calc(env(safe-area-inset-top, 0px) + 7rem)",
             opacity: scrolled ? 1 : 0,
             background: `linear-gradient(to top,
               transparent 0%,
