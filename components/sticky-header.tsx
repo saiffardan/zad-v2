@@ -28,27 +28,32 @@ export function StickyHeader({ title, subtitle }: StickyHeaderProps) {
 
   return (
     <>
-      {/* Invisible sentinel — when this scrolls out of view, header shrinks */}
+      {/* Invisible sentinel — when this scrolls out of view, mini header appears */}
       <div ref={sentinelRef} className="h-0 w-0" />
 
-      {/* Sticky mini header */}
+      {/* Fixed mini header — no container, just floating text */}
       <div
-        className="sticky top-0 z-40 transition-all duration-300 ease-out"
-        style={{
-          opacity: scrolled ? 1 : 0,
-          transform: scrolled ? "translateY(0)" : "translateY(-100%)",
-          pointerEvents: scrolled ? "auto" : "none",
-        }}
+        className="fixed top-0 inset-x-0 z-40 pointer-events-none flex justify-center"
+        aria-hidden={!scrolled}
       >
-        <div className="glass dark:!bg-[rgba(21,20,25,0.85)] py-2.5 -mx-4 px-4">
-          <p className="text-sm font-semibold text-center">{title}</p>
-        </div>
+        <p
+          className="text-sm font-semibold pt-3 pb-2 transition-all duration-300 ease-out"
+          style={{
+            opacity: scrolled ? 1 : 0,
+            transform: scrolled ? "translateY(0)" : "translateY(-8px)",
+          }}
+        >
+          {title}
+        </p>
       </div>
 
-      {/* Full header — always in document flow */}
+      {/* Full header — hides when scrolled */}
       <div
-        className="transition-opacity duration-300"
-        style={{ opacity: scrolled ? 0.4 : 1 }}
+        className="transition-all duration-300"
+        style={{
+          opacity: scrolled ? 0 : 1,
+          transform: scrolled ? "translateY(-4px)" : "translateY(0)",
+        }}
       >
         <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
         {subtitle && (
