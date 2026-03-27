@@ -38,14 +38,14 @@ export function StickyHeader({ title, subtitle }: StickyHeaderProps) {
         <div
           className="absolute inset-x-0 top-0 transition-opacity duration-300"
           style={{
-            height: "calc(env(safe-area-inset-top, 0px) + 7rem)",
+            height: "calc(env(safe-area-inset-top, 0px) + 9rem)",
             opacity: scrolled ? 1 : 0,
             background: `linear-gradient(to top,
               transparent 0%,
-              color-mix(in srgb, var(--background) 30%, transparent) 20%,
-              color-mix(in srgb, var(--background) 60%, transparent) 40%,
-              color-mix(in srgb, var(--background) 85%, transparent) 60%,
-              var(--background) 80%
+              color-mix(in srgb, var(--background) 25%, transparent) 20%,
+              color-mix(in srgb, var(--background) 50%, transparent) 40%,
+              color-mix(in srgb, var(--background) 75%, transparent) 60%,
+              color-mix(in srgb, var(--background) 90%, transparent) 80%
             )`,
           }}
         />
