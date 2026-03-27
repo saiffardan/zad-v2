@@ -3,6 +3,50 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { StickyHeader } from "@/components/sticky-header"
 
+function DonutChart({
+  slices,
+  size,
+  strokeWidth,
+}: {
+  slices: { value: number; color: string }[]
+  size: number
+  strokeWidth: number
+}) {
+  const radius = (size - strokeWidth) / 2
+  const circumference = 2 * Math.PI * radius
+  const total = slices.reduce((sum, s) => sum + s.value, 0)
+
+  let offset = 0
+  const segments = slices.map((slice) => {
+    const pct = slice.value / total
+    const dash = pct * circumference
+    const gap = circumference - dash
+    const rotation = (offset / total) * 360 - 90
+    offset += slice.value
+    return { dash, gap, rotation, color: slice.color }
+  })
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      {segments.map((seg, i) => (
+        <circle
+          key={i}
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={seg.color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={`${seg.dash} ${seg.gap}`}
+          strokeLinecap="round"
+          transform={`rotate(${seg.rotation} ${size / 2} ${size / 2})`}
+          style={{ transition: "stroke-dasharray 0.5s ease" }}
+        />
+      ))}
+    </svg>
+  )
+}
+
 const budgetCategories = [
   { name: "Housing", spent: 4500, budget: 5000 },
   { name: "Food & Dining", spent: 1800, budget: 2500 },
@@ -29,20 +73,43 @@ export default function DashboardPage() {
         <CardHeader className="pb-2">
           <CardTitle>Monthly Income</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-3xl font-bold text-emerald-500">AED 29.4K</p>
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Expenses</span>
-              <span className="font-medium">9.1K</span>
+        <CardContent>
+          <p className="text-3xl font-bold text-emerald-500 mb-4">AED 29.4K</p>
+          <div className="flex items-center gap-4">
+            {/* Left: breakdown list */}
+            <div className="flex-1 space-y-2.5">
+              {[
+                { label: "Expenses", value: "9.1K", color: "#F56E0F" },
+                { label: "Savings", value: "8.0K", color: "#10B981" },
+                { label: "Debt", value: "3.7K", color: "#EF4444" },
+                { label: "Remaining", value: "8.6K", color: "#878787" },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-2 text-sm">
+                  <span
+                    className="size-2 rounded-full shrink-0"
+                    style={{ background: item.color }}
+                  />
+                  <span className="text-muted-foreground flex-1">{item.label}</span>
+                  <span className="font-medium tabular-nums">{item.value}</span>
+                </div>
+              ))}
             </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Savings</span>
-              <span className="font-medium">8.0K</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Debt</span>
-              <span className="font-medium">3.7K</span>
+            {/* Right: donut chart */}
+            <div className="relative shrink-0">
+              <DonutChart
+                slices={[
+                  { value: 9.1, color: "#F56E0F" },
+                  { value: 8.0, color: "#10B981" },
+                  { value: 3.7, color: "#EF4444" },
+                  { value: 8.6, color: "#878787" },
+                ]}
+                size={120}
+                strokeWidth={14}
+              />
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Remaining</span>
+                <span className="text-lg font-bold leading-tight">8.6K</span>
+              </div>
             </div>
           </div>
         </CardContent>
