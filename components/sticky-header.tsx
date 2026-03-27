@@ -46,14 +46,14 @@ export function StickyHeader({ title, subtitle }: StickyHeaderProps) {
             background: "color-mix(in srgb, var(--background) 50%, transparent)",
           }}
         />
-        {/* Soft fade below the blur to avoid a hard cutoff */}
+        {/* Gradual fade below the blur — tall gradient to smooth the edge */}
         <div
           className="absolute inset-x-0 transition-opacity duration-300"
           style={{
             top: "calc(env(safe-area-inset-top, 0px) + 3rem)",
-            height: "1.5rem",
+            height: "3rem",
             opacity: scrolled ? 1 : 0,
-            background: "linear-gradient(to bottom, color-mix(in srgb, var(--background) 30%, transparent), transparent)",
+            background: "linear-gradient(to bottom, color-mix(in srgb, var(--background) 50%, transparent), transparent)",
           }}
         />
         {/* Title text */}
