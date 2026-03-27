@@ -51,7 +51,7 @@
   let userFirstName = '';
   let allTrades = [];
   let holdings = {};
-  const getActiveHoldings = () => getActiveHoldings();
+  const getActiveHoldings = () => Object.values(holdings).filter(h => h.shares > 0.0001);
   let livePrices = {};
   let currentCurrency = 'AED'; // default
   let currentHoldingsFilter = 'all';
@@ -1256,6 +1256,7 @@
     if (table) table.style.display = 'none';
     renderHoldingsCards(typeFilter);
     return;
+  }
 
   function renderHoldingsCards(typeFilter) {
     const container = document.getElementById('holdingsTableContainer');
