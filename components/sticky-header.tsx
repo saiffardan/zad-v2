@@ -28,7 +28,6 @@ export function StickyHeader({ title, subtitle }: StickyHeaderProps) {
 
   return (
     <>
-      {/* Invisible sentinel — when this scrolls out of view, mini header appears */}
       <div ref={sentinelRef} className="h-0 w-0" />
 
       {/* Fixed mini header */}
@@ -36,17 +35,34 @@ export function StickyHeader({ title, subtitle }: StickyHeaderProps) {
         className="fixed top-0 inset-x-0 z-40 pointer-events-none"
         aria-hidden={!scrolled}
       >
-        {/* Solid gradient overlay */}
+        {/* Pure backdrop blur — no mask, no gradient tricks */}
         <div
-          className="absolute inset-x-0 top-0 h-20 transition-opacity duration-300"
+          className="absolute inset-x-0 top-0 transition-opacity duration-300"
           style={{
-            opacity: scrolled ? 0.7 : 0,
-            background: "linear-gradient(to bottom, var(--background) 40%, transparent 100%)",
+            height: "calc(env(safe-area-inset-top, 0px) + 3rem)",
+            opacity: scrolled ? 1 : 0,
+            backdropFilter: "blur(16px) saturate(180%)",
+            WebkitBackdropFilter: "blur(16px) saturate(180%)",
+            background: "color-mix(in srgb, var(--background) 50%, transparent)",
           }}
         />
-        <div className="relative flex justify-center">
+        {/* Soft fade below the blur to avoid a hard cutoff */}
+        <div
+          className="absolute inset-x-0 transition-opacity duration-300"
+          style={{
+            top: "calc(env(safe-area-inset-top, 0px) + 3rem)",
+            height: "1.5rem",
+            opacity: scrolled ? 1 : 0,
+            background: "linear-gradient(to bottom, color-mix(in srgb, var(--background) 30%, transparent), transparent)",
+          }}
+        />
+        {/* Title text */}
+        <div
+          className="relative flex justify-center"
+          style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+        >
           <p
-            className="text-sm font-semibold pt-3 pb-2 transition-all duration-300 ease-out"
+            className="text-sm font-semibold py-2 transition-all duration-300 ease-out"
             style={{
               opacity: scrolled ? 1 : 0,
               transform: scrolled ? "translateY(0)" : "translateY(-8px)",
