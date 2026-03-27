@@ -2612,7 +2612,7 @@
         <div style="display:flex;align-items:center;gap:4px;">
           <input type="number" class="advisor-config-input" value="${val}" min="0" max="100"
             onchange="updateAdvisorClassTarget('${t}', this.value)">
-          <span style="font-size:11px;color:var(--text-3);">%</span>
+          <span style="font-size:12px;color:var(--text-3);">%</span>
         </div>
       </div>`;
     }).join('');
@@ -2628,7 +2628,7 @@
         <div style="display:flex;align-items:center;gap:4px;">
           <input type="number" class="advisor-config-input" value="${val}" min="0" max="100"
             id="fw_${k}" onchange="updateAdvisorFactorWeight('${k}', this.value)">
-          <span style="font-size:11px;color:var(--text-3);">%</span>
+          <span style="font-size:12px;color:var(--text-3);">%</span>
         </div>
       </div>`;
     }).join('');
@@ -2773,17 +2773,17 @@
           <div style="min-width:80px;"><div class="label">${h.ticker}</div><div class="sublabel">Updated: ${lastUp}${staleWarning}</div></div>
           <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
             <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
-              <span style="font-size:8px;color:var(--text-3);">EPS</span>
+              <span style="font-size:9px;color:var(--text-3);">EPS</span>
               <input type="number" class="advisor-config-input" value="${mf.trailingEPS || ''}" placeholder="—" step="0.01" style="width:52px;font-size:10px;"
                 onchange="updateManualFundamental('${h.ticker}', 'trailingEPS', this.value)">
             </div>
             <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
-              <span style="font-size:8px;color:var(--text-3);">P/E</span>
+              <span style="font-size:9px;color:var(--text-3);">P/E</span>
               <input type="number" class="advisor-config-input" value="${mf.trailingPE || ''}" placeholder="—" step="0.1" style="width:52px;font-size:10px;"
                 onchange="updateManualFundamental('${h.ticker}', 'trailingPE', this.value)">
             </div>
             <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
-              <span style="font-size:8px;color:var(--text-3);">Div%</span>
+              <span style="font-size:9px;color:var(--text-3);">Div%</span>
               <input type="number" class="advisor-config-input" value="${mf.dividendYield ? (mf.dividendYield * 100).toFixed(2) : ''}" placeholder="—" step="0.1" style="width:52px;font-size:10px;"
                 onchange="updateManualFundamental('${h.ticker}', 'dividendYield', this.value, true)">
             </div>
@@ -2986,7 +2986,7 @@
     localStorage.setItem('advisorDCA', dcaAED);
 
     if (advisorSelectedTickers.length === 0) {
-      document.getElementById('advisorResults').innerHTML = '<div style="text-align:center;color:var(--text-3);padding:20px;font-size:13px;">Select at least one ticker above</div>';
+      document.getElementById('advisorResults').innerHTML = '<div style="text-align:center;color:var(--text-3);padding:20px;font-size:14px;">Select at least one ticker above</div>';
       return;
     }
 
@@ -3119,7 +3119,7 @@
 
     // ── Investable picks as list rows ──
     if (investable.length === 0) {
-      html += '<div style="text-align:center;color:var(--text-3);padding:32px 0;font-size:13px;">No strong buy signals. Consider holding cash.</div>';
+      html += '<div style="text-align:center;color:var(--text-3);padding:32px 0;font-size:14px;">No strong buy signals. Consider holding cash.</div>';
     } else {
       html += '<div class="advisor-picks-list">';
       investable.forEach((r, i) => {
@@ -3303,9 +3303,9 @@
       return `<div class="txn-modal-row" style="flex-direction:column;gap:4px;">
         <div style="display:flex;justify-content:space-between;width:100%;">
           <span class="txn-modal-label" style="color:${FACTOR_COLORS[k]}">${FACTOR_LABELS[k]}</span>
-          <span style="font-size:13px;font-weight:700;color:${v >= 60 ? 'var(--emerald)' : v >= 35 ? 'var(--text-2)' : 'var(--red)'};font-family:'DM Mono',monospace;">${score}${showRaw ? `<span style="font-size:9px;color:var(--text-3);font-weight:400;"> (raw ${rawScore.toFixed(0)})</span>` : ''}<span style="font-size:9px;color:var(--text-3)">/100</span></span>
+          <span style="font-size:14px;font-weight:700;color:${v >= 60 ? 'var(--emerald)' : v >= 35 ? 'var(--text-2)' : 'var(--red)'};font-family:'DM Mono',monospace;">${score}${showRaw ? `<span style="font-size:9px;color:var(--text-3);font-weight:400;"> (raw ${rawScore.toFixed(0)})</span>` : ''}<span style="font-size:9px;color:var(--text-3)">/100</span></span>
         </div>
-        <div style="font-size:11px;color:var(--text-2);line-height:1.4;">${explanation}</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.4;">${explanation}</div>
       </div>`;
     }).join('');
 
@@ -3313,22 +3313,22 @@
     if (r.focusSkip) {
       verdict = `<div style="background:rgba(255,159,10,0.08);border:1px solid rgba(255,159,10,0.2);border-radius:10px;padding:10px 14px;margin-bottom:12px;">
           <div style="font-size:12px;font-weight:700;color:#ff9f0a;">🎯 Cut by Focus Mode</div>
-          <div style="font-size:11px;color:var(--text-2);margin-top:4px;">Score ${r.composite.toFixed(0)}/100 is solid, but it didn't make the top picks cut. Your capital is better concentrated on fewer, stronger positions this month.</div>
+          <div style="font-size:12px;color:var(--text-2);margin-top:4px;">Score ${r.composite.toFixed(0)}/100 is solid, but it didn't make the top picks cut. Your capital is better concentrated on fewer, stronger positions this month.</div>
         </div>`;
     } else if (r.floorSkip) {
       verdict = `<div style="background:rgba(255,159,10,0.08);border:1px solid rgba(255,159,10,0.2);border-radius:10px;padding:10px 14px;margin-bottom:12px;">
           <div style="font-size:12px;font-weight:700;color:#ff9f0a;">📏 Below Minimum Floor</div>
-          <div style="font-size:11px;color:var(--text-2);margin-top:4px;">Allocation was too small for a practical order. Capital redistributed to stronger picks.</div>
+          <div style="font-size:12px;color:var(--text-2);margin-top:4px;">Allocation was too small for a practical order. Capital redistributed to stronger picks.</div>
         </div>`;
     } else if (r.skip) {
       verdict = `<div style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:10px;padding:10px 14px;margin-bottom:12px;">
           <div style="font-size:12px;font-weight:700;color:var(--red);">⛔ Not recommended this month</div>
-          <div style="font-size:11px;color:var(--text-2);margin-top:4px;">Composite score ${r.composite.toFixed(0)}/100 is below the ${SKIP_THRESHOLD} threshold. Consider waiting for better entry conditions.</div>
+          <div style="font-size:12px;color:var(--text-2);margin-top:4px;">Composite score ${r.composite.toFixed(0)}/100 is below the ${SKIP_THRESHOLD} threshold. Consider waiting for better entry conditions.</div>
         </div>`;
     } else {
       verdict = `<div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:10px;padding:10px 14px;margin-bottom:12px;">
           <div style="font-size:12px;font-weight:700;color:var(--emerald);">✅ Recommended: ${sym}${fmtP(r.allocationAmt)} (${r.allocationPct.toFixed(1)}%)</div>
-          <div style="font-size:11px;color:var(--text-2);margin-top:4px;">Composite score ${r.composite.toFixed(0)}/100. ${r.composite >= 65 ? 'Strong buy signal.' : r.composite >= 45 ? 'Moderate buy signal.' : 'Weak buy signal — proceed with caution.'}</div>
+          <div style="font-size:12px;color:var(--text-2);margin-top:4px;">Composite score ${r.composite.toFixed(0)}/100. ${r.composite >= 65 ? 'Strong buy signal.' : r.composite >= 45 ? 'Moderate buy signal.' : 'Weak buy signal — proceed with caution.'}</div>
         </div>`;
     }
 
@@ -3379,8 +3379,8 @@
 
     document.getElementById('txnModalContent').innerHTML = `
       <div style="text-align:center;margin-bottom:12px;">
-        <div style="font-size:18px;font-weight:800;color:var(--text-1);font-family:'DM Mono',monospace;">${r.ticker}</div>
-        <div style="font-size:11px;color:var(--text-3);">${r.name}</div>
+        <div style="font-size:20px;font-weight:800;color:var(--text-1);font-family:'DM Mono',monospace;">${r.ticker}</div>
+        <div style="font-size:12px;color:var(--text-3);">${r.name}</div>
       </div>
       ${positionSummary}
       ${verdict}
@@ -3418,11 +3418,11 @@
 
       html += `<tr style="cursor:pointer;${r.skip ? 'opacity:0.45;' : ''}" onclick="openAdvisorDetail(${i})">
         <td><strong>${r.ticker}</strong></td>
-        <td style="font-family:'DM Mono',monospace;font-size:11px;">${priceStr}</td>
+        <td style="font-family:'DM Mono',monospace;font-size:12px;">${priceStr}</td>
         <td style="color:${scoreColor};font-weight:700;font-family:'DM Mono',monospace;">${r.composite.toFixed(0)}</td>
         <td>${r.skip ? '--' : r.allocationPct.toFixed(0) + '%'}</td>
         <td style="color:${r.skip ? 'var(--text-3)' : 'var(--emerald)'};font-weight:600;font-family:'DM Mono',monospace;">${r.skip ? 'SKIP' : sym + fmt(r.allocationAmt)}</td>
-        <td><span class="advisor-signal ${signalType}" style="font-size:8px;">${topSignal}</span></td>
+        <td><span class="advisor-signal ${signalType}" style="font-size:9px;">${topSignal}</span></td>
       </tr>`;
     });
 
@@ -3450,7 +3450,7 @@
     const investable = results.filter(r => !r.skip);
     const totalAmt = investable.reduce((s, r) => s + r.allocationAmt, 0);
     if (totalAmt === 0) {
-      container.innerHTML = '<div style="text-align:center;color:var(--text-3);padding:20px;font-size:13px;">No investable tickers. All were marked Skip.</div>';
+      container.innerHTML = '<div style="text-align:center;color:var(--text-3);padding:20px;font-size:14px;">No investable tickers. All were marked Skip.</div>';
       return;
     }
 
@@ -3509,12 +3509,12 @@
       return `<div class="advisor-result-card" style="border-left:3px solid ${color};">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
           <div>
-            <div style="font-size:15px;font-weight:700;color:${color};">${type}</div>
+            <div style="font-size:16px;font-weight:700;color:${color};">${type}</div>
             <div style="font-size:10px;color:var(--text-3);">${data.count} ticker${data.count !== 1 ? 's' : ''} · Avg score ${avgScore.toFixed(0)}</div>
           </div>
           <div style="text-align:right;">
-            <div style="font-size:18px;font-weight:800;color:var(--text-1);font-family:'DM Mono',monospace;">${pct.toFixed(0)}%</div>
-            <div style="font-size:11px;color:var(--emerald);font-family:'DM Mono',monospace;">${sym}${fmt(data.amount)}</div>
+            <div style="font-size:20px;font-weight:800;color:var(--text-1);font-family:'DM Mono',monospace;">${pct.toFixed(0)}%</div>
+            <div style="font-size:12px;color:var(--emerald);font-family:'DM Mono',monospace;">${sym}${fmt(data.amount)}</div>
           </div>
         </div>
         <div class="alloc-bar-bg" style="margin-bottom:10px;">
@@ -3943,7 +3943,7 @@
     }
     if (active.length === 0) {
       waterfallChartInstance = null;
-      canvas.parentElement.innerHTML = '<p style="color:var(--text-2);text-align:center;padding:40px 0;font-size:13px;">Live prices needed for P&L chart</p>';
+      canvas.parentElement.innerHTML = '<p style="color:var(--text-2);text-align:center;padding:40px 0;font-size:14px;">Live prices needed for P&L chart</p>';
       return;
     }
 
@@ -4241,7 +4241,7 @@
         canvas.style.display = 'none';
         const p = document.createElement('p');
         p.className = 'no-data-msg';
-        p.style.cssText = 'color:var(--text-2);text-align:center;padding:40px 0;font-size:13px;';
+        p.style.cssText = 'color:var(--text-2);text-align:center;padding:40px 0;font-size:14px;';
         p.textContent = 'Not enough trade history for chart';
         wrapper.appendChild(p);
       }
@@ -5548,7 +5548,7 @@
     const convert = (v) => currentCurrency === 'USD' ? v / AED_USD_RATE : v;
 
     if (sorted.length === 0) {
-      container.innerHTML = '<p style="color:var(--text-2);text-align:center;padding:30px 0;font-size:13px;">No expense data</p>';
+      container.innerHTML = '<p style="color:var(--text-2);text-align:center;padding:30px 0;font-size:14px;">No expense data</p>';
       return;
     }
 
@@ -6459,7 +6459,7 @@
       </div>
       <div class="txn-modal-row">
         <div class="txn-modal-label">Available</div>
-        <div class="txn-modal-value" id="sellAvailable" style="font-family:'DM Mono',monospace;font-size:13px;">${sharesStr} shares</div>
+        <div class="txn-modal-value" id="sellAvailable" style="font-family:'DM Mono',monospace;font-size:14px;">${sharesStr} shares</div>
       </div>
       <div class="txn-modal-row">
         <div class="txn-modal-label">Shares to Sell</div>
@@ -6474,7 +6474,7 @@
       </div>
       <div class="txn-modal-row">
         <div class="txn-modal-label">Total Proceeds</div>
-        <div class="txn-modal-value" id="sellTotal" style="font-family:'DM Mono',monospace;font-size:15px;font-weight:600;color:var(--emerald);">--</div>
+        <div class="txn-modal-value" id="sellTotal" style="font-family:'DM Mono',monospace;font-size:16px;font-weight:600;color:var(--emerald);">--</div>
       </div>
       <div class="txn-modal-actions">
         <button class="txn-modal-btn cancel" onclick="closeTxnModal()">Cancel</button>
@@ -7182,7 +7182,7 @@
           const bc = badgeColorMap[badge.cls] || badgeColorMap.muted;
           chipHTML = `<span class="bd-item-chip" style="background:${bc.bg};color:${bc.fg};border:1px solid ${bc.border}">${badge.text}</span>`;
         } else if (budget > 0) {
-          chipHTML = `<span style="font-size:11px;color:${accentColor};opacity:0.7;font-variant-numeric:tabular-nums">${pct.toFixed(0)}%</span>`;
+          chipHTML = `<span style="font-size:12px;color:${accentColor};opacity:0.7;font-variant-numeric:tabular-nums">${pct.toFixed(0)}%</span>`;
         } else {
           chipHTML = `<span class="bd-item-chip bd-chip-muted">--</span>`;
         }
@@ -8329,7 +8329,7 @@
     if (values.length === 0) {
       barEl.innerHTML = '';
       totalEl.innerHTML = '';
-      listEl.innerHTML = '<div style="color:var(--text-3);text-align:center;padding:32px 0;font-size:11px;">No ' + label.toLowerCase() + ' data</div>';
+      listEl.innerHTML = '<div style="color:var(--text-3);text-align:center;padding:32px 0;font-size:12px;">No ' + label.toLowerCase() + ' data</div>';
       return;
     }
 
@@ -8597,7 +8597,7 @@ async function fetchAndRenderCategories(targetId) {
   if (!accessToken) return;
   const cid = targetId || 'categoriesContent';
   const container = document.getElementById(cid);
-  if (container) container.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-3);font-size:13px;">Loading categories...</div>';
+  if (container) container.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-3);font-size:14px;">Loading categories...</div>';
 
   try {
     const ranges = Object.values(CAT_RANGES).map(r => encodeURIComponent(r)).join('&ranges=');
@@ -8616,7 +8616,7 @@ async function fetchAndRenderCategories(targetId) {
     renderCategories(cid);
   } catch (err) {
     console.error('Categories fetch error:', err);
-    container.innerHTML = `<div style="text-align:center;padding:40px 0;color:var(--red);font-size:13px;">Error loading categories: ${err.message}</div>`;
+    container.innerHTML = `<div style="text-align:center;padding:40px 0;color:var(--red);font-size:14px;">Error loading categories: ${err.message}</div>`;
   }
 }
 
@@ -8838,7 +8838,7 @@ function renderBudgetOverview() {
 
   const scopeLabel = isYear ? currentBudgetYear + ' Annual Budget' : monthNamesFull[currentBudgetMonth - 1] + ' ' + currentBudgetYear;
   html += '<div style="text-align:center;padding:4px var(--content-px) 12px;">';
-  html += '<div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">' + scopeLabel + '</div>';
+  html += '<div style="font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">' + scopeLabel + '</div>';
   html += '<div style="font-family:\'SF Mono\',\'DM Mono\',monospace;font-size:36px;font-weight:700;color:var(--text-1);letter-spacing:-0.02em;line-height:1.1;">' + formatMoney(incomeTotal) + '</div>';
   html += '<div style="font-family:\'SF Mono\',\'DM Mono\',monospace;font-size:14px;font-weight:600;margin-top:6px;">';
   html += '<span style="color:' + remColor + '">' + (remaining >= 0 ? '' : '−') + formatMoney(Math.abs(remaining)) + ' ' + (remaining > 0 ? 'left' : remaining < 0 ? 'over' : 'allocated') + '</span>';
@@ -8859,8 +8859,8 @@ function renderBudgetOverview() {
 
     html += '<div class="budget-ov-card" style="opacity:0;transform:translateY(12px);transition:opacity 0.4s cubic-bezier(0.16,1,0.3,1),transform 0.4s cubic-bezier(0.16,1,0.3,1);transition-delay:' + (si * 0.05) + 's">';
     html += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">';
-    html += '<span style="font-size:13px;font-weight:600;color:' + sec.color + '">' + sec.label + '</span>';
-    html += '<span style="font-family:\'SF Mono\',\'DM Mono\',monospace;font-size:15px;font-weight:700;color:var(--text-1);">' + formatMoney(sec.total) + '</span>';
+    html += '<span style="font-size:14px;font-weight:600;color:' + sec.color + '">' + sec.label + '</span>';
+    html += '<span style="font-family:\'SF Mono\',\'DM Mono\',monospace;font-size:16px;font-weight:700;color:var(--text-1);">' + formatMoney(sec.total) + '</span>';
     html += '</div>';
     html += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">';
     html += '<span style="font-size:10px;color:var(--text-3);">' + (sec.key === 'INCOME' ? (items.length + ' source' + (items.length !== 1 ? 's' : '')) : pct.toFixed(0) + '% of income') + '</span>';
@@ -8913,7 +8913,7 @@ function renderBudgetOverview() {
       html += '<div style="margin-bottom:8px;' + (isCur ? 'font-weight:600;' : '') + '">';
       html += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;">';
       html += '<span style="font-size:12px;color:' + (isCur ? 'var(--text-1)' : 'var(--text-2)') + ';">' + m + (isCur ? ' (now)' : '') + '</span>';
-      html += '<span style="font-size:11px;color:' + statusColor + ';font-family:\'SF Mono\',\'DM Mono\',monospace;">' + statusText + '</span>';
+      html += '<span style="font-size:12px;color:' + statusColor + ';font-family:\'SF Mono\',\'DM Mono\',monospace;">' + statusText + '</span>';
       html += '</div>';
 
       // Center-origin tick bar
@@ -9088,7 +9088,7 @@ async function fetchAndRenderBudget() {
   }
   const overview = document.getElementById('budgetOverviewContent');
   const edit = document.getElementById('budgetEditContent');
-  const loadingMsg = '<div style="text-align:center;padding:40px 0;color:var(--text-3);font-size:13px;">Loading budget data...</div>';
+  const loadingMsg = '<div style="text-align:center;padding:40px 0;color:var(--text-3);font-size:14px;">Loading budget data...</div>';
   if (overview && !overview.classList.contains('hidden')) overview.innerHTML = loadingMsg;
   if (edit && !edit.classList.contains('hidden')) edit.innerHTML = loadingMsg;
   if (!accessToken) return;
@@ -9105,7 +9105,7 @@ async function fetchAndRenderBudget() {
     else renderBudgetPage();
   } catch (err) {
     console.error('Budget page fetch error:', err);
-    const errMsg = `<div style="text-align:center;padding:40px 0;color:var(--red);font-size:13px;">Error loading budget: ${err.message}</div>`;
+    const errMsg = `<div style="text-align:center;padding:40px 0;color:var(--red);font-size:14px;">Error loading budget: ${err.message}</div>`;
     if (overview) overview.innerHTML = errMsg;
     if (edit) edit.innerHTML = errMsg;
   }
