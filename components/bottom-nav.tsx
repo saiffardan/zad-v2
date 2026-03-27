@@ -69,7 +69,15 @@ export function BottomNav() {
   const lastTimeRef = useRef(Date.now())
   const rafRef = useRef<number>(0)
 
-  const activeIndex = navItems.findIndex((item) => item.href === pathname)
+  const routeIndex = navItems.findIndex((item) => item.href === pathname)
+  // Track tapped index so pill moves instantly, before route resolves
+  const [tappedIndex, setTappedIndex] = useState<number | null>(null)
+  const activeIndex = tappedIndex ?? (routeIndex >= 0 ? routeIndex : 0)
+
+  // Sync back to route once navigation completes
+  useEffect(() => {
+    setTappedIndex(null)
+  }, [pathname])
 
   // Scroll momentum spring
   useEffect(() => {
@@ -144,6 +152,7 @@ export function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => setTappedIndex(i)}
                 className={cn(
                   "relative flex flex-1 flex-col items-center gap-0.5 py-1.5 text-[10px] font-medium transition-colors duration-200",
                   isActive
