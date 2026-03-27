@@ -2291,6 +2291,16 @@
     .categories-content {
       padding-bottom: 24px;
     }
+    #txnOverviewTab > :last-child,
+    #txnBreakdownTab > :last-child,
+    #txnSummaryTab > :last-child,
+    #txnListTab > :last-child,
+    #advisorTab > :last-child,
+    .categories-content > :last-child,
+    #breakdownContent > :last-child {
+      margin-bottom: 0 !important;
+      padding-bottom: 0 !important;
+    }
 
     .txn-tab-spacer, .portfolio-tab-spacer {
       height: 56px;
