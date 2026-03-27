@@ -83,7 +83,7 @@ export default function DashboardPage() {
           <p className="text-3xl font-bold text-emerald-500 mb-4">AED 29.4K</p>
           <div className="flex items-center gap-4">
             {/* Left: breakdown list */}
-            <div className="flex-1 space-y-2.5">
+            <div className="w-1/2 space-y-2.5">
               {[
                 { label: "Expenses", value: "9.1K", color: "#F56E0F" },
                 { label: "Savings", value: "8.0K", color: "#10B981" },
@@ -100,7 +100,7 @@ export default function DashboardPage() {
               ))}
             </div>
             {/* Right: donut chart */}
-            <div className="relative shrink-0 flex items-center justify-center">
+            <div className="w-1/2 relative flex items-center justify-center">
               <DonutChart
                 slices={[
                   { value: 9.1, color: "#F56E0F" },
