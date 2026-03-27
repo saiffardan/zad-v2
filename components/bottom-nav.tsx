@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useEffect, useRef, useState, useCallback } from "react"
+import { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -59,38 +59,17 @@ const navItems = [
   },
 ]
 
+const ITEM_COUNT = navItems.length
+
 export function BottomNav() {
   const pathname = usePathname()
   const navRef = useRef<HTMLDivElement>(null)
-  const itemRefs = useRef<(HTMLAnchorElement | null)[]>([])
   const [translateY, setTranslateY] = useState(0)
-  const [indicator, setIndicator] = useState({ left: 0, width: 0 })
   const lastScrollRef = useRef(0)
   const lastTimeRef = useRef(Date.now())
   const rafRef = useRef<number>(0)
 
   const activeIndex = navItems.findIndex((item) => item.href === pathname)
-
-  // Measure active tab position for the sliding indicator
-  const updateIndicator = useCallback(() => {
-    const el = itemRefs.current[activeIndex]
-    const container = navRef.current
-    if (el && container) {
-      const elRect = el.getBoundingClientRect()
-      const containerRect = container.getBoundingClientRect()
-      setIndicator({
-        left: elRect.left - containerRect.left,
-        width: elRect.width,
-      })
-    }
-  }, [activeIndex])
-
-  useEffect(() => {
-    updateIndicator()
-    // Recalculate on resize
-    window.addEventListener("resize", updateIndicator)
-    return () => window.removeEventListener("resize", updateIndicator)
-  }, [updateIndicator])
 
   // Scroll momentum spring
   useEffect(() => {
@@ -135,43 +114,49 @@ export function BottomNav() {
     }
   }, [])
 
+  // Pill position: percentage-based, no DOM measurement needed
+  const pillLeft = `${(activeIndex / ITEM_COUNT) * 100}%`
+  const pillWidth = `${100 / ITEM_COUNT}%`
+
   return (
     <div className="fixed bottom-4 inset-x-0 z-50 flex justify-center px-6">
       <nav
         ref={navRef}
-        className="glass shadow-depth-lg rounded-2xl w-full max-w-sm will-change-transform relative"
+        className="glass shadow-depth-lg rounded-2xl w-full max-w-sm will-change-transform relative overflow-hidden"
         style={{
           transform: `translateY(${translateY}px)`,
         }}
       >
-        {/* Sliding indicator pill */}
+        {/* Sliding pill — pure CSS percentage positioning, no JS measurement */}
         <div
-          className="absolute top-1.5 h-[calc(100%-12px)] rounded-xl bg-primary/10 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.1,1)]"
+          className="absolute top-1 bottom-1 rounded-xl bg-primary/12"
           style={{
-            left: `${indicator.left}px`,
-            width: `${indicator.width}px`,
+            left: pillLeft,
+            width: pillWidth,
+            transition: "left 350ms cubic-bezier(0.34, 1.56, 0.64, 1)",
           }}
         />
 
-        <div className="relative flex items-center justify-around px-1 py-1.5">
+        <div className="relative flex items-center py-1.5">
           {navItems.map((item, i) => {
-            const isActive = pathname === item.href
+            const isActive = i === activeIndex
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                ref={(el) => { itemRefs.current[i] = el }}
                 className={cn(
-                  "relative flex flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-[10px] font-medium transition-colors duration-300",
+                  "relative flex flex-1 flex-col items-center gap-0.5 py-1.5 text-[10px] font-medium transition-colors duration-200",
                   isActive
                     ? "text-primary"
                     : "text-muted-foreground active:scale-95"
                 )}
               >
-                <span className={cn(
-                  "transition-transform duration-300",
-                  isActive && "scale-110"
-                )}>
+                <span
+                  className="transition-transform duration-200"
+                  style={{
+                    transform: isActive ? "scale(1.15)" : "scale(1)",
+                  }}
+                >
                   {item.icon}
                 </span>
                 <span>{item.label}</span>

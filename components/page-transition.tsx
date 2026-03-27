@@ -1,38 +1,31 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 
 export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const [isTransitioning, setIsTransitioning] = useState(false)
-  const [displayChildren, setDisplayChildren] = useState(children)
-  const prevPathRef = useRef(pathname)
+  const [visible, setVisible] = useState(true)
 
   useEffect(() => {
-    if (pathname !== prevPathRef.current) {
-      setIsTransitioning(true)
-      // Short fade-out, then swap content
-      const timer = setTimeout(() => {
-        setDisplayChildren(children)
-        setIsTransitioning(false)
-        prevPathRef.current = pathname
-      }, 150)
-      return () => clearTimeout(timer)
-    } else {
-      setDisplayChildren(children)
-    }
-  }, [pathname, children])
+    // Brief fade on route change
+    setVisible(false)
+    const timer = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setVisible(true)
+      })
+    })
+    return () => cancelAnimationFrame(timer)
+  }, [pathname])
 
   return (
     <div
-      className="transition-all duration-300 ease-out"
       style={{
-        opacity: isTransitioning ? 0 : 1,
-        transform: isTransitioning ? "translateY(8px)" : "translateY(0)",
+        opacity: visible ? 1 : 0,
+        transition: "opacity 200ms ease-out",
       }}
     >
-      {displayChildren}
+      {children}
     </div>
   )
 }
