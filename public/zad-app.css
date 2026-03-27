@@ -1,5 +1,21 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --content-px: 16px; }
+    :root {
+      --content-px: 16px;
+      /* Font stacks */
+      --font-sans: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      --font-mono: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      /* Letter-spacing scale */
+      --ls-tight: -0.02em;
+      --ls-slight: 0.04em;
+      --ls-wide: 0.1em;
+      --ls-caps: 0.5px;
+      --ls-spread: 1px;
+      /* Line-height scale */
+      --lh-none: 1;
+      --lh-tight: 1.2;
+      --lh-normal: 1.4;
+      --lh-relaxed: 1.6;
+    }
 
     /* ── Theme transition (View Transitions API) ── */
     ::view-transition-old(root),
@@ -197,10 +213,10 @@
         padding: 10px 12px;
         border-radius: 10px;
         color: var(--text-2);
-        font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+        font-family: var(--font-sans);
         font-size: 14px;
         font-weight: 500;
-        letter-spacing: -0.01em;
+        letter-spacing: var(--ls-tight);
         cursor: pointer;
         transition: background var(--duration-normal) ease, color var(--duration-normal) ease, box-shadow var(--duration-normal) ease, border-color var(--duration-normal) ease;
         border: none;
@@ -397,7 +413,7 @@
       overscroll-behavior-x: none;
     }
     body {
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       background: var(--bg);
       color: var(--text-1);
       min-height: 100vh;
@@ -524,9 +540,9 @@
       font-size: 9px;
       font-weight: 400;
       color: rgba(255,255,255,0.15);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       margin-top: 2px;
-      letter-spacing: 0.3px;
+      letter-spacing: var(--ls-caps);
       transition: color var(--duration-slow) ease;
     }
 
@@ -538,10 +554,10 @@
       gap: 8px;
     }
     .header-title {
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-size: 20px;
       font-weight: 700;
-      letter-spacing: -0.02em;
+      letter-spacing: var(--ls-tight);
       color: var(--text-1);
       flex: 1;
       min-width: 0;
@@ -580,7 +596,7 @@
       .header-title {
         font-size: 28px;
         font-weight: 800;
-        letter-spacing: -0.03em;
+        letter-spacing: var(--ls-tight);
         transition: font-size var(--duration-slow) var(--ease-out), opacity var(--duration-slow) ease;
       }
       /* ── Page Switcher (tappable header title) ── */
@@ -682,7 +698,7 @@
         border-radius: 12px;
         background: transparent;
         color: var(--text-2);
-        font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+        font-family: var(--font-sans);
         font-size: 16px;
         font-weight: 500;
         cursor: pointer;
@@ -863,7 +879,7 @@
         background: none;
         width: 100%;
         color: var(--text-1);
-        font-family: -apple-system, 'SF Pro Text', sans-serif;
+        font-family: var(--font-sans);
         font-size: 16px;
         font-weight: 500;
         cursor: pointer;
@@ -1017,10 +1033,10 @@
       transform: translateX(-50%) translateY(4px);
       background: #2c2c2e;
       color: rgba(255,255,255,0.8);
-      font-family: -apple-system, 'SF Pro Text', sans-serif;
+      font-family: var(--font-sans);
       font-size: 10px;
       font-weight: 500;
-      letter-spacing: 0.02em;
+      letter-spacing: var(--ls-slight);
       padding: 4px 8px;
       border-radius: 6px;
       white-space: nowrap;
@@ -1083,7 +1099,7 @@
     }
 
     .currency-btn {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: clamp(11px, 3vw, 12px);
     }
 
@@ -1092,10 +1108,10 @@
       margin-left: 6px;
       padding: 8px 16px;
       border-radius: 12px;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 12px;
       font-weight: 600;
-      letter-spacing: 0.5px;
+      letter-spacing: var(--ls-caps);
       cursor: pointer;
       border: 1px solid var(--glass-border);
       background: var(--glass-bg);
@@ -1306,7 +1322,7 @@
       color: rgba(245,245,247,0.8) !important;
       width: 100%;
       font-weight: 400;
-      letter-spacing: 0.04em;
+      letter-spacing: var(--ls-slight);
     }
     .btn-glass:active {
       background: rgba(255,255,255,0.15) !important;
@@ -1317,10 +1333,10 @@
       background: none;
       border: none;
       color: rgba(255,255,255,0.3);
-      font-family: -apple-system, 'SF Pro Text', sans-serif;
+      font-family: var(--font-sans);
       font-size: 14px;
       font-weight: 400;
-      letter-spacing: 0.02em;
+      letter-spacing: var(--ls-slight);
       padding: 12px;
       margin-top: 8px;
       cursor: pointer;
@@ -1338,7 +1354,7 @@
       border-radius: 12px;
       font-size: 16px;
       font-weight: 500;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       cursor: pointer;
       transition: opacity var(--duration-normal), transform var(--duration-fast);
       box-shadow: 0 4px 20px rgba(74,222,128,0.25);
@@ -1363,7 +1379,7 @@
     .loading p {
       font-size: 14px;
       font-weight: 400;
-      letter-spacing: 0.02em;
+      letter-spacing: var(--ls-slight);
       opacity: 0;
       animation: loadTextFade 0.4s ease forwards;
       transition: opacity var(--duration-slow) ease;
@@ -1468,11 +1484,11 @@
     .summary-label {
       font-size: 10px;
       font-weight: 600;
-      letter-spacing: 0.1em;
+      letter-spacing: var(--ls-wide);
       text-transform: uppercase;
       color: rgba(255,255,255,0.15);
       text-shadow: 0 -1px 0 rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.04);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       margin-bottom: 8px;
       transition: color var(--duration-slow) ease;
     }
@@ -1482,11 +1498,11 @@
     }
 
     .summary-value {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: clamp(20px, 5vw, 28px);
       font-weight: 700;
       color: var(--text-1);
-      letter-spacing: -0.5px;
+      letter-spacing: var(--ls-tight);
       transition: color var(--duration-slow) ease;
       white-space: nowrap;
       overflow: hidden;
@@ -1499,7 +1515,7 @@
     .summary-sub {
       font-size: 12px;
       margin-top: 4px;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       color: var(--text-3);
     }
 
@@ -1554,28 +1570,28 @@
     .hero-income-label {
       font-size: 10px;
       font-weight: 600;
-      letter-spacing: 0.1em;
+      letter-spacing: var(--ls-wide);
       text-transform: uppercase;
       color: rgba(255,255,255,0.15);
       text-shadow: 0 -1px 0 rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.04);
       margin-bottom: 6px;
     }
     .hero-income-currency {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: clamp(18px, 4vw, 24px);
       font-weight: 700;
       color: var(--emerald);
-      letter-spacing: 0.04em;
+      letter-spacing: var(--ls-slight);
       margin-bottom: 2px;
-      line-height: 1;
+      line-height: var(--lh-none);
     }
     .hero-income-value {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: clamp(36px, 10vw, 56px);
       font-weight: 800;
-      letter-spacing: -0.04em;
+      letter-spacing: var(--ls-tight);
       color: var(--emerald);
-      line-height: 1;
+      line-height: var(--lh-none);
       margin-bottom: 20px;
     }
     .hero-legend {
@@ -1603,7 +1619,7 @@
     .hero-legend-amount {
       font-size: 12px;
       font-weight: 600;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       flex-shrink: 0;
       color: var(--text-2);
     }
@@ -1634,17 +1650,17 @@
       font-size: 9px;
       color: var(--text-3);
       font-weight: 600;
-      letter-spacing: 0.1em;
+      letter-spacing: var(--ls-wide);
       text-transform: uppercase;
       margin-bottom: 4px;
     }
     .hero-center-value {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 24px;
       font-weight: 700;
       color: var(--emerald);
-      letter-spacing: -0.04em;
-      line-height: 1;
+      letter-spacing: var(--ls-tight);
+      line-height: var(--lh-none);
     }
     .hero-center-sub {
       font-size: 10px;
@@ -1684,18 +1700,18 @@
     .metric-pill-label {
       font-size: 10px;
       font-weight: 600;
-      letter-spacing: 0.1em;
+      letter-spacing: var(--ls-wide);
       text-transform: uppercase;
       color: rgba(255,255,255,0.15);
       text-shadow: 0 -1px 0 rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.04);
       margin-bottom: 6px;
     }
     .metric-pill-value {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 24px;
       font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1;
+      letter-spacing: var(--ls-tight);
+      line-height: var(--lh-none);
       color: var(--text-1);
     }
     .metric-pill-sub {
@@ -1754,7 +1770,7 @@
     .insight-card-label {
       font-size: 10px;
       font-weight: 600;
-      letter-spacing: 0.1em;
+      letter-spacing: var(--ls-wide);
       text-transform: uppercase;
       color: rgba(255,255,255,0.15);
       text-shadow: 0 -1px 0 rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.04);
@@ -1763,7 +1779,7 @@
     .insight-card-status {
       font-size: 14px;
       font-weight: 600;
-      line-height: 1.2;
+      line-height: var(--lh-tight);
     }
     .insight-card-right-label {
       font-size: 12px;
@@ -1772,15 +1788,15 @@
       text-align: right;
     }
     .insight-card-value {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 28px;
       font-weight: 800;
-      letter-spacing: -0.03em;
+      letter-spacing: var(--ls-tight);
       color: var(--text-1);
-      line-height: 1;
+      line-height: var(--lh-none);
     }
     .insight-card-change {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 14px;
       font-weight: 600;
       padding: 4px 8px;
@@ -1802,7 +1818,7 @@
       color: var(--text-3);
     }
     .insight-bar-pct {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 12px;
       font-weight: 600;
       color: var(--text-2);
@@ -1905,7 +1921,7 @@
       border-radius: 10px;
       font-size: 12px;
       font-weight: 600;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       color: #fff;
       pointer-events: none;
       opacity: 0;
@@ -1931,7 +1947,7 @@
       font-size: 9px;
       font-weight: 500;
       color: var(--text-3);
-      letter-spacing: 0.04em;
+      letter-spacing: var(--ls-slight);
     }
     .sparkline-clip rect {
       transition: width 1.4s var(--ease-out);
@@ -2027,8 +2043,8 @@
       font-size: 9px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 1.2px;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      letter-spacing: var(--ls-spread);
+      font-family: var(--font-mono);
       opacity: 0.7;
     }
 
@@ -2044,14 +2060,14 @@
     .wl-roi {
       font-weight: 500;
       font-size: clamp(11px, 3vw, 13px);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       white-space: nowrap;
     }
 
     .wl-pnl {
       font-weight: 400;
       font-size: clamp(10px, 2.8vw, 11px);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       opacity: 0.7;
       white-space: nowrap;
     }
@@ -2131,7 +2147,7 @@
       border-radius: 20px;
       font-size: 12px;
       font-weight: 500;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       cursor: pointer;
       border: none;
       color: var(--text-2);
@@ -2210,7 +2226,7 @@
       border-radius: 12px;
       font-size: 14px;
       font-weight: 500;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       cursor: pointer;
       border: none;
       color: var(--text-2);
@@ -2440,9 +2456,9 @@
       font-size: 9px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 1.2px;
+      letter-spacing: var(--ls-spread);
       color: var(--text-3);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       padding: 20px 20px 10px;
       transition: color var(--duration-slow) ease;
     }
@@ -2473,7 +2489,7 @@
       display: inline-block;
       font-size: 10px;
       font-weight: 500;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       padding: 4px 8px;
       border-radius: 10px;
       background: var(--glass-bg);
@@ -2481,14 +2497,14 @@
       color: var(--text-2);
       margin-top: 4px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: var(--ls-caps);
       transition: all var(--duration-enter) ease;
     }
 
     .holding-left .live-price {
       font-size: 12px;
       font-weight: 400;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       color: var(--text-2);
       margin-top: 2px;
       transition: color var(--duration-slow) ease;
@@ -2499,7 +2515,7 @@
     .holding-right .shares {
       font-size: 14px;
       font-weight: 400;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       color: var(--text-2);
       transition: color var(--duration-slow) ease;
     }
@@ -2507,7 +2523,7 @@
     .holding-right .value {
       font-size: 16px;
       font-weight: 500;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       color: var(--text-1);
       transition: color var(--duration-slow) ease;
     }
@@ -2515,7 +2531,7 @@
     .holding-right .avg-price {
       font-size: 12px;
       font-weight: 400;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       color: var(--text-3);
       transition: color var(--duration-slow) ease;
     }
@@ -2523,7 +2539,7 @@
     .holding-right .pnl {
       font-size: 14px;
       font-weight: 500;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       margin-top: 2px;
     }
 
@@ -2576,7 +2592,7 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
-      line-height: 1.3;
+      line-height: var(--lh-normal);
     }
 
     .compact-roi {
@@ -2635,7 +2651,7 @@
       gap: 8px;
     }
     .holding-card-ticker {
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-size: 14px;
       font-weight: 600;
       color: var(--text-1);
@@ -2645,10 +2661,10 @@
       font-weight: 600;
       padding: 2px 6px;
       border-radius: 6px;
-      letter-spacing: 0.02em;
+      letter-spacing: var(--ls-slight);
     }
     .holding-card-sub {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 10px;
       color: var(--text-3);
     }
@@ -2660,7 +2676,7 @@
       flex-shrink: 0;
     }
     .holding-card-value {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 14px;
       font-weight: 600;
       color: var(--text-1);
@@ -2669,7 +2685,7 @@
       display: flex;
       align-items: baseline;
       gap: 6px;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 12px;
     }
     .holding-card-weight-bar {
@@ -2707,20 +2723,20 @@
       font-weight: 500;
       color: var(--text-3);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: var(--ls-slight);
       margin-bottom: 4px;
     }
     .port-hero-value {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 36px;
       font-weight: 700;
       color: var(--text-1);
-      letter-spacing: -0.02em;
-      line-height: 1.1;
+      letter-spacing: var(--ls-tight);
+      line-height: var(--lh-tight);
     }
     .port-hero-pnl {
       margin-top: 6px;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 14px;
       font-weight: 600;
       display: flex;
@@ -2739,7 +2755,7 @@
       gap: 16px;
       margin-top: 12px;
       font-size: 12px;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     .port-hero-wl-item {
       display: flex;
@@ -2779,7 +2795,7 @@
       color: var(--text-3);
       font-size: 12px;
       font-weight: 500;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       cursor: pointer;
       transition: all var(--duration-normal) ease;
       -webkit-tap-highlight-color: transparent;
@@ -2819,7 +2835,7 @@
       justify-content: space-between;
       align-items: baseline;
       padding: 12px 0 4px;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-size: 14px;
       font-weight: 600;
       color: var(--text-1);
@@ -2828,7 +2844,7 @@
       font-size: 10px;
       font-weight: 400;
       color: var(--text-3);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
 
     .holdings-table {
@@ -2837,7 +2853,7 @@
       border-collapse: collapse;
       font-size: 14px;
       font-weight: 400;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
 
     .holdings-table thead {
@@ -2854,7 +2870,7 @@
       font-size: 9px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 1.1px;
+      letter-spacing: var(--ls-spread);
       padding: 10px 16px;
       text-align: right;
       white-space: nowrap;
@@ -2888,7 +2904,7 @@
       text-align: left;
       padding-left: 20px;
       font-weight: 600;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
     }
 
     .holdings-table tr:hover td { background: var(--hover-bg); }
@@ -2908,10 +2924,10 @@
       display: inline-block;
       font-size: 10px;
       font-weight: 600;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       padding: 4px 10px;
       border-radius: 10px;
-      letter-spacing: 0.5px;
+      letter-spacing: var(--ls-caps);
     }
 
     .trade-badge.buy {
@@ -2986,14 +3002,14 @@
       padding: 12px 16px 6px;
     }
     .txn-date-label {
-      font-family: -apple-system, 'SF Pro Display', sans-serif;
+      font-family: var(--font-sans);
       font-size: 14px;
       font-weight: 600;
       color: var(--text-1);
-      letter-spacing: -0.01em;
+      letter-spacing: var(--ls-tight);
     }
     .txn-date-total {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 12px;
       color: var(--text-3);
       font-weight: 400;
@@ -3040,7 +3056,7 @@
       min-width: 0;
     }
     .txn-list-category {
-      font-family: -apple-system, 'SF Pro Text', sans-serif;
+      font-family: var(--font-sans);
       font-size: 14px;
       font-weight: 500;
       color: var(--text-1);
@@ -3049,7 +3065,7 @@
       text-overflow: ellipsis;
     }
     .txn-list-desc {
-      font-family: -apple-system, 'SF Pro Text', sans-serif;
+      font-family: var(--font-sans);
       font-size: 12px;
       color: var(--text-3);
       white-space: nowrap;
@@ -3058,11 +3074,11 @@
       margin-top: 2px;
     }
     .txn-list-amount {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 14px;
       text-align: right;
       flex-shrink: 0;
-      letter-spacing: -0.02em;
+      letter-spacing: var(--ls-tight);
     }
     .txn-list-amount.large {
       font-weight: 600;
@@ -3082,7 +3098,7 @@
       border: 1px solid var(--glass-border);
       border-radius: 12px;
       padding: 6px 12px 6px 32px;
-      font-family: -apple-system, 'SF Pro Text', sans-serif;
+      font-family: var(--font-sans);
       font-size: 12px;
       color: var(--text-1);
       width: 160px;
@@ -3238,7 +3254,7 @@
       width: 100%;
       gap: 6px;
       color: var(--text-2);
-      font-family: -apple-system, 'SF Pro Text', sans-serif;
+      font-family: var(--font-sans);
       font-size: 12px;
       transition: border-color var(--duration-normal) ease, color var(--duration-normal) ease;
     }
@@ -3254,7 +3270,7 @@
     .cal-quick-label {
       font-size: 9px;
       font-weight: 600;
-      letter-spacing: 0.08em;
+      letter-spacing: var(--ls-wide);
       color: var(--text-3);
       text-transform: uppercase;
       padding: 0 12px;
@@ -3276,7 +3292,7 @@
       color: var(--text-2);
       cursor: pointer;
       transition: all var(--duration-normal) ease;
-      font-family: -apple-system, 'SF Pro Text', sans-serif;
+      font-family: var(--font-sans);
       flex: 1;
       text-align: center;
       min-width: 0;
@@ -3363,13 +3379,13 @@
       padding: 4px 8px;
       border-radius: 6px;
       font-size: 16px;
-      line-height: 1;
+      line-height: var(--lh-none);
       transition: color var(--duration-fast), background var(--duration-fast);
     }
     .txn-cal-nav-btn:hover { color: var(--text-1); background: rgba(255,255,255,0.06); }
     [data-theme="light"] .txn-cal-nav-btn:hover { background: rgba(0,0,0,0.04); }
     .txn-cal-month-label {
-      font-family: -apple-system, 'SF Pro Display', sans-serif;
+      font-family: var(--font-sans);
       font-size: 14px;
       font-weight: 600;
       color: var(--text-1);
@@ -3382,13 +3398,13 @@
     }
     .txn-cal-weekday {
       text-align: center;
-      font-family: -apple-system, 'SF Pro Text', sans-serif;
+      font-family: var(--font-sans);
       font-size: 10px;
       font-weight: 500;
       color: var(--text-3);
       padding: 4px 0;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: var(--ls-slight);
     }
     .txn-cal-days {
       display: grid;
@@ -3399,7 +3415,7 @@
       position: relative;
       text-align: center;
       padding: 6px 0;
-      font-family: -apple-system, 'SF Pro Text', sans-serif;
+      font-family: var(--font-sans);
       font-size: 12px;
       font-weight: 400;
       color: var(--text-2);
@@ -3442,7 +3458,7 @@
       border: none;
       border-radius: 10px;
       color: var(--text-2);
-      font-family: -apple-system, 'SF Pro Text', sans-serif;
+      font-family: var(--font-sans);
       font-size: 12px;
       cursor: pointer;
       transition: color var(--duration-fast), background var(--duration-fast);
@@ -3467,7 +3483,7 @@
     }
 
     .alloc-header span:last-child {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 12px;
       color: var(--text-2);
     }
@@ -3503,7 +3519,7 @@
     .advisor-hero-label {
       font-size: 12px;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: var(--ls-slight);
       color: var(--text-3);
     }
     .advisor-hero-input-wrap {
@@ -3513,7 +3529,7 @@
       gap: 6px;
     }
     .advisor-hero-input-wrap .advisor-currency-label {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 16px;
       font-weight: 500;
       color: var(--text-3);
@@ -3522,7 +3538,7 @@
       background: transparent !important;
       border: none !important;
       text-align: center;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 36px !important;
       font-weight: 700;
       color: var(--text-1);
@@ -3553,7 +3569,7 @@
       color: var(--text-2);
       font-size: 14px;
       font-weight: 500;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       cursor: pointer;
       transition: all var(--duration-normal) ease;
       -webkit-tap-highlight-color: transparent;
@@ -3633,7 +3649,7 @@
       font-size: 14px;
       font-weight: 600;
       color: var(--emerald);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       min-width: 32px;
     }
     .advisor-input {
@@ -3644,7 +3660,7 @@
       color: var(--text-1);
       font-size: 24px;
       font-weight: 600;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       -moz-appearance: textfield;
     }
     .advisor-input::-webkit-outer-spin-button,
@@ -3691,7 +3707,7 @@
       background: var(--bg);
       color: var(--text-1);
       font-size: 14px;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       outline: none;
       margin-bottom: 8px;
       box-sizing: border-box;
@@ -3711,7 +3727,7 @@
       font-size: 12px;
       font-weight: 500;
       cursor: pointer;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
     }
     .advisor-ticker-list {
       max-height: 220px;
@@ -3759,7 +3775,7 @@
       font-size: 14px;
       font-weight: 700;
       color: var(--text-1);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     .advisor-ticker-name {
       font-size: 10px;
@@ -3787,7 +3803,7 @@
       color: var(--emerald);
       font-size: 16px;
       font-weight: 600;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -3815,7 +3831,7 @@
       font-size: 16px;
       font-weight: 700;
       color: var(--text-1);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     .advisor-result-name {
       font-size: 10px;
@@ -3826,7 +3842,7 @@
       font-size: 20px;
       font-weight: 700;
       color: var(--emerald);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     .advisor-result-pct {
       font-size: 12px;
@@ -3857,9 +3873,9 @@
       font-weight: 600;
       padding: 4px 8px;
       border-radius: 10px;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       text-transform: uppercase;
-      letter-spacing: 0.3px;
+      letter-spacing: var(--ls-caps);
     }
     .advisor-signal.value { background: rgba(74,222,128,0.1); color: #4ade80; }
     .advisor-signal.rebalance { background: rgba(10,132,255,0.1); color: #0a84ff; }
@@ -3878,7 +3894,7 @@
     .advisor-status-warning {
       font-size: 12px;
       font-weight: 500;
-      line-height: 1.6;
+      line-height: var(--lh-relaxed);
     }
     .advisor-status-note {
       font-size: 10px;
@@ -3914,7 +3930,7 @@
       font-size: 12px;
       color: var(--text-2);
       margin-bottom: 12px;
-      line-height: 1.4;
+      line-height: var(--lh-normal);
     }
     .advisor-picks-list {
       background: var(--card-bg-solid);
@@ -3950,7 +3966,7 @@
     .advisor-pick-sub {
       font-size: 12px;
       color: var(--text-3);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       margin-top: 2px;
       white-space: nowrap;
       overflow: hidden;
@@ -3961,7 +3977,7 @@
       flex-shrink: 0;
     }
     .advisor-pick-amount {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 14px;
       font-weight: 600;
       color: var(--emerald);
@@ -3987,7 +4003,7 @@
       color: #ff9f0a;
     }
     .advisor-cash-amount {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 16px;
       font-weight: 700;
       color: #ff9f0a;
@@ -4026,7 +4042,7 @@
       font-size: 12px;
     }
     .advisor-skipped-ticker {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-weight: 600;
       color: var(--text-2);
       min-width: 80px;
@@ -4043,15 +4059,15 @@
       font-size: 10px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
+      letter-spacing: var(--ls-spread);
       color: var(--text-3);
       margin-bottom: 8px;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     .advisor-methodology p {
       font-size: 12px;
       color: var(--text-2);
-      line-height: 1.5;
+      line-height: var(--lh-relaxed);
       margin: 0;
     }
 
@@ -4075,7 +4091,7 @@
       font-size: 14px;
       font-weight: 700;
       color: var(--text-1);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     .advisor-suggest-desc {
       font-size: 10px;
@@ -4104,9 +4120,9 @@
       font-size: 10px;
       font-weight: 600;
       cursor: pointer;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: var(--ls-caps);
       transition: all var(--duration-normal) ease;
       float: right;
       margin-top: -2px;
@@ -4133,10 +4149,10 @@
       font-size: 10px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
+      letter-spacing: var(--ls-spread);
       color: var(--text-3);
       margin-bottom: 10px;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     .advisor-config-row {
       display: flex;
@@ -4149,7 +4165,7 @@
       font-size: 12px;
       font-weight: 600;
       color: var(--text-1);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       min-width: 50px;
     }
     .advisor-config-row .sublabel {
@@ -4166,7 +4182,7 @@
       color: var(--text-1);
       font-size: 14px;
       font-weight: 600;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       text-align: center;
       outline: none;
       -moz-appearance: textfield;
@@ -4201,7 +4217,7 @@
     .advisor-sum-badge {
       font-size: 10px;
       font-weight: 700;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       padding: 2px 8px;
       border-radius: 10px;
       display: inline-block;
@@ -4216,7 +4232,7 @@
       border-radius: 10px;
       background: rgba(255,159,10,0.1);
       color: #ff9f0a;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       white-space: nowrap;
     }
     .advisor-signal.momentum { background: rgba(251,146,60,0.1); color: #fb923c; }
@@ -4253,7 +4269,7 @@
       color: var(--text-3);
       font-size: 14px;
       font-weight: 500;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       cursor: pointer;
       transition: all var(--duration-normal) var(--ease-out);
       -webkit-tap-highlight-color: transparent;
@@ -4279,18 +4295,18 @@
       font-size: 12px;
       color: var(--text-3);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: var(--ls-slight);
       margin-bottom: 2px;
     }
     .chart-hero-number {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 28px;
       font-weight: 700;
       color: var(--text-1);
-      letter-spacing: -0.02em;
+      letter-spacing: var(--ls-tight);
     }
     .chart-hero-sub {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 14px;
       font-weight: 600;
       margin-top: 2px;
@@ -4333,9 +4349,9 @@
       font-size: 9px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 1.2px;
+      letter-spacing: var(--ls-spread);
       color: var(--text-3);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       margin-bottom: 10px;
       transition: color var(--duration-slow) ease;
     }
@@ -4381,21 +4397,21 @@
     }
 
     .pie-center-label .pie-center-amount {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 14px;
       font-weight: 600;
       color: var(--text-1);
-      letter-spacing: -0.5px;
+      letter-spacing: var(--ls-tight);
       transition: color var(--duration-slow) ease;
     }
 
     .pie-center-label .pie-center-sub {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 9px;
       font-weight: 500;
       color: var(--text-3);
       text-transform: uppercase;
-      letter-spacing: 0.8px;
+      letter-spacing: var(--ls-spread);
       margin-top: 2px;
       transition: color var(--duration-slow) ease;
     }
@@ -4438,7 +4454,7 @@
       font-size: 12px;
       font-weight: 500;
       color: var(--text-1);
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       flex: 1;
       min-width: 0;
       overflow: hidden;
@@ -4463,7 +4479,7 @@
     }
 
     .pie-legend-val {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 10px;
       font-weight: 500;
       color: var(--text-1);
@@ -4473,7 +4489,7 @@
     }
 
     .pie-legend-pct {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 9px;
       font-weight: 400;
       color: var(--text-3);
@@ -4494,12 +4510,12 @@
       font-size: 9px;
       font-weight: 600;
       color: var(--text-3);
-      letter-spacing: 0.08em;
+      letter-spacing: var(--ls-wide);
       text-transform: uppercase;
       flex: 1;
     }
     .pie-legend-total-val {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 10px;
       font-weight: 600;
       color: var(--text-1);
@@ -4536,9 +4552,9 @@
     .alloc-total-label {
       font-size: 24px;
       font-weight: 700;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       color: var(--text-1);
-      letter-spacing: -0.02em;
+      letter-spacing: var(--ls-tight);
     }
     .alloc-total-sub {
       font-size: 12px;
@@ -4573,7 +4589,7 @@
       background: rgba(0,0,0,0.02);
     }
     .alloc-rank-num {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 10px;
       font-weight: 600;
       color: var(--text-3);
@@ -4613,7 +4629,7 @@
       transition: width 0.8s var(--ease-out);
     }
     .alloc-rank-val {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 12px;
       font-weight: 600;
       color: var(--text-1);
@@ -4622,7 +4638,7 @@
       font-variant-numeric: tabular-nums;
     }
     .alloc-rank-pct {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 10px;
       font-weight: 400;
       color: var(--text-3);
@@ -4651,7 +4667,7 @@
       cursor: pointer;
       border-radius: 10px;
       transition: all var(--duration-normal) ease;
-      font-family: -apple-system, 'SF Pro Text', sans-serif;
+      font-family: var(--font-sans);
     }
     .alloc-tab:hover {
       color: var(--text-2);
@@ -4771,7 +4787,7 @@
       gap: 6px;
       font-size: 12px;
       font-weight: 600;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       cursor: pointer;
       padding: 8px 16px;
       border-radius: 12px;
@@ -4856,7 +4872,7 @@
       border: 1px solid var(--glass-border);
       border-radius: 12px;
       padding: 8px 24px 8px 10px;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-size: 12px;
       font-weight: 500;
       color: var(--text-1);
@@ -4928,7 +4944,7 @@
     .insight-metric-label {
       font-size: 10px;
       font-weight: 600;
-      letter-spacing: 0.1em;
+      letter-spacing: var(--ls-wide);
       text-transform: uppercase;
       color: rgba(255,255,255,0.15);
       text-shadow: 0 -1px 0 rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.04);
@@ -4939,12 +4955,12 @@
       text-shadow: 0 1px 0 rgba(255,255,255,0.8), 0 -1px 1px rgba(0,0,0,0.04);
     }
     .insight-metric-value {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 28px;
       font-weight: 700;
-      letter-spacing: -0.02em;
+      letter-spacing: var(--ls-tight);
       color: var(--text-1);
-      line-height: 1;
+      line-height: var(--lh-none);
       margin-bottom: 4px;
     }
     .insight-metric-sub {
@@ -5027,14 +5043,14 @@
       white-space: nowrap;
     }
     .mover-amount {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 12px;
       font-weight: 600;
       margin-left: 12px;
       flex-shrink: 0;
     }
     .mover-pct {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 10px;
       font-weight: 500;
       margin-left: 8px;
@@ -5093,7 +5109,7 @@
       position: fixed;
       background: #2c2c2e;
       color: rgba(255,255,255,0.8);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 9px;
       font-weight: 500;
       padding: 4px 8px;
@@ -5125,7 +5141,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     .heatmap-months {
       display: flex;
@@ -5135,7 +5151,7 @@
     .heatmap-month-label {
       font-size: 9px;
       color: var(--text-3);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
 
     /* ── Scrollable txn tabs ── */
@@ -5179,7 +5195,7 @@
       padding: 8px 0;
       border: none;
       background: none;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-size: 12px;
       font-weight: 400;
       color: var(--text-3);
@@ -5223,15 +5239,15 @@
       font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.07em;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      letter-spacing: var(--ls-wide);
+      font-family: var(--font-sans);
     }
     .bd-status-badge {
       font-size: 10px;
       font-weight: 600;
       padding: 2px 8px;
       border-radius: 10px;
-      line-height: 1.3;
+      line-height: var(--lh-normal);
     }
     .bd-item-count {
       font-size: 12px;
@@ -5250,9 +5266,9 @@
     .bd-headline {
       font-size: 28px;
       font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1.15;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      letter-spacing: var(--ls-tight);
+      line-height: var(--lh-tight);
+      font-family: var(--font-sans);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -5308,13 +5324,13 @@
       margin-bottom: 6px;
     }
     .bd-item-name {
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-weight: 500;
       font-size: 14px;
       color: var(--text-1);
     }
     .bd-item-gap {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 14px;
       font-weight: 700;
     }
@@ -5343,19 +5359,19 @@
       gap: 8px;
     }
     .bd-item-meta {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 10px;
       color: var(--text-3);
       font-variant-numeric: tabular-nums;
     }
     .bd-item-chip {
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-size: 9px;
       font-weight: 600;
       padding: 4px 8px;
       border-radius: 6px;
-      line-height: 1;
-      letter-spacing: 0.02em;
+      line-height: var(--lh-none);
+      letter-spacing: var(--ls-slight);
     }
     .bd-chip-green { background: rgba(48,209,88,0.1); color: #30d158; border: 1px solid rgba(48,209,88,0.15); }
     .bd-chip-amber { background: rgba(255,159,10,0.1); color: var(--amber); border: 1px solid rgba(255,159,10,0.15); }
@@ -5376,7 +5392,7 @@
       border-radius: 10px;
       transition: opacity var(--duration-normal), background var(--duration-fast);
       user-select: none;
-      font-family: -apple-system, 'SF Pro Text', sans-serif;
+      font-family: var(--font-sans);
     }
     .chart-toggle:hover {
       background: rgba(255,255,255,0.04);
@@ -5422,7 +5438,7 @@
       font-weight: 600;
       color: var(--text-1);
       pointer-events: none;
-      line-height: 1;
+      line-height: var(--lh-none);
     }
 
     /* Gradient colors are set dynamically via inline style */
@@ -5463,7 +5479,7 @@
       transform: translateX(-50%) translateY(0);
     }
     .bd-donut-tip-label {
-      font-family: -apple-system, 'SF Pro Text', sans-serif;
+      font-family: var(--font-sans);
       font-size: 12px;
       font-weight: 500;
       color: rgba(255,255,255,0.9);
@@ -5475,13 +5491,13 @@
       margin-top: 2px;
     }
     .bd-donut-tip-amount {
-      font-family: 'SF Mono', 'DM Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 12px;
       font-weight: 600;
       color: #fff;
     }
     .bd-donut-tip-pct {
-      font-family: 'SF Mono', 'DM Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px;
       color: rgba(255,255,255,0.5);
     }
@@ -5576,15 +5592,15 @@
       font-size: 10px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
+      letter-spacing: var(--ls-spread);
       color: var(--text-3);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     .txn-modal-value {
       font-size: 14px;
       font-weight: 500;
       color: var(--text-1);
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       text-align: right;
       max-width: 65%;
       word-break: break-word;
@@ -5597,7 +5613,7 @@
       font-size: 14px;
       font-weight: 500;
       color: var(--text-1);
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       text-align: right;
       width: 100%;
       max-width: 65%;
@@ -5616,7 +5632,7 @@
       font-size: 14px;
       font-weight: 500;
       color: var(--text-1);
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       text-align: right;
       width: 100%;
       max-width: 65%;
@@ -5636,7 +5652,7 @@
       padding: 12px 0;
       border-radius: 12px;
       border: 1px solid var(--divider);
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
@@ -5668,7 +5684,7 @@
     .txn-edit-status {
       text-align: center;
       font-size: 12px;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       padding: 8px 0 0;
       min-height: 24px;
     }
@@ -5700,7 +5716,7 @@
 
     .price-loading {
       font-size: 12px;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       color: var(--text-3);
       padding: 8px 20px;
       text-align: center;
@@ -5762,9 +5778,9 @@
       font-size: 10px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: var(--ls-wide);
       color: rgba(255,255,255,0.15);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       padding: 16px 0 8px;
     }
     [data-theme="light"] .cat-group-label { color: rgba(0,0,0,0.25); }
@@ -5794,7 +5810,7 @@
     .cat-section-count {
       font-size: 12px;
       color: var(--text-3);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     .cat-items {
       background: var(--card-bg-solid);
@@ -5838,7 +5854,7 @@
       font-size: 9px;
       color: var(--text-3);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: var(--ls-caps);
       padding: 4px 8px;
       border-radius: 6px;
       background: rgba(255,255,255,0.04);
@@ -5865,7 +5881,7 @@
       border: none;
       color: var(--text-1);
       font-size: 14px;
-      font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
       outline: none;
       padding: 0;
     }
@@ -5919,7 +5935,7 @@
       border: 1px solid var(--glass-border);
       border-radius: 10px;
       padding: 6px 10px;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 12px;
       font-weight: 600;
       color: var(--text-1);
@@ -5948,7 +5964,7 @@
       flex-shrink: 0;
       transition: all var(--duration-normal) ease;
       -webkit-tap-highlight-color: transparent;
-      font-family: -apple-system, 'SF Pro Display', BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-sans);
     }
     .budget-month-pill.active {
       background: rgba(255,255,255,0.08);
@@ -5981,7 +5997,7 @@
     .budget-section-total {
       font-size: 12px;
       color: var(--text-3);
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     .budget-items {
       background: var(--card-bg-solid);
@@ -6025,7 +6041,7 @@
       border: 1px solid rgba(255,255,255,0.06);
       border-radius: 10px;
       padding: 6px 10px;
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 14px;
       color: var(--text-1);
       outline: none;
@@ -6052,7 +6068,7 @@
       text-align: right;
     }
     .budget-footer-amount {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-weight: 600;
       color: var(--text-2);
     }
@@ -6115,7 +6131,7 @@
       flex-shrink: 0;
     }
     .budget-ov-item-amount {
-      font-family: 'SF Mono', 'DM Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 12px;
       color: var(--text-2);
     }
@@ -6150,7 +6166,7 @@
       font-weight: 500;
     }
     .budget-remaining-amount {
-      font-family: 'SF Mono', 'DM Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 16px;
       font-weight: 700;
     }
