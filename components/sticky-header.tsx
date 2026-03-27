@@ -30,42 +30,25 @@ export function StickyHeader({ title, subtitle }: StickyHeaderProps) {
     <>
       <div ref={sentinelRef} className="h-0 w-0" />
 
-      {/* Fixed mini header */}
       <div
         className="fixed top-0 inset-x-0 z-40 pointer-events-none"
         aria-hidden={!scrolled}
       >
-        {/* Backdrop blur */}
+        {/* Gradient: transparent at bottom → background color at top */}
         <div
           className="absolute inset-x-0 top-0 transition-opacity duration-300"
           style={{
-            height: "calc(env(safe-area-inset-top, 0px) + 3rem)",
+            height: "calc(env(safe-area-inset-top, 0px) + 5rem)",
             opacity: scrolled ? 1 : 0,
-            backdropFilter: "blur(16px) saturate(180%)",
-            WebkitBackdropFilter: "blur(16px) saturate(180%)",
-            background: "color-mix(in srgb, var(--background) 50%, transparent)",
-          }}
-        />
-        {/*
-          Gradient that sits over the bottom edge of the blur to
-          smooth the harsh cutoff. Goes from background-colored
-          (hides the blur edge) to transparent (reveals content).
-        */}
-        <div
-          className="absolute inset-x-0 transition-opacity duration-300"
-          style={{
-            top: "calc(env(safe-area-inset-top, 0px) + 2rem)",
-            height: "4rem",
-            opacity: scrolled ? 1 : 0,
-            background: `linear-gradient(to bottom,
-              color-mix(in srgb, var(--background) 50%, transparent) 0%,
-              color-mix(in srgb, var(--background) 30%, transparent) 40%,
-              color-mix(in srgb, var(--background) 10%, transparent) 70%,
-              transparent 100%
+            background: `linear-gradient(to top,
+              transparent 0%,
+              color-mix(in srgb, var(--background) 30%, transparent) 20%,
+              color-mix(in srgb, var(--background) 60%, transparent) 40%,
+              color-mix(in srgb, var(--background) 85%, transparent) 60%,
+              var(--background) 80%
             )`,
           }}
         />
-        {/* Title text */}
         <div
           className="relative flex justify-center"
           style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
@@ -82,7 +65,6 @@ export function StickyHeader({ title, subtitle }: StickyHeaderProps) {
         </div>
       </div>
 
-      {/* Full header — hides when scrolled */}
       <div
         className="transition-all duration-300"
         style={{
