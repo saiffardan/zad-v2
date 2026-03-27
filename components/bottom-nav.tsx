@@ -157,7 +157,7 @@ export function BottomNav() {
                   "relative flex flex-1 flex-col items-center gap-0.5 py-1.5 text-[10px] font-medium transition-colors duration-200",
                   isActive
                     ? "text-primary"
-                    : "text-muted-foreground active:scale-95"
+                    : "text-foreground/60 dark:text-white/50 active:scale-95"
                 )}
               >
                 <span
