@@ -76,11 +76,11 @@ export default function DashboardPage() {
 
       {/* Monthly Income */}
       <Card>
-        <CardHeader className="pb-2">
+        <CardHeader className="pb-1 pt-3 px-4">
           <CardTitle>Monthly Income</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-3xl font-bold text-success mb-4">AED 29.4K</p>
+        <CardContent className="px-4 pb-3">
+          <p className="text-3xl font-bold text-success mb-2">AED 29.4K</p>
           <div className="flex items-center gap-4">
             {/* Left: breakdown list */}
             <div className="w-1/2 space-y-2.5">
