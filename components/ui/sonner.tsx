@@ -1,9 +1,9 @@
 "use client"
 
 import { useTheme } from "next-themes"
-import { Toaster as Sonner, type ToasterProps } from "sonner"
+import { Toaster as Sonner } from "sonner"
 
-import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"
+type ToasterProps = React.ComponentProps<typeof Sonner>
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
@@ -12,69 +12,15 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
-      icons={{
-        success: (
-          <IconPlaceholder
-            lucide="CircleCheckIcon"
-            tabler="IconCircleCheck"
-            hugeicons="CheckmarkCircle02Icon"
-            phosphor="CheckCircleIcon"
-            remixicon="RiCheckboxCircleLine"
-            className="size-4"
-          />
-        ),
-        info: (
-          <IconPlaceholder
-            lucide="InfoIcon"
-            tabler="IconInfoCircle"
-            hugeicons="InformationCircleIcon"
-            phosphor="InfoIcon"
-            remixicon="RiInformationLine"
-            className="size-4"
-          />
-        ),
-        warning: (
-          <IconPlaceholder
-            lucide="TriangleAlertIcon"
-            tabler="IconAlertTriangle"
-            hugeicons="Alert02Icon"
-            phosphor="WarningIcon"
-            remixicon="RiErrorWarningLine"
-            className="size-4"
-          />
-        ),
-        error: (
-          <IconPlaceholder
-            lucide="OctagonXIcon"
-            tabler="IconAlertOctagon"
-            hugeicons="MultiplicationSignCircleIcon"
-            phosphor="XCircleIcon"
-            remixicon="RiCloseCircleLine"
-            className="size-4"
-          />
-        ),
-        loading: (
-          <IconPlaceholder
-            lucide="Loader2Icon"
-            tabler="IconLoader"
-            hugeicons="Loading03Icon"
-            phosphor="SpinnerIcon"
-            remixicon="RiLoaderLine"
-            className="size-4 animate-spin"
-          />
-        ),
-      }}
-      style={
-        {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)",
-        } as React.CSSProperties
-      }
       toastOptions={{
         classNames: {
-          toast: "cn-toast",
+          toast:
+            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+          description: "group-[.toast]:text-muted-foreground",
+          actionButton:
+            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
+          cancelButton:
+            "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
         },
       }}
       {...props}
