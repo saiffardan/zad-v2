@@ -3157,30 +3157,30 @@
       /* Breakdown: wrap all 5 filters into 2 rows on mobile */
       body.txn-bd-active .txn-filters {
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 6px;
       }
       body.txn-bd-active #filterYear {
-        flex: 1 1 calc(50% - 4px) !important;
+        flex: 1 1 calc(50% - 3px) !important;
         display: block !important;
         order: 1;
       }
       body.txn-bd-active #filterPeriod {
-        flex: 1 1 calc(50% - 4px) !important;
+        flex: 1 1 calc(50% - 3px) !important;
         display: block !important;
         order: 2;
       }
       body.txn-bd-active #filterView {
-        flex: 1 1 calc(33% - 6px) !important;
+        flex: 1 1 calc(33.33% - 4px) !important;
         display: block !important;
         order: 3;
       }
       body.txn-bd-active #filterDetail {
-        flex: 1 1 calc(33% - 6px) !important;
+        flex: 1 1 calc(33.33% - 4px) !important;
         display: block !important;
         order: 4;
       }
       body.txn-bd-active #filterBdType {
-        flex: 1 1 calc(33% - 6px) !important;
+        flex: 1 1 calc(33.33% - 4px) !important;
         display: block !important;
         order: 5;
       }
