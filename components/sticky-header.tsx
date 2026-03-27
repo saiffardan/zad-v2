@@ -36,14 +36,12 @@ export function StickyHeader({ title, subtitle }: StickyHeaderProps) {
         className="fixed top-0 inset-x-0 z-40 pointer-events-none"
         aria-hidden={!scrolled}
       >
-        {/* Translucent overlay with blur — covers from top of screen past the title */}
+        {/* Solid gradient overlay */}
         <div
-          className="absolute inset-x-0 top-0 h-16 transition-opacity duration-300"
+          className="absolute inset-x-0 top-0 h-20 transition-opacity duration-300"
           style={{
             opacity: scrolled ? 1 : 0,
-            background: "linear-gradient(to bottom, color-mix(in srgb, var(--background) 85%, transparent) 0%, color-mix(in srgb, var(--background) 60%, transparent) 60%, transparent 100%)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
+            background: "linear-gradient(to bottom, var(--background) 40%, transparent 100%)",
           }}
         />
         <div className="relative flex justify-center">
