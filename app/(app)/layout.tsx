@@ -1,14 +1,10 @@
-import { AppShell } from "@/components/app-shell"
-import { AuthProvider } from "@/lib/auth-context"
+import { BottomNav } from "@/components/bottom-nav"
 
-export default function AppLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthProvider>
-      <AppShell>{children}</AppShell>
-    </AuthProvider>
+    <div className="mx-auto min-h-dvh max-w-lg bg-background">
+      <main className="px-4 pt-6 pb-20">{children}</main>
+      <BottomNav />
+    </div>
   )
 }

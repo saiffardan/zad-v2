@@ -2,11 +2,10 @@ import type { Metadata, Viewport } from "next"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
   title: "Zad",
-  description: "Personal finance dashboard powered by Google Sheets",
+  description: "Personal budgeting app",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon.svg",
@@ -25,8 +24,8 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#F2F2F7" },
-    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+    { media: "(prefers-color-scheme: light)", color: "#f8faf9" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0f0d" },
   ],
 }
 
@@ -36,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn("antialiased")}>
+    <html lang="en" suppressHydrationWarning className="antialiased">
       <body>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
