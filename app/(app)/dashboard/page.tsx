@@ -44,7 +44,7 @@ function DonutChart({
           stroke={seg.color}
           strokeWidth={strokeWidth}
           strokeDasharray={`${seg.dash} ${seg.space}`}
-          strokeLinecap="round"
+          strokeLinecap="butt"
           transform={`rotate(${seg.rotation} ${size / 2} ${size / 2})`}
           style={{ transition: "stroke-dasharray 0.5s ease" }}
         />
@@ -80,14 +80,14 @@ export default function DashboardPage() {
           <CardTitle>Monthly Income</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-3xl font-bold text-emerald-500 mb-4">AED 29.4K</p>
+          <p className="text-3xl font-bold text-success mb-4">AED 29.4K</p>
           <div className="flex items-center gap-4">
             {/* Left: breakdown list */}
             <div className="w-1/2 space-y-2.5">
               {[
-                { label: "Expenses", value: "9.1K", color: "#F56E0F" },
-                { label: "Savings", value: "8.0K", color: "#10B981" },
-                { label: "Debt", value: "3.7K", color: "#EF4444" },
+                { label: "Expenses", value: "9.1K", color: "#e03c81" },
+                { label: "Savings", value: "8.0K", color: "#4285f4" },
+                { label: "Debt", value: "3.7K", color: "#76849a" },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-2 text-sm">
                   <span
@@ -104,10 +104,10 @@ export default function DashboardPage() {
               <div className="w-full aspect-square relative">
                 <DonutChart
                   slices={[
-                    { value: 9.1, color: "#F56E0F" },
-                    { value: 8.0, color: "#10B981" },
-                    { value: 3.7, color: "#EF4444" },
-                    { value: 8.6, color: "#878787" },
+                    { value: 9.1, color: "#e03c81" },
+                    { value: 8.0, color: "#4285f4" },
+                    { value: 3.7, color: "#76849a" },
+                    { value: 8.6, color: "#47d491" },
                   ]}
                   size={200}
                   strokeWidth={18}
@@ -182,7 +182,7 @@ export default function DashboardPage() {
                   <span className="text-xs text-muted-foreground">{tx.category} &middot; {tx.date}</span>
                 </div>
                 <span
-                  className={`text-sm font-semibold tabular-nums ${tx.amount > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"}`}
+                  className={`text-sm font-semibold tabular-nums ${tx.amount > 0 ? "text-success" : "text-foreground"}`}
                 >
                   {tx.amount > 0 ? "+" : ""}
                   {tx.amount.toLocaleString("en-AE", { minimumFractionDigits: 2 })}

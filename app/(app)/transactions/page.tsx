@@ -38,7 +38,7 @@ export default function TransactionsPage() {
                   </div>
                 </div>
                 <span
-                  className={`text-sm font-semibold tabular-nums ${tx.amount > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"}`}
+                  className={`text-sm font-semibold tabular-nums ${tx.amount > 0 ? "text-success" : "text-foreground"}`}
                 >
                   {tx.amount > 0 ? "+" : ""}
                   {tx.amount.toLocaleString("en-AE", { minimumFractionDigits: 2 })}
