@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
@@ -30,10 +30,107 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Slider } from "@/components/ui/slider"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Textarea } from "@/components/ui/textarea"
+import { Toggle } from "@/components/ui/toggle"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 export default function ShowcasePage() {
   const [progress, setProgress] = useState(65)
   const [switchOn, setSwitchOn] = useState(true)
+  const [sliderValue, setSliderValue] = useState([50])
+  const [collapsibleOpen, setCollapsibleOpen] = useState(false)
 
   return (
     <div className="space-y-8">
@@ -54,7 +151,6 @@ export default function ShowcasePage() {
           <Button variant="link">Link</Button>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button size="xs">XS</Button>
           <Button size="sm">Small</Button>
           <Button size="default">Default</Button>
           <Button size="lg">Large</Button>
@@ -111,8 +207,6 @@ export default function ShowcasePage() {
           <Badge variant="secondary">Secondary</Badge>
           <Badge variant="outline">Outline</Badge>
           <Badge variant="destructive">Destructive</Badge>
-          <Badge variant="success">Success</Badge>
-          <Badge variant="warning">Warning</Badge>
         </div>
       </section>
 
@@ -136,7 +230,95 @@ export default function ShowcasePage() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="disabled">Disabled</Label>
-            <Input id="disabled" placeholder="Can't type here" disabled />
+            <Input id="disabled" placeholder="Can&apos;t type here" disabled />
+          </div>
+        </div>
+      </section>
+
+      <Separator />
+
+      {/* ── Textarea ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Textarea</h2>
+        <div className="space-y-1.5">
+          <Label htmlFor="notes">Notes</Label>
+          <Textarea id="notes" placeholder="Write your notes here..." />
+        </div>
+      </section>
+
+      <Separator />
+
+      {/* ── Select ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Select</h2>
+        <Select>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="groceries">Groceries</SelectItem>
+            <SelectItem value="transport">Transport</SelectItem>
+            <SelectItem value="entertainment">Entertainment</SelectItem>
+            <SelectItem value="utilities">Utilities</SelectItem>
+            <SelectItem value="rent">Rent</SelectItem>
+          </SelectContent>
+        </Select>
+      </section>
+
+      <Separator />
+
+      {/* ── Checkbox ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Checkbox</h2>
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <Checkbox id="terms" />
+            <Label htmlFor="terms">Accept terms and conditions</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox id="newsletter" defaultChecked />
+            <Label htmlFor="newsletter">Subscribe to newsletter</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox id="disabled-check" disabled />
+            <Label htmlFor="disabled-check" className="text-muted-foreground">Disabled checkbox</Label>
+          </div>
+        </div>
+      </section>
+
+      <Separator />
+
+      {/* ── Radio Group ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Radio Group</h2>
+        <RadioGroup defaultValue="monthly">
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="daily" id="daily" />
+            <Label htmlFor="daily">Daily</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="weekly" id="weekly" />
+            <Label htmlFor="weekly">Weekly</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="monthly" id="monthly" />
+            <Label htmlFor="monthly">Monthly</Label>
+          </div>
+        </RadioGroup>
+      </section>
+
+      <Separator />
+
+      {/* ── Slider ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Slider</h2>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-sm">
+              <span>Budget allocation</span>
+              <span>{sliderValue[0]}%</span>
+            </div>
+            <Slider value={sliderValue} onValueChange={setSliderValue} max={100} step={1} />
           </div>
         </div>
       </section>
@@ -159,10 +341,6 @@ export default function ShowcasePage() {
             <Progress value={25} className="h-2" />
           </div>
           <div className="space-y-1.5">
-            <span className="text-sm">50%</span>
-            <Progress value={50} className="h-3" />
-          </div>
-          <div className="space-y-1.5">
             <span className="text-sm">90%</span>
             <Progress value={90} className="h-2" />
           </div>
@@ -174,6 +352,47 @@ export default function ShowcasePage() {
               +10
             </Button>
           </div>
+        </div>
+      </section>
+
+      <Separator />
+
+      {/* ── Switch ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Switch</h2>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="notifications">Enable notifications</Label>
+            <Switch id="notifications" checked={switchOn} onCheckedChange={setSwitchOn} />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="disabled-switch">Disabled switch</Label>
+            <Switch id="disabled-switch" disabled />
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Switch is {switchOn ? "ON" : "OFF"}
+        </p>
+      </section>
+
+      <Separator />
+
+      {/* ── Toggle ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Toggle</h2>
+        <div className="flex flex-wrap gap-2">
+          <Toggle aria-label="Toggle bold">
+            <span className="font-bold">B</span>
+          </Toggle>
+          <Toggle aria-label="Toggle italic">
+            <span className="italic">I</span>
+          </Toggle>
+          <Toggle aria-label="Toggle underline">
+            <span className="underline">U</span>
+          </Toggle>
+          <Toggle variant="outline" aria-label="Toggle outline">
+            Outline
+          </Toggle>
         </div>
       </section>
 
@@ -214,22 +433,94 @@ export default function ShowcasePage() {
 
       <Separator />
 
-      {/* ── Switch ── */}
+      {/* ── Accordion ── */}
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Switch</h2>
-        <div className="space-y-3">
+        <h2 className="text-lg font-semibold">Accordion</h2>
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="item-1">
+            <AccordionTrigger>What is Zad?</AccordionTrigger>
+            <AccordionContent>
+              Zad is a personal budgeting app that helps you track expenses, set budgets, and manage your finances.
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-2">
+            <AccordionTrigger>How does it work?</AccordionTrigger>
+            <AccordionContent>
+              It reads transactions from your Google Sheets and lets you categorize, budget, and analyze your spending.
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-3">
+            <AccordionTrigger>Is my data secure?</AccordionTrigger>
+            <AccordionContent>
+              Yes, all data stays in your Google Sheets. We use OAuth2 for secure access and never store your data on our servers.
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </section>
+
+      <Separator />
+
+      {/* ── Collapsible ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Collapsible</h2>
+        <Collapsible open={collapsibleOpen} onOpenChange={setCollapsibleOpen}>
           <div className="flex items-center justify-between">
-            <Label htmlFor="notifications">Enable notifications</Label>
-            <Switch id="notifications" checked={switchOn} onCheckedChange={setSwitchOn} />
+            <h4 className="text-sm font-semibold">3 subcategories</h4>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm">
+                {collapsibleOpen ? "Hide" : "Show"}
+              </Button>
+            </CollapsibleTrigger>
           </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="disabled-switch">Disabled switch</Label>
-            <Switch id="disabled-switch" disabled />
-          </div>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Switch is {switchOn ? "ON" : "OFF"}
-        </p>
+          <div className="rounded-md border px-4 py-3 text-sm mt-2">Food & Dining</div>
+          <CollapsibleContent className="space-y-2 mt-2">
+            <div className="rounded-md border px-4 py-3 text-sm">Groceries</div>
+            <div className="rounded-md border px-4 py-3 text-sm">Restaurants</div>
+          </CollapsibleContent>
+        </Collapsible>
+      </section>
+
+      <Separator />
+
+      {/* ── Alert ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Alert</h2>
+        <Alert>
+          <AlertTitle>Heads up!</AlertTitle>
+          <AlertDescription>
+            You have 3 transactions that need to be categorized.
+          </AlertDescription>
+        </Alert>
+        <Alert variant="destructive">
+          <AlertTitle>Over budget!</AlertTitle>
+          <AlertDescription>
+            You&apos;ve exceeded your monthly grocery budget by AED 150.
+          </AlertDescription>
+        </Alert>
+      </section>
+
+      <Separator />
+
+      {/* ── Alert Dialog ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Alert Dialog</h2>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive">Delete Category</Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete the category and all its subcategories. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </section>
 
       <Separator />
@@ -274,6 +565,143 @@ export default function ShowcasePage() {
             </div>
           </CardContent>
         </Card>
+      </section>
+
+      <Separator />
+
+      {/* ── Table ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Table</h2>
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="text-muted-foreground">Mar 27</TableCell>
+                  <TableCell>Carrefour</TableCell>
+                  <TableCell className="text-right tabular-nums">AED 245.50</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="text-muted-foreground">Mar 26</TableCell>
+                  <TableCell>DEWA Bill</TableCell>
+                  <TableCell className="text-right tabular-nums">AED 380.00</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="text-muted-foreground">Mar 25</TableCell>
+                  <TableCell>Netflix</TableCell>
+                  <TableCell className="text-right tabular-nums">AED 49.99</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="text-muted-foreground">Mar 24</TableCell>
+                  <TableCell>Uber</TableCell>
+                  <TableCell className="text-right tabular-nums">AED 32.00</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </section>
+
+      <Separator />
+
+      {/* ── Dropdown Menu ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Dropdown Menu</h2>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">Open Menu</Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Edit transaction</DropdownMenuItem>
+            <DropdownMenuItem>Change category</DropdownMenuItem>
+            <DropdownMenuItem>Add note</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </section>
+
+      <Separator />
+
+      {/* ── Popover ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Popover</h2>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline">Open Popover</Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80">
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm">Quick Add</h4>
+              <div className="space-y-1.5">
+                <Label htmlFor="pop-amount">Amount</Label>
+                <Input id="pop-amount" type="number" placeholder="0.00" />
+              </div>
+              <Button size="sm" className="w-full">Add</Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </section>
+
+      <Separator />
+
+      {/* ── Hover Card ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Hover Card</h2>
+        <p className="text-sm text-muted-foreground">Hover (or tap on mobile) the link below:</p>
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <Button variant="link" className="p-0 h-auto">@groceries</Button>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-64">
+            <div className="space-y-1">
+              <h4 className="text-sm font-semibold">Groceries</h4>
+              <p className="text-xs text-muted-foreground">Monthly budget: AED 2,000</p>
+              <p className="text-xs text-muted-foreground">Spent this month: AED 1,450</p>
+              <Progress value={72} className="h-1.5 mt-2" />
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      </section>
+
+      <Separator />
+
+      {/* ── Tooltip ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Tooltip</h2>
+        <TooltipProvider>
+          <div className="flex gap-3">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <span className="text-lg">+</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Add transaction</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <span className="text-lg">?</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Help & support</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
       </section>
 
       <Separator />
@@ -360,6 +788,107 @@ export default function ShowcasePage() {
 
       <Separator />
 
+      {/* ── Drawer ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Drawer</h2>
+        <Drawer>
+          <DrawerTrigger asChild>
+            <Button variant="outline">Open Drawer</Button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Set Budget</DrawerTitle>
+              <DrawerDescription>Set your monthly budget for this category.</DrawerDescription>
+            </DrawerHeader>
+            <div className="px-4 space-y-3">
+              <div className="space-y-1.5">
+                <Label>Monthly Budget (AED)</Label>
+                <Input type="number" placeholder="0.00" />
+              </div>
+            </div>
+            <DrawerFooter>
+              <Button>Save</Button>
+              <DrawerClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      </section>
+
+      <Separator />
+
+      {/* ── Breadcrumb ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Breadcrumb</h2>
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/budgets">Budgets</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Groceries</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </section>
+
+      <Separator />
+
+      {/* ── Input OTP ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Input OTP</h2>
+        <InputOTP maxLength={6}>
+          <InputOTPGroup>
+            <InputOTPSlot index={0} />
+            <InputOTPSlot index={1} />
+            <InputOTPSlot index={2} />
+          </InputOTPGroup>
+          <InputOTPSeparator />
+          <InputOTPGroup>
+            <InputOTPSlot index={3} />
+            <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
+          </InputOTPGroup>
+        </InputOTP>
+      </section>
+
+      <Separator />
+
+      {/* ── Pagination ── */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Pagination</h2>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious href="#" />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink href="#" isActive>1</PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink href="#">2</PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink href="#">3</PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext href="#" />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </section>
+
+      <Separator />
+
       {/* ── Scroll Area ── */}
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Scroll Area</h2>
@@ -370,7 +899,7 @@ export default function ShowcasePage() {
                 <div key={i} className="flex items-center justify-between border-b py-2 last:border-0">
                   <span className="text-sm">Transaction #{i + 1}</span>
                   <span className="text-sm tabular-nums text-muted-foreground">
-                    AED {(Math.random() * 500).toFixed(2)}
+                    AED {((i + 1) * 23.5).toFixed(2)}
                   </span>
                 </div>
               ))}
@@ -398,14 +927,15 @@ export default function ShowcasePage() {
         </div>
       </section>
 
-      {/* ── Color Palette ── */}
       <Separator />
+
+      {/* ── Color Palette ── */}
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Color Palette</h2>
         <div className="grid grid-cols-3 gap-2">
           <div className="space-y-1">
             <div className="h-12 rounded-lg bg-primary" />
-            <p className="text-[10px] text-muted-foreground text-center">Primary (Teal)</p>
+            <p className="text-[10px] text-muted-foreground text-center">Primary (Orange)</p>
           </div>
           <div className="space-y-1">
             <div className="h-12 rounded-lg bg-secondary" />
@@ -442,7 +972,7 @@ export default function ShowcasePage() {
         </div>
       </section>
 
-      <div className="h-4" />
+      <div className="h-20" />
     </div>
   )
 }
