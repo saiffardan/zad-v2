@@ -23,8 +23,6 @@
       <path d="M148.036 90.44C153.555 88.1327 159.885 91.1527 161.06 97.0178C162.405 103.73 163.224 110.48 163.516 117.268C164.078 127.782 162.861 137.727 159.866 147.105C157.946 153.112 155.25 158.749 151.775 164.014C150.261 166.308 147.746 167.743 144.998 167.707C141.568 167.662 137.162 167.276 131.781 166.552C123.939 165.4 116.294 163.634 108.845 161.254C105.124 160.066 101.756 158.799 98.7424 157.454C94.438 155.533 92.6771 150.519 94.6104 146.22C96.733 141.501 99.246 136.844 102.149 132.252C104.639 128.314 109.645 126.976 113.998 128.636C117.311 129.9 120.542 131.035 123.691 132.042C128.472 133.569 133.084 134.858 137.527 135.908C137.002 126.523 135.27 117.069 132.332 107.548C130.734 102.366 133.115 96.6783 138.118 94.5866L148.036 90.44Z" fill="${fill}"/>
     </svg>`;
   }
-  // Alias for backward compat
-  function sulLogo(size = 32) { return zadLogo(size); }
 
   const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const TYPE_COLORS = { 'Equity': '#5aa8f5', 'ETF': '#30d158', 'Crypto': '#ff9f0a', 'Bond': '#ac8eff', 'REIT': '#00c7be' };
@@ -53,6 +51,7 @@
   let userFirstName = '';
   let allTrades = [];
   let holdings = {};
+  const getActiveHoldings = () => getActiveHoldings();
   let livePrices = {};
   let currentCurrency = 'AED'; // default
   let currentHoldingsFilter = 'all';
@@ -153,6 +152,14 @@
     if (window.Chart && pieChartInstance) renderCharts();
     // Re-render all theme-dependent components immediately
     if (typeof renderThemeDependentComponents === 'function') renderThemeDependentComponents();
+    // Reposition animated indicators (layout may shift on theme change)
+    requestAnimationFrame(() => {
+      const activeTab = document.querySelector('.tabs .tab.active');
+      if (activeTab) moveTabUnderline(activeTab);
+      const activeChip = document.querySelector('#typeFilters .filter-chip.active');
+      if (activeChip) moveFilterPill(activeChip);
+      if (typeof initAllPills === 'function') initAllPills();
+    });
   }
 
   themeToggle.addEventListener('click', () => {
@@ -817,7 +824,7 @@
     requestAnimationFrame(() => requestAnimationFrame(() => { initNavPill(); syncSidebarNav(); }));
 
     // Calculate live price data for all holdings
-    const allPositions = Object.values(holdings).filter(h => h.shares > 0.0001);
+    const allPositions = getActiveHoldings();
     for (const h of allPositions) {
       const lp = livePrices[h.ticker];
       if (lp) {
@@ -862,7 +869,7 @@
   }
 
   function renderSummary(typeFilter) {
-    let positions = Object.values(holdings).filter(h => h.shares > 0.0001);
+    let positions = getActiveHoldings();
     if (typeFilter !== 'all') {
       positions = positions.filter(h => h.type === typeFilter);
     }
@@ -1166,7 +1173,7 @@
 
   function renderHoldings(typeFilter) {
     const container = document.getElementById('holdingsList');
-    let items = Object.values(holdings).filter(h => h.shares > 0.0001);
+    let items = getActiveHoldings();
 
     if (typeFilter !== 'all') {
       items = items.filter(h => h.type === typeFilter);
@@ -1249,169 +1256,10 @@
     if (table) table.style.display = 'none';
     renderHoldingsCards(typeFilter);
     return;
-    // Legacy table code below (kept for reference)
-    const cardsEl = document.getElementById('holdingsTableContainer')?.querySelector('.holdings-cards');
-    if (cardsEl) cardsEl.remove();
-    if (table) table.style.display = '';
-    let items = Object.values(holdings).filter(h => h.shares > 0.0001);
-
-    if (typeFilter !== 'all') {
-      items = items.filter(h => h.type === typeFilter);
-    }
-
-    const totalPortfolioValue = items.reduce((sum, h) => sum + (h.currentValue || h.netInvested), 0);
-
-    window._holdingsRows = null; // will be set after sort
-    const rows = items.map(h => {
-      const lp = livePrices[h.ticker];
-      const hasPrice = !!lp;
-      const curPrice = hasPrice ? lp.priceAED : 0;
-      const curValue = hasPrice ? h.currentValue : h.netInvested;
-      const pnl = hasPrice ? h.pnl : 0;
-      const roi = hasPrice && h.netInvested !== 0 ? h.pnlPercent : 0;
-      const weight = totalPortfolioValue > 0 ? (curValue / totalPortfolioValue * 100) : 0;
-
-      return {
-        ticker: h.ticker,
-        shares: h.shares,
-        spent: h.totalSpent,
-        avgCost: h.avgCost,
-        curPrice,
-        currentValue: curValue,
-        pnl,
-        roi,
-        weight,
-        hasPrice
-      };
-    });
-
-    rows.sort((a, b) => {
-      let va = a[tableSortCol], vb = b[tableSortCol];
-      if (typeof va === 'string') va = va.toLowerCase();
-      if (typeof vb === 'string') vb = vb.toLowerCase();
-      if (va < vb) return tableSortDir === 'asc' ? -1 : 1;
-      if (va > vb) return tableSortDir === 'asc' ? 1 : -1;
-      return 0;
-    });
-    window._holdingsRows = rows;
-
-    const totSpent = rows.reduce((s, r) => s + r.spent, 0);
-    const totValue = rows.reduce((s, r) => s + r.currentValue, 0);
-    const totPnl = rows.reduce((s, r) => s + r.pnl, 0);
-    const totRoi = totSpent > 0 ? ((totValue - totSpent) / totSpent * 100) : 0;
-
-    const container = document.getElementById('holdingsTableContainer');
-    const mob = isMobile();
-    const fm = (v) => formatMoney(v, { noSymbol: mob });
-    if (currentView === 'compact') {
-      table.className = 'holdings-table compact-table';
-      container.style.overflowX = 'hidden';
-      const thClass = (key) => tableSortCol === key ? (tableSortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : '';
-      table.innerHTML = `
-        <thead>
-          <tr>
-            <th class="${thClass('ticker')}" onclick="sortTable('ticker')">Ticker</th>
-            <th class="${thClass('shares')}" onclick="sortTable('shares')">Shares</th>
-            <th class="${thClass('spent')}" onclick="sortTable('spent')">Invested</th>
-            <th class="${thClass('pnl')}" onclick="sortTable('pnl')">P&L / ROI</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.map(r => {
-            const pnlClass = r.pnl >= 0 ? 'tbl-positive' : 'tbl-negative';
-            const pnlSign = r.pnl >= 0 ? '+' : '\u2212';
-            const roiSign = r.roi >= 0 ? '+' : '\u2212';
-            return `<tr onclick="openHoldingDetail(${rows.indexOf(r)})" style="cursor:pointer;">
-              <td><strong>${r.ticker}</strong></td>
-              <td>${r.shares % 1 === 0 ? r.shares.toFixed(0) : r.shares.toFixed(4)}</td>
-              <td>${fm(r.spent)}</td>
-              <td class="${pnlClass}">
-                <div class="compact-stack">
-                  <span>${r.hasPrice ? pnlSign + fm(Math.abs(r.pnl)) : '--'}</span>
-                  <span class="compact-roi">${r.hasPrice ? roiSign + Math.abs(r.roi).toFixed(1) + '%' : ''}</span>
-                </div>
-              </td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td><strong>TOTAL</strong></td>
-            <td></td>
-            <td>${fm(totSpent)}</td>
-            <td class="${totPnl >= 0 ? 'tbl-positive' : 'tbl-negative'}">
-              <div class="compact-stack">
-                <span>${(totPnl >= 0 ? '+' : '\u2212') + fm(Math.abs(totPnl))}</span>
-                <span class="compact-roi">${(totRoi >= 0 ? '+' : '\u2212') + Math.abs(totRoi).toFixed(1)}%</span>
-              </div>
-            </td>
-          </tr>
-        </tfoot>
-      `;
-      animateTable(container);
-      return;
-    }
-
-    table.className = 'holdings-table';
-    container.style.overflowX = 'auto';
-    const cols = [
-      { key: 'ticker', label: 'Ticker' },
-      { key: 'shares', label: 'Shares' },
-      { key: 'spent', label: 'Spent' },
-      { key: 'avgCost', label: 'Avg Cost' },
-      { key: 'curPrice', label: 'Price' },
-      { key: 'currentValue', label: 'Value' },
-      { key: 'pnl', label: 'P&L' },
-      { key: 'roi', label: 'ROI' },
-      { key: 'weight', label: 'Weight' }
-    ];
-
-    const thClass = (key) => tableSortCol === key ? (tableSortDir === 'asc' ? 'sorted-asc' : 'sorted-desc') : '';
-
-    table.innerHTML = `
-      <thead>
-        <tr>
-          ${cols.map(c => `<th class="${thClass(c.key)}" onclick="sortTable('${c.key}')">${c.label}</th>`).join('')}
-        </tr>
-      </thead>
-      <tbody>
-        ${rows.map(r => {
-          const pnlClass = r.pnl >= 0 ? 'tbl-positive' : 'tbl-negative';
-          const pnlSign = r.pnl >= 0 ? '+' : '\u2212';
-          const roiSign = r.roi >= 0 ? '+' : '\u2212';
-          return `<tr>
-            <td>${r.ticker}</td>
-            <td>${r.shares % 1 === 0 ? r.shares.toFixed(0) : r.shares.toFixed(4)}</td>
-            <td>${fm(r.spent)}</td>
-            <td>${fm(r.avgCost)}</td>
-            <td>${r.hasPrice ? fm(r.curPrice) : '--'}</td>
-            <td>${fm(r.currentValue)}</td>
-            <td class="${pnlClass}">${r.hasPrice ? pnlSign + fm(Math.abs(r.pnl)) : '--'}</td>
-            <td class="${pnlClass}">${r.hasPrice ? roiSign + Math.abs(r.roi).toFixed(1) + '%' : '--'}</td>
-            <td>${r.weight.toFixed(1)}%</td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-      <tfoot>
-        <tr>
-          <td>TOTAL</td>
-          <td></td>
-          <td>${fm(totSpent)}</td>
-          <td></td>
-          <td></td>
-          <td>${fm(totValue)}</td>
-          <td class="${totPnl >= 0 ? 'tbl-positive' : 'tbl-negative'}">${(totPnl >= 0 ? '+' : '\u2212') + fm(Math.abs(totPnl))}</td>
-          <td class="${totRoi >= 0 ? 'tbl-positive' : 'tbl-negative'}">${(totRoi >= 0 ? '+' : '\u2212') + Math.abs(totRoi).toFixed(1)}%</td>
-          <td>100%</td>
-        </tr>
-      </tfoot>
-    `;
-    animateTable(container);
-  }
 
   function renderHoldingsCards(typeFilter) {
     const container = document.getElementById('holdingsTableContainer');
-    let items = Object.values(holdings).filter(h => h.shares > 0.0001);
+    let items = getActiveHoldings();
     if (typeFilter !== 'all') items = items.filter(h => h.type === typeFilter);
 
     const totalPortfolioValue = items.reduce((sum, h) => sum + (h.currentValue || h.netInvested), 0);
@@ -1706,7 +1554,7 @@
   }
 
   function renderAllocation() {
-    let activeHoldings = Object.values(holdings).filter(h => h.shares > 0.0001);
+    let activeHoldings = getActiveHoldings();
     if (currentHoldingsFilter !== 'all') {
       activeHoldings = activeHoldings.filter(h => h.type === currentHoldingsFilter);
     }
@@ -1848,7 +1696,7 @@
 
   // Auto-populate class targets from actual holdings types if not set
   function ensureClassTargets(config) {
-    const types = new Set(Object.values(holdings).filter(h => h.shares > 0.0001).map(h => h.type));
+    const types = new Set(getActiveHoldings().map(h => h.type));
     let needsSave = false;
     types.forEach(t => {
       if (config.classTargets[t] === undefined) {
@@ -2623,7 +2471,7 @@
       localStorage.setItem('advisorDCA', advisorDCA);
     };
 
-    const activeHoldings = Object.values(holdings).filter(h => h.shares > 0.0001);
+    const activeHoldings = getActiveHoldings();
     advisorSelectedTickers = advisorSelectedTickers.filter(t => activeHoldings.some(h => h.ticker === t));
 
     renderAdvisorTickerList();
@@ -2675,7 +2523,7 @@
   function renderAdvisorSettings() {
     const config = loadAdvisorConfig();
     ensureClassTargets(config);
-    const activeHoldings = Object.values(holdings).filter(h => h.shares > 0.0001);
+    const activeHoldings = getActiveHoldings();
     const selectedHoldings = activeHoldings.filter(h => advisorSelectedTickers.includes(h.ticker));
     const tickersToShow = selectedHoldings.length > 0 ? selectedHoldings : activeHoldings;
 
@@ -3045,7 +2893,7 @@
   }
 
   function renderAdvisorTickerList(filter = '') {
-    const activeHoldings = Object.values(holdings).filter(h => h.shares > 0.0001);
+    const activeHoldings = getActiveHoldings();
     const filtered = filter ? activeHoldings.filter(h => h.ticker.toLowerCase().includes(filter.toLowerCase()) || (livePrices[h.ticker]?.name || '').toLowerCase().includes(filter.toLowerCase())) : activeHoldings;
 
     // Group by type
@@ -3114,7 +2962,7 @@
   }
 
   function advisorSelectAll() {
-    advisorSelectedTickers = Object.values(holdings).filter(h => h.shares > 0.0001).map(h => h.ticker);
+    advisorSelectedTickers = getActiveHoldings().map(h => h.ticker);
     localStorage.setItem('advisorTickers', JSON.stringify(advisorSelectedTickers));
     renderAdvisorTickerList(document.getElementById('advisorSearch')?.value || '');
     updateAdvisorSelectorPreview();
@@ -4005,7 +3853,7 @@
     if (!barEl || !totalEl || !listEl) return;
 
     const isDark = htmlEl.getAttribute('data-theme') !== 'light';
-    let active = Object.values(holdings).filter(h => h.shares > 0.0001);
+    let active = getActiveHoldings();
     if (currentHoldingsFilter !== 'all') active = active.filter(h => h.type === currentHoldingsFilter);
 
     const hasLP = active.some(h => livePrices[h.ticker]);
@@ -4301,7 +4149,7 @@
   }
 
   function getPortfolioTotals() {
-    const positions = Object.values(holdings).filter(h => h.shares > 0.0001);
+    const positions = getActiveHoldings();
     const totalSpent = positions.reduce((s, h) => s + h.totalSpent, 0);
     const totalSold = positions.reduce((s, h) => s + h.totalSold, 0);
     const netInvested = totalSpent - totalSold;
@@ -4523,17 +4371,6 @@
     });
   });
 
-  // Reposition animated indicators on theme toggle (layout may shift)
-  themeToggle.addEventListener('click', () => {
-    requestAnimationFrame(() => {
-      const activeTab = document.querySelector('.tabs .tab.active');
-      if (activeTab) moveTabUnderline(activeTab);
-      const activeChip = document.querySelector('#typeFilters .filter-chip.active');
-      if (activeChip) moveFilterPill(activeChip);
-      initAllPills();
-      // Logo + component re-render now handled by applyThemeSwitch → renderThemeDependentComponents
-    });
-  });
 
   // Reposition pills & spacer on resize (mobile ↔ desktop layout shift)
   let resizeTimer;
@@ -4576,7 +4413,6 @@
       const data = await res.json();
       processTransactions(data.values || []);
       txnDataLoaded = true;
-      console.log('Transactions loaded:', allTransactions.length, 'rows');
       // Only render if transactions screen is visible
       if (currentNavSection === 'transactions') {
         renderTransactionsDashboard();
@@ -4596,7 +4432,6 @@
       const data = await res.json();
       processBudgetData(data.values || []);
       budgetDataLoaded = true;
-      console.log('Budget data loaded, categories:', Object.keys(budgetData).length);
     } catch (err) {
       console.error('Budget fetch error:', err);
     }
@@ -4657,8 +4492,6 @@
     }
     // Store category -> sheet row mapping
     window._budgetCatRowMap = {};
-
-    console.log('Budget columns mapped:', Object.keys(colMap).length);
 
     // Category sections (row offsets from row 5):
     // Income: rows 11-111 -> index 6-106
