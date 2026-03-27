@@ -40,7 +40,7 @@ export function StickyHeader({ title, subtitle }: StickyHeaderProps) {
         <div
           className="absolute inset-x-0 top-0 h-20 transition-opacity duration-300"
           style={{
-            opacity: scrolled ? 1 : 0,
+            opacity: scrolled ? 0.7 : 0,
             background: "linear-gradient(to bottom, var(--background) 40%, transparent 100%)",
           }}
         />
