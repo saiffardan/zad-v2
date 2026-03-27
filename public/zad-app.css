@@ -2282,24 +2282,41 @@
     [data-theme="light"] .txn-bottom-tabs.scrolled {
       background: rgba(250,250,250,0.7);
     }
-    /* ── Consistent bottom spacing for all tab/page content ── */
+    /* ── Consistent bottom spacing for all tab/page content ──
+         Uses ::after to guarantee a fixed-height spacer at the end
+         of every tab, regardless of internal structure. Also zeros
+         bottom margin on known last-content elements so the gap
+         is purely controlled here. ── */
     #txnOverviewTab,
     #txnBreakdownTab,
     #txnSummaryTab,
     #txnListTab,
     #advisorTab,
     .categories-content {
-      padding-bottom: 24px;
+      padding-bottom: 0;
     }
-    #txnOverviewTab > :last-child,
-    #txnBreakdownTab > :last-child,
-    #txnSummaryTab > :last-child,
-    #txnListTab > :last-child,
-    #advisorTab > :last-child,
-    .categories-content > :last-child,
-    #breakdownContent > :last-child {
+    #txnOverviewTab::after,
+    #txnBreakdownTab::after,
+    #txnSummaryTab::after,
+    #txnListTab::after,
+    #advisorTab::after,
+    .categories-content::after {
+      content: '';
+      display: block;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    /* Zero trailing margins so only the ::after spacer controls the gap */
+    #breakdownContent > .breakdown-section:last-child {
       margin-bottom: 0 !important;
+    }
+    #txnSummaryTab > .charts-section:last-child,
+    #txnSummaryTab > .insights-bottom-row:last-of-type,
+    #txnSummaryTab > .insights-donuts-row:last-of-type {
       padding-bottom: 0 !important;
+    }
+    .txn-list-container > .txn-date-group:last-child {
+      margin-bottom: 0 !important;
     }
 
     .txn-tab-spacer, .portfolio-tab-spacer {
