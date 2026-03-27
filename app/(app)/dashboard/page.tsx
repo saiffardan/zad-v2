@@ -81,7 +81,7 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <p className="text-3xl font-bold text-emerald-500 mb-4">AED 29.4K</p>
-          <div className="flex gap-4">
+          <div className="flex items-center gap-4">
             {/* Left: breakdown list */}
             <div className="flex-1 space-y-2.5">
               {[
