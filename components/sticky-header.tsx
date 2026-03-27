@@ -36,21 +36,14 @@ export function StickyHeader({ title, subtitle }: StickyHeaderProps) {
         className="fixed top-0 inset-x-0 z-40 pointer-events-none"
         aria-hidden={!scrolled}
       >
-        {/* Full blur layer — no mask, covers entire area */}
+        {/* Translucent overlay with blur — covers from top of screen past the title */}
         <div
-          className="absolute inset-x-0 top-0 h-12 transition-opacity duration-300"
+          className="absolute inset-x-0 top-0 h-16 transition-opacity duration-300"
           style={{
             opacity: scrolled ? 1 : 0,
-            backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
-          }}
-        />
-        {/* Subtle gradient fade below the blur to soften the edge */}
-        <div
-          className="absolute inset-x-0 top-12 h-8 transition-opacity duration-300"
-          style={{
-            opacity: scrolled ? 0.6 : 0,
-            background: "linear-gradient(to bottom, var(--background), transparent)",
+            background: "linear-gradient(to bottom, color-mix(in srgb, var(--background) 85%, transparent) 0%, color-mix(in srgb, var(--background) 60%, transparent) 60%, transparent 100%)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
           }}
         />
         <div className="relative flex justify-center">
