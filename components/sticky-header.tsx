@@ -35,7 +35,7 @@ export function StickyHeader({ title, subtitle }: StickyHeaderProps) {
         className="fixed top-0 inset-x-0 z-40 pointer-events-none"
         aria-hidden={!scrolled}
       >
-        {/* Pure backdrop blur — no mask, no gradient tricks */}
+        {/* Backdrop blur */}
         <div
           className="absolute inset-x-0 top-0 transition-opacity duration-300"
           style={{
@@ -46,14 +46,23 @@ export function StickyHeader({ title, subtitle }: StickyHeaderProps) {
             background: "color-mix(in srgb, var(--background) 50%, transparent)",
           }}
         />
-        {/* Gradual fade below the blur — tall gradient to smooth the edge */}
+        {/*
+          Gradient that sits over the bottom edge of the blur to
+          smooth the harsh cutoff. Goes from background-colored
+          (hides the blur edge) to transparent (reveals content).
+        */}
         <div
           className="absolute inset-x-0 transition-opacity duration-300"
           style={{
-            top: "calc(env(safe-area-inset-top, 0px) + 3rem)",
-            height: "3rem",
+            top: "calc(env(safe-area-inset-top, 0px) + 2rem)",
+            height: "4rem",
             opacity: scrolled ? 1 : 0,
-            background: "linear-gradient(to bottom, color-mix(in srgb, var(--background) 50%, transparent), transparent)",
+            background: `linear-gradient(to bottom,
+              color-mix(in srgb, var(--background) 50%, transparent) 0%,
+              color-mix(in srgb, var(--background) 30%, transparent) 40%,
+              color-mix(in srgb, var(--background) 10%, transparent) 70%,
+              transparent 100%
+            )`,
           }}
         />
         {/* Title text */}
