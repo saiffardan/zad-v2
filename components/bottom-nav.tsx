@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -60,29 +61,101 @@ const navItems = [
 
 export function BottomNav() {
   const pathname = usePathname()
+  const navRef = useRef<HTMLDivElement>(null)
+  const [translateY, setTranslateY] = useState(0)
+  const velocityRef = useRef(0)
+  const lastScrollRef = useRef(0)
+  const lastTimeRef = useRef(Date.now())
+  const rafRef = useRef<number>(0)
+  const springRef = useRef<number>(0)
+
+  useEffect(() => {
+    // Spring physics: damping + stiffness
+    const DAMPING = 0.75
+    const STIFFNESS = 0.08
+    const MAX_OFFSET = 6
+
+    let currentY = 0
+    let velocity = 0
+
+    const onScroll = () => {
+      const now = Date.now()
+      const scrollY = window.scrollY
+      const dt = Math.max(1, now - lastTimeRef.current)
+      const scrollDelta = scrollY - lastScrollRef.current
+
+      // Calculate scroll velocity (px/ms), clamped
+      const scrollVelocity = Math.max(-2, Math.min(2, scrollDelta / dt))
+
+      // Apply scroll velocity as a force
+      velocity += scrollVelocity * 3
+
+      lastScrollRef.current = scrollY
+      lastTimeRef.current = now
+    }
+
+    const animate = () => {
+      // Spring force pulls back to 0
+      const springForce = -STIFFNESS * currentY
+      // Apply spring + damping
+      velocity = (velocity + springForce) * DAMPING
+      currentY += velocity
+
+      // Clamp
+      currentY = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, currentY))
+
+      // Settle when motion is tiny
+      if (Math.abs(currentY) < 0.1 && Math.abs(velocity) < 0.01) {
+        currentY = 0
+        velocity = 0
+      }
+
+      setTranslateY(currentY)
+      rafRef.current = requestAnimationFrame(animate)
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true })
+    rafRef.current = requestAnimationFrame(animate)
+
+    return () => {
+      window.removeEventListener("scroll", onScroll)
+      cancelAnimationFrame(rafRef.current)
+    }
+  }, [])
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-lg items-center justify-around">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex flex-1 flex-col items-center gap-1 py-2 text-[10px] font-medium transition-colors",
-                isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {item.icon}
-              <span>{item.label}</span>
-            </Link>
-          )
-        })}
-      </div>
-    </nav>
+    <div className="fixed bottom-5 left-0 right-0 z-50 flex justify-center px-4">
+      <nav
+        ref={navRef}
+        className="glass shadow-depth-lg rounded-2xl will-change-transform"
+        style={{
+          transform: `translateY(${translateY}px)`,
+        }}
+      >
+        <div className="flex items-center gap-1 px-2 py-1.5">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "relative flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-[10px] font-medium transition-all duration-200",
+                  isActive
+                    ? "text-primary"
+                    : "text-muted-foreground active:scale-95"
+                )}
+              >
+                {isActive && (
+                  <span className="absolute inset-0 rounded-xl bg-primary/10" />
+                )}
+                <span className="relative">{item.icon}</span>
+                <span className="relative">{item.label}</span>
+              </Link>
+            )
+          })}
+        </div>
+      </nav>
+    </div>
   )
 }
