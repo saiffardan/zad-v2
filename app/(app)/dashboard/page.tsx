@@ -33,7 +33,7 @@ function DonutChart({
   })
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+    <svg width="100%" height="100%" viewBox={`0 0 ${size} ${size}`}>
       {segments.map((seg, i) => (
         <circle
           key={i}
@@ -101,19 +101,21 @@ export default function DashboardPage() {
             </div>
             {/* Right: donut chart */}
             <div className="w-1/2 relative flex items-center justify-center">
-              <DonutChart
-                slices={[
-                  { value: 9.1, color: "#F56E0F" },
-                  { value: 8.0, color: "#10B981" },
-                  { value: 3.7, color: "#EF4444" },
-                  { value: 8.6, color: "#878787" },
-                ]}
-                size={120}
-                strokeWidth={14}
-              />
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Remaining</span>
-                <span className="text-lg font-bold leading-tight">8.6K</span>
+              <div className="w-full aspect-square relative">
+                <DonutChart
+                  slices={[
+                    { value: 9.1, color: "#F56E0F" },
+                    { value: 8.0, color: "#10B981" },
+                    { value: 3.7, color: "#EF4444" },
+                    { value: 8.6, color: "#878787" },
+                  ]}
+                  size={200}
+                  strokeWidth={18}
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Remaining</span>
+                  <span className="text-lg font-bold leading-tight">8.6K</span>
+                </div>
               </div>
             </div>
           </div>
