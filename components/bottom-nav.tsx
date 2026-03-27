@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -62,15 +62,38 @@ const navItems = [
 export function BottomNav() {
   const pathname = usePathname()
   const navRef = useRef<HTMLDivElement>(null)
+  const itemRefs = useRef<(HTMLAnchorElement | null)[]>([])
   const [translateY, setTranslateY] = useState(0)
-  const velocityRef = useRef(0)
+  const [indicator, setIndicator] = useState({ left: 0, width: 0 })
   const lastScrollRef = useRef(0)
   const lastTimeRef = useRef(Date.now())
   const rafRef = useRef<number>(0)
-  const springRef = useRef<number>(0)
+
+  const activeIndex = navItems.findIndex((item) => item.href === pathname)
+
+  // Measure active tab position for the sliding indicator
+  const updateIndicator = useCallback(() => {
+    const el = itemRefs.current[activeIndex]
+    const container = navRef.current
+    if (el && container) {
+      const elRect = el.getBoundingClientRect()
+      const containerRect = container.getBoundingClientRect()
+      setIndicator({
+        left: elRect.left - containerRect.left,
+        width: elRect.width,
+      })
+    }
+  }, [activeIndex])
 
   useEffect(() => {
-    // Softer spring: lower stiffness = slower return, higher damping = less oscillation
+    updateIndicator()
+    // Recalculate on resize
+    window.addEventListener("resize", updateIndicator)
+    return () => window.removeEventListener("resize", updateIndicator)
+  }, [updateIndicator])
+
+  // Scroll momentum spring
+  useEffect(() => {
     const DAMPING = 0.92
     const STIFFNESS = 0.035
     const MAX_OFFSET = 5
@@ -84,32 +107,21 @@ export function BottomNav() {
       const scrollY = window.scrollY
       const dt = Math.max(1, now - lastTimeRef.current)
       const scrollDelta = scrollY - lastScrollRef.current
-
-      // Gentle velocity from scroll, clamped softly
       const scrollVelocity = Math.max(-1.5, Math.min(1.5, scrollDelta / dt))
-
-      // Accumulate as a gentle push
       velocity += scrollVelocity * FORCE_MULTIPLIER
-
       lastScrollRef.current = scrollY
       lastTimeRef.current = now
     }
 
     const animate = () => {
-      // Spring pulls back to rest
       const springForce = -STIFFNESS * currentY
       velocity = (velocity + springForce) * DAMPING
       currentY += velocity
-
-      // Soft clamp
       currentY = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, currentY))
-
-      // Settle
       if (Math.abs(currentY) < 0.05 && Math.abs(velocity) < 0.005) {
         currentY = 0
         velocity = 0
       }
-
       setTranslateY(currentY)
       rafRef.current = requestAnimationFrame(animate)
     }
@@ -127,30 +139,42 @@ export function BottomNav() {
     <div className="fixed bottom-4 inset-x-0 z-50 flex justify-center px-6">
       <nav
         ref={navRef}
-        className="glass shadow-depth-lg rounded-2xl w-full max-w-sm will-change-transform"
+        className="glass shadow-depth-lg rounded-2xl w-full max-w-sm will-change-transform relative"
         style={{
           transform: `translateY(${translateY}px)`,
         }}
       >
-        <div className="flex items-center justify-around px-1 py-1.5">
-          {navItems.map((item) => {
+        {/* Sliding indicator pill */}
+        <div
+          className="absolute top-1.5 h-[calc(100%-12px)] rounded-xl bg-primary/10 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.1,1)]"
+          style={{
+            left: `${indicator.left}px`,
+            width: `${indicator.width}px`,
+          }}
+        />
+
+        <div className="relative flex items-center justify-around px-1 py-1.5">
+          {navItems.map((item, i) => {
             const isActive = pathname === item.href
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                ref={(el) => { itemRefs.current[i] = el }}
                 className={cn(
-                  "relative flex flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-[10px] font-medium transition-all duration-200",
+                  "relative flex flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-[10px] font-medium transition-colors duration-300",
                   isActive
                     ? "text-primary"
                     : "text-muted-foreground active:scale-95"
                 )}
               >
-                {isActive && (
-                  <span className="absolute inset-0 rounded-xl bg-primary/10" />
-                )}
-                <span className="relative">{item.icon}</span>
-                <span className="relative">{item.label}</span>
+                <span className={cn(
+                  "transition-transform duration-300",
+                  isActive && "scale-110"
+                )}>
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
               </Link>
             )
           })}
