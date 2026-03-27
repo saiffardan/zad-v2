@@ -3,13 +3,6 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { StickyHeader } from "@/components/sticky-header"
 
-const stats = [
-  { label: "Total Budget", value: "AED 15,000", badge: "Monthly", badgeVariant: "secondary" as const },
-  { label: "Spent", value: "AED 8,420", badge: "56%", badgeVariant: "warning" as const },
-  { label: "Remaining", value: "AED 6,580", badge: "44%", badgeVariant: "success" as const },
-  { label: "Savings", value: "AED 3,200", badge: "Goal", badgeVariant: "secondary" as const },
-]
-
 const budgetCategories = [
   { name: "Housing", spent: 4500, budget: 5000 },
   { name: "Food & Dining", spent: 1800, budget: 2500 },
@@ -29,23 +22,56 @@ const recentTransactions = [
 export default function DashboardPage() {
   return (
     <div className="space-y-4">
-      <StickyHeader title="Dashboard" subtitle="Your financial overview" />
+      <StickyHeader title="Dashboard" />
 
-      {/* Stat Cards */}
+      {/* Monthly Income */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>Monthly Income</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-3xl font-bold text-emerald-500">AED 29.4K</p>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Expenses</span>
+              <span className="font-medium">9.1K</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Savings</span>
+              <span className="font-medium">8.0K</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Debt</span>
+              <span className="font-medium">3.7K</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Remaining & Savings */}
       <div className="grid grid-cols-2 gap-3">
-        {stats.map((stat) => (
-          <Card key={stat.label}>
-            <CardHeader className="pb-2">
-              <CardTitle>{stat.label}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-baseline justify-between">
-                <span className="text-xl font-bold">{stat.value}</span>
-                <Badge variant={stat.badgeVariant}>{stat.badge}</Badge>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Remaining</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-baseline justify-between">
+              <span className="text-xl font-bold">AED 6,580</span>
+              <Badge variant="success">44%</Badge>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Savings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-baseline justify-between">
+              <span className="text-xl font-bold">AED 3,200</span>
+              <Badge variant="secondary">Goal</Badge>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Budget Progress */}
