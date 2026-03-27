@@ -4839,12 +4839,15 @@
     }
 
     .txn-filter-item {
+      overflow: hidden;
+    }
+    .txn-filter-item.txn-filter-extra,
+    .txn-filter-item#filterBdType {
       transition: flex var(--duration-enter) var(--ease-out),
                   opacity var(--duration-slow) ease,
                   max-width var(--duration-enter) var(--ease-out),
                   padding var(--duration-enter) var(--ease-out),
                   margin var(--duration-enter) var(--ease-out);
-      overflow: hidden;
     }
     .txn-filter-extra.filter-hidden,
     .txn-filter-item.filter-hidden {
