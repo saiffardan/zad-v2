@@ -2773,17 +2773,17 @@
         return `<div class="advisor-config-row" style="flex-wrap:wrap;gap:4px;">
           <div style="min-width:80px;"><div class="label">${h.ticker}</div><div class="sublabel">Updated: ${lastUp}${staleWarning}</div></div>
           <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
-            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
               <span style="font-size:9px;color:var(--text-3);">EPS</span>
               <input type="number" class="advisor-config-input" value="${mf.trailingEPS || ''}" placeholder="—" step="0.01" style="width:52px;font-size:10px;"
                 onchange="updateManualFundamental('${h.ticker}', 'trailingEPS', this.value)">
             </div>
-            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
               <span style="font-size:9px;color:var(--text-3);">P/E</span>
               <input type="number" class="advisor-config-input" value="${mf.trailingPE || ''}" placeholder="—" step="0.1" style="width:52px;font-size:10px;"
                 onchange="updateManualFundamental('${h.ticker}', 'trailingPE', this.value)">
             </div>
-            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
               <span style="font-size:9px;color:var(--text-3);">Div%</span>
               <input type="number" class="advisor-config-input" value="${mf.dividendYield ? (mf.dividendYield * 100).toFixed(2) : ''}" placeholder="—" step="0.1" style="width:52px;font-size:10px;"
                 onchange="updateManualFundamental('${h.ticker}', 'dividendYield', this.value, true)">
@@ -3312,22 +3312,22 @@
 
     let verdict;
     if (r.focusSkip) {
-      verdict = `<div style="background:rgba(255,159,10,0.08);border:1px solid rgba(255,159,10,0.2);border-radius:12px;padding:10px 14px;margin-bottom:12px;">
+      verdict = `<div style="background:rgba(255,159,10,0.08);border:1px solid rgba(255,159,10,0.2);border-radius:12px;padding:10px 16px;margin-bottom:12px;">
           <div style="font-size:12px;font-weight:700;color:#ff9f0a;">🎯 Cut by Focus Mode</div>
           <div style="font-size:12px;color:var(--text-2);margin-top:4px;">Score ${r.composite.toFixed(0)}/100 is solid, but it didn't make the top picks cut. Your capital is better concentrated on fewer, stronger positions this month.</div>
         </div>`;
     } else if (r.floorSkip) {
-      verdict = `<div style="background:rgba(255,159,10,0.08);border:1px solid rgba(255,159,10,0.2);border-radius:12px;padding:10px 14px;margin-bottom:12px;">
+      verdict = `<div style="background:rgba(255,159,10,0.08);border:1px solid rgba(255,159,10,0.2);border-radius:12px;padding:10px 16px;margin-bottom:12px;">
           <div style="font-size:12px;font-weight:700;color:#ff9f0a;">📏 Below Minimum Floor</div>
           <div style="font-size:12px;color:var(--text-2);margin-top:4px;">Allocation was too small for a practical order. Capital redistributed to stronger picks.</div>
         </div>`;
     } else if (r.skip) {
-      verdict = `<div style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:12px;padding:10px 14px;margin-bottom:12px;">
+      verdict = `<div style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:12px;padding:10px 16px;margin-bottom:12px;">
           <div style="font-size:12px;font-weight:700;color:var(--red);">⛔ Not recommended this month</div>
           <div style="font-size:12px;color:var(--text-2);margin-top:4px;">Composite score ${r.composite.toFixed(0)}/100 is below the ${SKIP_THRESHOLD} threshold. Consider waiting for better entry conditions.</div>
         </div>`;
     } else {
-      verdict = `<div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:12px;padding:10px 14px;margin-bottom:12px;">
+      verdict = `<div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:12px;padding:10px 16px;margin-bottom:12px;">
           <div style="font-size:12px;font-weight:700;color:var(--emerald);">✅ Recommended: ${sym}${fmtP(r.allocationAmt)} (${r.allocationPct.toFixed(1)}%)</div>
           <div style="font-size:12px;color:var(--text-2);margin-top:4px;">Composite score ${r.composite.toFixed(0)}/100. ${r.composite >= 65 ? 'Strong buy signal.' : r.composite >= 45 ? 'Moderate buy signal.' : 'Weak buy signal — proceed with caution.'}</div>
         </div>`;
@@ -5549,7 +5549,7 @@
     const convert = (v) => currentCurrency === 'USD' ? v / AED_USD_RATE : v;
 
     if (sorted.length === 0) {
-      container.innerHTML = '<p style="color:var(--text-2);text-align:center;padding:30px 0;font-size:14px;">No expense data</p>';
+      container.innerHTML = '<p style="color:var(--text-2);text-align:center;padding:32px 0;font-size:14px;">No expense data</p>';
       return;
     }
 
@@ -8912,7 +8912,7 @@ function renderBudgetOverview() {
       var deviationPct = mInc > 0 ? Math.min(Math.abs(mRem) / mInc * 100, 50) : 0;
 
       html += '<div style="margin-bottom:8px;' + (isCur ? 'font-weight:600;' : '') + '">';
-      html += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">';
       html += '<span style="font-size:12px;color:' + (isCur ? 'var(--text-1)' : 'var(--text-2)') + ';">' + m + (isCur ? ' (now)' : '') + '</span>';
       html += '<span style="font-size:12px;color:' + statusColor + ';font-family:\'SF Mono\',\'DM Mono\',monospace;">' + statusText + '</span>';
       html += '</div>';
