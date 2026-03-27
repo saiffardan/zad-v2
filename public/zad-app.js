@@ -6780,6 +6780,7 @@
       if (bdTypeFilter) bdTypeFilter.classList.toggle('filter-hidden', tab !== 'breakdown');
     }
     if (tab === 'list') {
+      renderTxnTable();
       requestAnimationFrame(() => initTxnPills());
     }
     if (tab === 'breakdown') {
