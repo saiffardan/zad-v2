@@ -137,7 +137,7 @@ export function BottomNav() {
       >
         {/* Sliding pill — pure CSS percentage positioning, no JS measurement */}
         <div
-          className="absolute top-1 bottom-1 rounded-xl bg-primary/12"
+          className="absolute top-1 bottom-1 rounded-xl bg-primary/15 dark:bg-white/8"
           style={{
             left: pillLeft,
             width: pillWidth,
