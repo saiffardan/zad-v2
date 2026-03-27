@@ -98,6 +98,8 @@ Aliases: `--shadow-elevated` = md, `--shadow-card` = md, `--shadow-subtle` = sm.
 
 Use multiples of 4: `4px`, `8px`, `12px`, `16px`, `20px`, `24px`. The content horizontal padding is `var(--content-px)` (16px).
 
+**Bottom spacing:** All tab/page containers use `padding-bottom: 24px` for consistent spacing above the floating bottom nav. This is defined once in CSS for all tab IDs — never add per-section `padding-bottom: 80px` or similar. The tab spacer elements handle the rest.
+
 ### Theme Colors (CSS variables)
 
 | Token | Usage |

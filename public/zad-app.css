@@ -2282,6 +2282,16 @@
     [data-theme="light"] .txn-bottom-tabs.scrolled {
       background: rgba(250,250,250,0.7);
     }
+    /* ── Consistent bottom spacing for all tab/page content ── */
+    #txnOverviewTab,
+    #txnBreakdownTab,
+    #txnSummaryTab,
+    #txnListTab,
+    #advisorTab,
+    .categories-content {
+      padding-bottom: 24px;
+    }
+
     .txn-tab-spacer, .portfolio-tab-spacer {
       height: 56px;
     }
@@ -2818,7 +2828,7 @@
 
     /* ── Mobile holdings card list ── */
     .holdings-cards-mobile {
-      padding: 8px var(--content-px) 80px !important;
+      padding: 8px var(--content-px) 0 !important;
     }
     .holdings-cards-mobile .txn-list-row:first-child {
       border-top-left-radius: 12px;
@@ -2833,7 +2843,7 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      padding: 16px var(--content-px) 80px;
+      padding: 16px var(--content-px) 0;
     }
     .trade-date-header {
       display: flex;
@@ -2947,7 +2957,7 @@
 
     /* ── Transaction List (All Txns redesign) ── */
     .txn-list-container {
-      padding: 16px var(--content-px) 80px;
+      padding: 16px var(--content-px) 0;
     }
     .fab-stack {
       position: fixed;
@@ -3509,7 +3519,7 @@
     }
 
     /* ── Advisor Tab ── */
-    #advisorTab { padding: 0 var(--content-px) 80px; }
+    #advisorTab { padding: 0 var(--content-px) 0; }
     .advisor-section { padding: 8px 0; }
 
     /* Hero input area */
@@ -4246,7 +4256,7 @@
 
     /* ── Charts Section ── */
     .charts-section {
-      padding: 12px var(--content-px) 80px;
+      padding: 12px var(--content-px) 0;
       position: relative;
       z-index: 10;
     }
@@ -5819,7 +5829,7 @@
 
     /* ── Categories Page ── */
     .categories-content {
-      padding: 8px var(--content-px) 80px;
+      padding: 8px var(--content-px) 0;
     }
     .cat-group-label {
       font-size: 10px;
