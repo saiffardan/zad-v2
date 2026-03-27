@@ -36,12 +36,21 @@ export function StickyHeader({ title, subtitle }: StickyHeaderProps) {
         className="fixed top-0 inset-x-0 z-40 pointer-events-none"
         aria-hidden={!scrolled}
       >
-        {/* Solid fade: background color that fades to transparent — works on all browsers */}
+        {/* Full blur layer — no mask, covers entire area */}
         <div
-          className="absolute inset-x-0 top-0 h-20 transition-opacity duration-300"
+          className="absolute inset-x-0 top-0 h-12 transition-opacity duration-300"
           style={{
             opacity: scrolled ? 1 : 0,
-            background: "linear-gradient(to bottom, var(--background) 40%, transparent 100%)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+          }}
+        />
+        {/* Subtle gradient fade below the blur to soften the edge */}
+        <div
+          className="absolute inset-x-0 top-12 h-8 transition-opacity duration-300"
+          style={{
+            opacity: scrolled ? 0.6 : 0,
+            background: "linear-gradient(to bottom, var(--background), transparent)",
           }}
         />
         <div className="relative flex justify-center">
