@@ -7,23 +7,29 @@ function DonutChart({
   slices,
   size,
   strokeWidth,
+  gap = 4,
 }: {
   slices: { value: number; color: string }[]
   size: number
   strokeWidth: number
+  gap?: number
 }) {
   const radius = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius
   const total = slices.reduce((sum, s) => sum + s.value, 0)
+  // Gap in circumference units per slice
+  const gapSize = (gap / 360) * circumference * slices.length
+  const usable = circumference - gapSize
+  const sliceGap = (gap / 360) * circumference
 
   let offset = 0
   const segments = slices.map((slice) => {
     const pct = slice.value / total
-    const dash = pct * circumference
-    const gap = circumference - dash
-    const rotation = (offset / total) * 360 - 90
-    offset += slice.value
-    return { dash, gap, rotation, color: slice.color }
+    const dash = pct * usable
+    const space = circumference - dash
+    const rotation = (offset / circumference) * 360 - 90
+    offset += dash + sliceGap
+    return { dash, space, rotation, color: slice.color }
   })
 
   return (
@@ -37,7 +43,7 @@ function DonutChart({
           fill="none"
           stroke={seg.color}
           strokeWidth={strokeWidth}
-          strokeDasharray={`${seg.dash} ${seg.gap}`}
+          strokeDasharray={`${seg.dash} ${seg.space}`}
           strokeLinecap="round"
           transform={`rotate(${seg.rotation} ${size / 2} ${size / 2})`}
           style={{ transition: "stroke-dasharray 0.5s ease" }}
@@ -75,14 +81,13 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <p className="text-3xl font-bold text-emerald-500 mb-4">AED 29.4K</p>
-          <div className="flex items-center gap-4">
+          <div className="flex gap-4">
             {/* Left: breakdown list */}
             <div className="flex-1 space-y-2.5">
               {[
                 { label: "Expenses", value: "9.1K", color: "#F56E0F" },
                 { label: "Savings", value: "8.0K", color: "#10B981" },
                 { label: "Debt", value: "3.7K", color: "#EF4444" },
-                { label: "Remaining", value: "8.6K", color: "#878787" },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-2 text-sm">
                   <span
@@ -95,7 +100,7 @@ export default function DashboardPage() {
               ))}
             </div>
             {/* Right: donut chart */}
-            <div className="relative shrink-0">
+            <div className="relative shrink-0 flex items-center justify-center">
               <DonutChart
                 slices={[
                   { value: 9.1, color: "#F56E0F" },
