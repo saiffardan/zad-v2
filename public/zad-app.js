@@ -453,7 +453,7 @@
     if (response.error) {
       const btn = document.getElementById('signInBtn');
       if (btn) btn.classList.remove('loading');
-      showError('Sign-in failed: ' + response.error);
+      showSignInError('Sign-in failed: ' + response.error);
       return;
     }
     accessToken = response.access_token;
@@ -612,11 +612,12 @@
       // Clear cached token on auth failure so next load shows sign-in
       localStorage.removeItem('cachedToken');
       localStorage.removeItem('tokenExpiresAt');
-      showError(e.message);
+      console.error('[Zad] fetchSheetData error:', e);
       document.getElementById('loadingScreen').classList.add('hidden');
       const signInEl = document.getElementById('signInScreen');
       signInEl.style.display = '';
       signInEl.classList.remove('hidden');
+      showSignInError(e.message || 'Failed to load data. Please try again.');
     }
   }
 
