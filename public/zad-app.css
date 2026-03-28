@@ -461,7 +461,7 @@
       left: 0;
       right: 0;
       z-index: 100;
-      transition: background var(--duration-slow) ease, backdrop-filter var(--duration-slow) ease, -webkit-backdrop-filter var(--duration-slow) ease, box-shadow var(--duration-slow) ease;
+      transition: all var(--duration-normal) var(--ease-out), background var(--duration-slow) ease, backdrop-filter var(--duration-slow) ease, -webkit-backdrop-filter var(--duration-slow) ease, box-shadow var(--duration-slow) ease;
       overflow: visible;
     }
     .header.scrolled {
@@ -602,6 +602,7 @@
         letter-spacing: var(--ls-wide);
         text-transform: uppercase;
         line-height: var(--lh-none);
+        transition: font-size var(--duration-normal) var(--ease-out);
       }
       .header-tab-indicator {
         display: block;
@@ -611,6 +612,7 @@
         letter-spacing: var(--ls-tight);
         line-height: var(--lh-tight);
         pointer-events: none;
+        transition: font-size var(--duration-normal) var(--ease-out);
       }
       .header-tab-indicator::before {
         display: none;
@@ -735,6 +737,9 @@
         overflow: hidden;
       }
       /* Scrolled/collapsed state */
+      .mobile-header-logo {
+        transition: opacity var(--duration-normal) var(--ease-out), max-width var(--duration-normal) var(--ease-out), margin var(--duration-normal) var(--ease-out);
+      }
       .header.header-compact .mobile-header-logo {
         opacity: 1 !important;
         max-width: 20px !important;
@@ -743,6 +748,10 @@
       .header.header-compact .mobile-header-logo svg {
         width: 14px !important;
         height: 14px !important;
+      }
+      .header-collapse-hide {
+        transition: opacity var(--duration-normal) var(--ease-out), max-height var(--duration-normal) var(--ease-out), margin var(--duration-normal) var(--ease-out), padding var(--duration-normal) var(--ease-out);
+        overflow: hidden;
       }
       .header.header-compact .header-collapse-hide {
         opacity: 0;
@@ -775,8 +784,6 @@
       .header.header-compact .header-right {
         opacity: 0;
         pointer-events: none;
-        position: absolute;
-        transition: opacity var(--duration-normal) ease;
       }
       .header.header-compact .page-switcher-chevron {
         width: 10px;
@@ -786,6 +793,7 @@
       .controls-pill { display: none !important; }
       .header-right {
         flex-shrink: 0;
+        transition: opacity var(--duration-normal) var(--ease-out);
       }
       /* Settings gear button */
       .mobile-settings-btn {
