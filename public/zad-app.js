@@ -5742,7 +5742,7 @@
       // Daily net total
       const dayNet = group.items.reduce((sum, { txn }) => {
         if (txn.type === 'INCOME') return sum + txn.amount;
-        if (txn.type === 'EXPENSES') return sum - Math.abs(txn.amount);
+        if (txn.type === 'EXPENSES') return txn.isRefund ? sum + Math.abs(txn.amount) : sum - txn.amount;
         return sum;
       }, 0);
       const dayNetStr = dayNet >= 0 ? '+' + fmtAmt(dayNet) : '-' + fmtAmt(Math.abs(dayNet));
@@ -5759,7 +5759,7 @@
         const amtColor = txn.isRefund ? 'var(--emerald)' : (amtColors[txn.type] || 'var(--text-1)');
         const cv = convert(Math.abs(txn.amount));
         const isLarge = cv >= 1000;
-        const prefix = txn.type === 'INCOME' ? '+' : txn.type === 'EXPENSES' ? '-' : '';
+        const prefix = txn.isRefund ? '+' : (txn.type === 'INCOME' ? '+' : txn.type === 'EXPENSES' ? '-' : '');
         const amtStr = prefix + fmtAmt(txn.amount);
         const desc = txn.description || txn.account || txn.type.charAt(0) + txn.type.slice(1).toLowerCase();
 
@@ -6149,12 +6149,13 @@
       statusEl.style.color = 'var(--emerald)';
 
       // Update local data
+      const isExpenseRefund = (newType === 'EXPENSES' && sheetAmount > 0);
       t.date = newDate;
       t.type = newType;
       t.category = newCategory;
       t.account = newAccount;
-      t.amount = newAmount;
-      t.isRefund = (newType === 'EXPENSES' && sheetAmount > 0);
+      t.amount = isExpenseRefund ? -Math.abs(newAmount) : Math.abs(newAmount);
+      t.isRefund = isExpenseRefund;
       t.description = newDesc;
 
       // Also update in allTransactions
