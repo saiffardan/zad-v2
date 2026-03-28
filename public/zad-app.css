@@ -6697,6 +6697,18 @@
       width: 22px;
       height: 22px;
     }
+    .home-hub-btn .hub-icon-close {
+      display: none;
+    }
+    .home-hub-btn.hub-active .hub-icon-open {
+      display: none;
+    }
+    .home-hub-btn.hub-active .hub-icon-close {
+      display: block;
+    }
+    .home-hub-btn.hub-active {
+      transform: rotate(0deg);
+    }
     [data-theme="light"] .home-hub-btn {
       background: rgba(255,255,255,0.45);
       border-color: rgba(255,255,255,0.6);
@@ -6792,6 +6804,14 @@
     }
     [data-theme="light"] .hub-tile-planner {
       background: rgba(232, 164, 53, 0.08);
+    }
+    .hub-tile.hub-tile-active {
+      border-color: var(--text-2);
+      background: var(--surface-active);
+    }
+    [data-theme="light"] .hub-tile.hub-tile-active {
+      border-color: rgba(0,0,0,0.15);
+      background: rgba(0,0,0,0.04);
     }
     .hub-tile-label {
       font-size: 12px;

@@ -3836,7 +3836,26 @@
   }
 
   // ── Hub & Spoke Navigation ──
+  let _previousPage = 'home'; // tracks which page was open before hub
+  let _hubOpen = false;
+
+  function setHubBtnState(open) {
+    _hubOpen = open;
+    const btn = document.getElementById('floatingHubBtn');
+    if (btn) btn.classList.toggle('hub-active', open);
+  }
+
+  function highlightActiveHubTile() {
+    const tiles = document.querySelectorAll('#hubPage .hub-tile');
+    tiles.forEach(t => {
+      const page = t.getAttribute('data-page');
+      t.classList.toggle('hub-tile-active', page === _previousPage);
+    });
+  }
+
   window.navigateToHome = function navigateToHome() {
+    _previousPage = 'home';
+    setHubBtnState(false);
     document.getElementById('mainApp').classList.add('hidden');
     document.getElementById('transactionsApp').classList.add('hidden');
     document.getElementById('budgetApp').classList.add('hidden');
@@ -3852,13 +3871,41 @@
     updateHomePage();
   };
 
+  window.toggleHub = function toggleHub() {
+    if (_hubOpen) {
+      // Close hub — go back to previous page
+      setHubBtnState(false);
+      if (_previousPage === 'home') {
+        navigateToHome();
+      } else {
+        navigateToPage(_previousPage);
+      }
+    } else {
+      // Open hub
+      // Remember current page before opening
+      if (!document.getElementById('homePage').classList.contains('hidden')) {
+        _previousPage = 'home';
+      } else if (!document.getElementById('transactionsApp').classList.contains('hidden')) {
+        _previousPage = 'transactions';
+      } else if (!document.getElementById('mainApp').classList.contains('hidden')) {
+        _previousPage = 'portfolio';
+      } else if (!document.getElementById('budgetApp').classList.contains('hidden')) {
+        _previousPage = 'budget';
+      }
+      navigateToHub();
+    }
+  };
+
   window.navigateToHub = function navigateToHub() {
+    setHubBtnState(true);
     document.getElementById('mainApp').classList.add('hidden');
     document.getElementById('transactionsApp').classList.add('hidden');
     document.getElementById('budgetApp').classList.add('hidden');
     document.getElementById('homePage').classList.add('hidden');
     const catApp = document.getElementById('categoriesApp');
     if (catApp) catApp.classList.add('hidden');
+
+    highlightActiveHubTile();
 
     const hub = document.getElementById('hubPage');
     hub.classList.remove('hidden');
@@ -3868,6 +3915,8 @@
   };
 
   window.navigateToPage = function navigateToPage(section) {
+    _previousPage = section;
+    setHubBtnState(false);
     document.getElementById('homePage').classList.add('hidden');
     document.getElementById('hubPage').classList.add('hidden');
 
