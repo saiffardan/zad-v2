@@ -6676,27 +6676,26 @@
     .home-hub-btn {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 12px 28px;
-      border-radius: 50px;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
       border: 1px solid rgba(255,255,255,0.15);
       background: rgba(30,30,30,0.4);
       backdrop-filter: blur(50px) saturate(200%) brightness(1.15);
       -webkit-backdrop-filter: blur(50px) saturate(200%) brightness(1.15);
       color: var(--text-1);
-      font-size: 14px;
-      font-weight: 600;
       cursor: pointer;
       box-shadow: var(--shadow-lg);
       transition: transform var(--duration-fast) var(--ease-spring),
                   box-shadow var(--duration-fast) ease;
     }
     .home-hub-btn:active {
-      transform: scale(0.95);
+      transform: scale(0.9);
     }
     .home-hub-btn svg {
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
     }
     [data-theme="light"] .home-hub-btn {
       background: rgba(255,255,255,0.45);
@@ -6716,44 +6715,26 @@
       padding: clamp(10px, 3vw, 16px) var(--content-px) 24px;
       padding-top: calc(clamp(10px, 3vw, 16px) + env(safe-area-inset-top, 0px));
     }
-    .hub-back-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: none;
-      background: var(--glass-bg);
-      color: var(--text-2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: background var(--duration-fast) ease;
-      flex-shrink: 0;
-    }
-    .hub-back-btn:hover {
-      background: var(--hover-bg);
-    }
-    .hub-back-btn svg {
-      width: 20px;
-      height: 20px;
-    }
     .hub-title {
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 700;
       color: var(--text-1);
       letter-spacing: var(--ls-tight);
     }
     .hub-grid {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 12px;
       padding: 0 var(--content-px);
     }
     .hub-tile {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 16px;
-      padding: 20px;
+      justify-content: center;
+      gap: 10px;
+      aspect-ratio: 1;
+      padding: 16px 8px;
       background: var(--glass-bg);
       border-radius: 16px;
       border: 1px solid var(--divider);
@@ -6762,27 +6743,31 @@
                   box-shadow var(--duration-normal) ease,
                   background var(--duration-fast) ease;
       box-shadow: var(--shadow-sm);
-      text-align: left;
+      text-align: center;
     }
     .hub-tile:active {
-      transform: scale(0.97);
+      transform: scale(0.95);
     }
     .hub-tile:hover {
       box-shadow: var(--shadow-md);
       background: var(--hover-bg);
     }
     .hub-tile-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
     .hub-tile-icon svg {
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
+    }
+    .hub-tile-home {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-1);
     }
     .hub-tile-dashboard {
       background: rgba(48, 209, 88, 0.12);
@@ -6796,6 +6781,9 @@
       background: rgba(232, 164, 53, 0.12);
       color: var(--amber);
     }
+    [data-theme="light"] .hub-tile-home {
+      background: rgba(0, 0, 0, 0.05);
+    }
     [data-theme="light"] .hub-tile-dashboard {
       background: rgba(48, 209, 88, 0.08);
     }
@@ -6806,17 +6794,11 @@
       background: rgba(232, 164, 53, 0.08);
     }
     .hub-tile-label {
-      font-size: 16px;
+      font-size: 12px;
       font-weight: 600;
       color: var(--text-1);
       display: block;
       line-height: var(--lh-tight);
-    }
-    .hub-tile-desc {
-      font-size: 12px;
-      color: var(--text-3);
-      display: block;
-      margin-top: 2px;
     }
 
     /* Hub button in tab bars */
