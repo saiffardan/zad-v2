@@ -405,17 +405,42 @@
     renderDashboard();
   }
 
+  let gisLoadFailed = false;
+
   function loadGIS() {
+    if (!CLIENT_ID) {
+      gisLoadFailed = true;
+      console.warn('[Zad] No CLIENT_ID configured — Google Sign-In disabled.');
+      return;
+    }
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
     script.onload = () => {
-      tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        callback: handleTokenResponse,
-      });
+      try {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: CLIENT_ID,
+          scope: SCOPES,
+          callback: handleTokenResponse,
+        });
+      } catch (e) {
+        gisLoadFailed = true;
+        console.error('[Zad] Failed to init Google token client:', e);
+      }
+    };
+    script.onerror = () => {
+      gisLoadFailed = true;
+      console.warn('[Zad] Failed to load Google Identity Services script.');
     };
     document.head.appendChild(script);
+  }
+
+  function showSignInError(msg) {
+    const el = document.getElementById('signInError');
+    if (el) {
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
   }
 
   function handleSignIn() {
@@ -423,8 +448,10 @@
       const btn = document.getElementById('signInBtn');
       if (btn) btn.classList.add('loading');
       tokenClient.requestAccessToken();
+    } else if (gisLoadFailed || !CLIENT_ID) {
+      showSignInError('Google Sign-In unavailable — check your Client ID configuration.');
     } else {
-      showError('Google Sign-In is still loading. Please try again in a moment.');
+      showSignInError('Google Sign-In is still loading. Please try again.');
     }
   }
 
