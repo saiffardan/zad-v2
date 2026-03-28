@@ -42,8 +42,8 @@
       }); });
     });
   }
-  const CLIENT_ID = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.clientId) || '';
-  const SHEET_ID = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.sheetId) || '';
+  const CLIENT_ID = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.clientId) || '1008350848317-2pul4n12msbg606khco6h91mrnftv69j.apps.googleusercontent.com';
+  const SHEET_ID = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.sheetId) || '1NNOt_RCDxKyZ-E0YYN1cpvDji_bhRC8sZvoLV0pWX48';
   const SHEET_RANGE = 'Investments!G14:M';
   const TXN_RANGE = 'Transactions!B14:G';
   const BUDGET_RANGE = 'Budget Planning!C5:AZ424';
