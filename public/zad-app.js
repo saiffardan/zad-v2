@@ -3901,6 +3901,8 @@
     });
   }
 
+  let _skipPageEnter = false;
+
   window.navigateToHome = function navigateToHome() {
     _previousPage = 'home';
     setHubBtnState(false);
@@ -3915,23 +3917,25 @@
 
     const home = document.getElementById('homePage');
     home.classList.remove('hidden');
-    home.classList.add('page-enter');
-    setTimeout(() => home.classList.remove('page-enter'), 600);
+    if (!_skipPageEnter) {
+      home.classList.add('page-enter');
+      setTimeout(() => home.classList.remove('page-enter'), 600);
+    }
     window.scrollTo(0, 0);
     updateHomePage();
   };
 
   window.toggleHub = function toggleHub() {
     if (_hubOpen) {
-      // Navigate to destination page fully (renders content), then overlay hub and slide it out
+      // Navigate to destination page without enter animation, then overlay hub and slide it out
       const hub = document.getElementById('hubPage');
+      _skipPageEnter = true;
       if (_previousPage === 'home') {
         navigateToHome();
       } else {
         navigateToPage(_previousPage);
       }
-      // Strip page-enter animation so destination is fully visible immediately
-      document.querySelectorAll('.page-enter').forEach(el => el.classList.remove('page-enter'));
+      _skipPageEnter = false;
       // Re-show hub on top and animate it out
       hub.classList.remove('hidden');
       hub.classList.add('hub-exit');
@@ -3991,8 +3995,10 @@
       document.getElementById('budgetApp').classList.add('hidden');
       const mainAppEl = document.getElementById('mainApp');
       mainAppEl.classList.remove('hidden');
-      mainAppEl.classList.add('page-enter');
-      setTimeout(() => mainAppEl.classList.remove('page-enter'), 600);
+      if (!_skipPageEnter) {
+        mainAppEl.classList.add('page-enter');
+        setTimeout(() => mainAppEl.classList.remove('page-enter'), 600);
+      }
       window.scrollTo(0, 0);
       syncPortfolioTabPlacement();
       requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -4007,8 +4013,10 @@
       document.getElementById('budgetApp').classList.add('hidden');
       const txnApp = document.getElementById('transactionsApp');
       txnApp.classList.remove('hidden');
-      txnApp.classList.add('page-enter');
-      setTimeout(() => txnApp.classList.remove('page-enter'), 600);
+      if (!_skipPageEnter) {
+        txnApp.classList.add('page-enter');
+        setTimeout(() => txnApp.classList.remove('page-enter'), 600);
+      }
       window.scrollTo(0, 0);
       syncHeaderSpacer();
       if (txnDataLoaded) {
