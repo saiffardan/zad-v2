@@ -3923,27 +3923,19 @@
 
   window.toggleHub = function toggleHub() {
     if (_hubOpen) {
-      // Show the destination page behind hub immediately
-      const dest = _previousPage === 'home' ? 'homePage'
-        : _previousPage === 'transactions' ? 'transactionsApp'
-        : _previousPage === 'portfolio' ? 'mainApp'
-        : _previousPage === 'budget' ? 'budgetApp'
-        : 'homePage';
-      const destEl = document.getElementById(dest);
-      if (destEl) destEl.classList.remove('hidden');
-      showTabBar(_previousPage === 'home' ? null : _previousPage);
-      setHubBtnState(false);
-
-      // Slide hub down over the revealed page
+      // Navigate to destination page fully (renders content), then overlay hub and slide it out
       const hub = document.getElementById('hubPage');
+      if (_previousPage === 'home') {
+        navigateToHome();
+      } else {
+        navigateToPage(_previousPage);
+      }
+      // Re-show hub on top and animate it out
+      hub.classList.remove('hidden');
       hub.classList.add('hub-exit');
       setTimeout(() => {
         hub.classList.remove('hub-exit');
-        if (_previousPage === 'home') {
-          navigateToHome();
-        } else {
-          navigateToPage(_previousPage);
-        }
+        hub.classList.add('hidden');
       }, 300);
     } else {
       // Open hub
