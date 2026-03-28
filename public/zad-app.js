@@ -423,6 +423,8 @@
       const btn = document.getElementById('signInBtn');
       if (btn) btn.classList.add('loading');
       tokenClient.requestAccessToken();
+    } else {
+      showError('Google Sign-In is still loading. Please try again in a moment.');
     }
   }
 
