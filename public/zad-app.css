@@ -5758,6 +5758,20 @@
       max-width: 65%;
       word-break: break-word;
     }
+    .txn-refund-label {
+      font-size: 13px;
+      color: var(--text-2);
+      font-family: var(--font-sans);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .txn-refund-label input[type="checkbox"] {
+      accent-color: var(--emerald);
+      width: 16px;
+      height: 16px;
+    }
     .txn-edit-input {
       background: rgba(255,255,255,0.06);
       border: 1px solid var(--divider);

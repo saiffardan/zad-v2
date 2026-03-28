@@ -6027,6 +6027,15 @@
     // If current category exists in new type, keep it; otherwise pick first
     const keepCat = cats.find(c => c === currentCat) ? currentCat : (cats[0] || '');
     catEl.innerHTML = buildCatOptions(newType, keepCat);
+    // Show/hide refund toggle
+    const refundRow = document.getElementById('txnRefundRow');
+    if (refundRow) {
+      refundRow.style.display = newType === 'EXPENSES' ? '' : 'none';
+      if (newType !== 'EXPENSES') {
+        const cb = document.getElementById('txnRefundToggle');
+        if (cb) cb.checked = false;
+      }
+    }
   }
 
   function openTxnDetail(idx) {
@@ -6062,6 +6071,10 @@
       <div class="txn-modal-row">
         <div class="txn-modal-label">Account</div>
         <select class="txn-edit-select" id="txnEditAccount" onchange="if(this.value==='__custom__'){const v=prompt('Enter account name:');if(v){const o=new Option(v,v);this.add(o,this.options.length-1);this.value=v;}else{this.value='${t.account}';}}">${acctOptions}</select>
+      </div>
+      <div class="txn-modal-row" id="txnRefundRow" style="${t.type === 'EXPENSES' ? '' : 'display:none'}">
+        <div class="txn-modal-label">Refund</div>
+        <label class="txn-refund-label"><input type="checkbox" id="txnRefundToggle" ${t.isRefund ? 'checked' : ''}> This is a refund (+)</label>
       </div>
       <div class="txn-modal-row">
         <div class="txn-modal-label">Amount</div>
@@ -6107,9 +6120,9 @@
     }
 
     // For EXPENSES: negative in sheet (money out). Positive = refund.
-    // Store as negative for normal expenses, positive for refunds (keep original sign convention)
+    const isRefund = document.getElementById('txnRefundToggle')?.checked || false;
     let sheetAmount = newAmount;
-    if (newType === 'EXPENSES') sheetAmount = -newAmount;
+    if (newType === 'EXPENSES' && !isRefund) sheetAmount = -newAmount;
 
     const rowValues = [newDate, newType, newCategory, newAccount, sheetAmount, newDesc];
     const range = `Transactions!B${t.sheetRow}:G${t.sheetRow}`;
@@ -6199,6 +6212,10 @@
         <div class="txn-modal-label">Account</div>
         <select class="txn-edit-select" id="txnEditAccount" onchange="if(this.value==='__custom__'){const v=prompt('Enter account name:');if(v){const o=new Option(v,v);this.add(o,this.options.length-1);this.value=v;}else{this.value='';}}"><option value="">--</option>${acctOptions}</select>
       </div>
+      <div class="txn-modal-row" id="txnRefundRow" style="display:none">
+        <div class="txn-modal-label">Refund</div>
+        <label class="txn-refund-label"><input type="checkbox" id="txnRefundToggle"> This is a refund (+)</label>
+      </div>
       <div class="txn-modal-row">
         <div class="txn-modal-label">Amount</div>
         <input type="number" class="txn-edit-input" id="txnEditAmount" value="" step="0.01" min="0" placeholder="0.00">
@@ -6240,9 +6257,10 @@
       return;
     }
 
-    // For EXPENSES: store as negative in sheet
+    // For EXPENSES: store as negative in sheet, unless it's a refund
+    const isRefund = document.getElementById('txnRefundToggle')?.checked || false;
     let sheetAmount = newAmount;
-    if (newType === 'EXPENSES') sheetAmount = -newAmount;
+    if (newType === 'EXPENSES' && !isRefund) sheetAmount = -newAmount;
 
     const rowValues = [newDate, newType, newCategory, newAccount, sheetAmount, newDesc];
 
