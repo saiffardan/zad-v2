@@ -578,10 +578,10 @@
         flex: 1;
       }
       .header-title {
-        font-size: 28px;
-        font-weight: 800;
-        letter-spacing: var(--ls-tight);
-        transition: font-size var(--duration-slow) var(--ease-out), opacity var(--duration-slow) ease;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        transition: opacity var(--duration-slow) ease;
       }
       /* ── Page Switcher (tappable header title) ── */
       .page-switcher {
@@ -594,23 +594,26 @@
       .page-switcher:active {
         opacity: 0.6;
       }
-      .header-tab-indicator {
+      .header-page-name {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
         color: var(--text-3);
-        font-weight: 400;
-        font-size: 0.5em;
-        letter-spacing: 0;
+        letter-spacing: var(--ls-wide);
+        text-transform: uppercase;
+        line-height: var(--lh-none);
+      }
+      .header-tab-indicator {
+        display: block;
+        color: var(--text-1);
+        font-weight: 600;
+        font-size: 20px;
+        letter-spacing: var(--ls-tight);
+        line-height: var(--lh-tight);
         pointer-events: none;
       }
       .header-tab-indicator::before {
-        content: '';
-        display: inline-block;
-        width: 4px;
-        height: 4px;
-        border-radius: 2px;
-        background: var(--text-3);
-        opacity: 0.4;
-        vertical-align: middle;
-        margin: 0 6px;
+        display: none;
       }
       /* Make entire title area clickable */
       .page-switcher * {
@@ -749,12 +752,14 @@
         pointer-events: none;
       }
       .header.header-compact .header-title {
-        font-size: 16px;
-        font-weight: 600;
+        gap: 0;
+      }
+      .header.header-compact .header-page-name {
+        font-size: 9px;
       }
       .header.header-compact .header-tab-indicator {
-        font-size: 1em;
-        font-weight: 400;
+        font-size: 14px;
+        font-weight: 600;
       }
       .header.header-compact {
         padding-top: calc(6px + env(safe-area-inset-top, 0px)) !important;
