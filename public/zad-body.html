@@ -1,5 +1,3 @@
-<!-- Shader background -->
-<!-- shader bg removed -->
 
 <!-- V3 Sidebar (desktop only) -->
 <aside class="sidebar hidden" id="appSidebar">
@@ -110,8 +108,6 @@
     </div>
   </div>
   <div class="filters-spacer" id="portFiltersSpacer"></div>
-  <!-- Hidden elements for backward compat -->
-  <div style="display:none"><div id="typeFilters"><div id="filterPill"></div></div></div>
 
   <!-- Summary Cards + Best/Worst -->
   <!-- Desktop: original grid layout -->
@@ -150,7 +146,7 @@
   <!-- Tabs placeholder (actual tabs moved to bottom) -->
 
   <!-- Holdings Tab -->
-  <div id="holdingsTab">
+  <div id="holdingsTab" role="tabpanel" aria-labelledby="tab-holdings">
     <div class="holdings-controls mobile-only" id="holdingsSortBar">
       <div class="holdings-sort-bar">
         <span class="holdings-sort-label">Type</span>
@@ -179,7 +175,7 @@
   </div>
 
   <!-- Trades Tab -->
-  <div id="tradesTab" class="hidden">
+  <div id="tradesTab" class="hidden" role="tabpanel" aria-labelledby="tab-trades">
     <div class="table-container" id="tradesTableContainer">
       <table class="holdings-table" id="tradesTable"></table>
     </div>
@@ -194,7 +190,7 @@
   </div>
 
   <!-- Charts Tab -->
-  <div id="chartsTab" class="hidden">
+  <div id="chartsTab" class="hidden" role="tabpanel" aria-labelledby="tab-charts">
     <div class="charts-section">
       <!-- Segment Control -->
       <div class="chart-segment-control" id="chartSegmentControl">
@@ -209,8 +205,6 @@
         <div class="alloc-total-row" id="portfolioAllocTotal"></div>
         <div class="alloc-ranked-list" id="portfolioAllocList"></div>
       </div>
-      <!-- Hidden canvas for backward compat -->
-      <!-- pieChart removed -->
 
       <!-- Performance View -->
       <div class="chart-view hidden" id="chartViewPerformance">
@@ -250,7 +244,7 @@
   </div>
 
   <!-- Allocation Tab -->
-  <div id="allocationTab" class="hidden">
+  <div id="allocationTab" class="hidden" role="tabpanel" aria-labelledby="tab-allocation">
     <div class="section-title">By Type (Current Value)</div>
     <div class="allocation-list" id="typeAllocation"></div>
     <div class="section-title">By Ticker (Current Value)</div>
@@ -258,7 +252,7 @@
   </div>
 
   <!-- Advisor Tab (v2) -->
-  <div id="advisorTab" class="hidden">
+  <div id="advisorTab" class="hidden" role="tabpanel" aria-labelledby="tab-advisor">
     <!-- Hero Input Area -->
     <div class="advisor-hero" id="advisorHeroArea">
       <div class="advisor-hero-label">Monthly DCA</div>
@@ -266,7 +260,7 @@
         <span class="advisor-currency-label" id="advisorCurrLabel">AED</span>
         <input type="number" class="advisor-input advisor-hero-amount" id="advisorAmountInput" placeholder="1,000" min="0" step="100">
       </div>
-      <button class="advisor-ticker-pill" onclick="toggleAdvisorSelector()">
+      <button class="advisor-ticker-pill" onclick="toggleAdvisorSelector()" aria-expanded="false">
         <span id="advisorSelectorPreview">Select tickers</span>
         <span id="advisorSelCount" style="color:var(--emerald);font-size:12px;"></span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
@@ -285,12 +279,10 @@
       </button>
     </div>
 
-    <!-- Hidden: old advisor-selector wrapper for backward compat -->
-    
 
     <!-- Settings: hidden behind gear icon in header area -->
     <div class="advisor-section" style="padding:0;">
-      <div class="advisor-settings-header" onclick="toggleAdvisorSettings()">
+      <div class="advisor-settings-header" onclick="toggleAdvisorSettings()" aria-expanded="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         <span>Engine Settings</span>
         <span class="advisor-settings-toggle" id="advisorSettingsToggle"></span>
@@ -299,9 +291,9 @@
         <!-- Data Proxy -->
         <div class="advisor-settings-group">
           <div class="advisor-settings-group-title">Data Proxy (Enhanced)</div>
-          <div style="font-size:9px;color:var(--text-3);margin-bottom:6px;line-height:1.3;">Deploy <code>enhanced-proxy.gs</code> as a Google Apps Script Web App, then paste the URL below. This unlocks MA200, RSI, P/E, dividend yield, and auto fair values.</div>
+          <div class="advisor-helper-text">Deploy <code>enhanced-proxy.gs</code> as a Google Apps Script Web App, then paste the URL below. This unlocks MA200, RSI, P/E, dividend yield, and auto fair values.</div>
           <div id="proxyStatus" style="font-size:10px;margin-bottom:6px;"></div>
-          <div style="display:flex;gap:6px;">
+          <div class="advisor-flex-row">
             <input type="text" class="advisor-config-input" id="enhancedProxyInput"
               style="flex:1;width:auto;text-align:left;font-size:10px;padding:8px;"
               placeholder="https://script.google.com/macros/s/…/exec">
@@ -311,26 +303,26 @@
         <!-- Fair Values -->
         <div class="advisor-settings-group">
           <div class="advisor-settings-group-title">Fair Values (per share, original currency)</div>
-          <div style="font-size:9px;color:var(--text-3);margin-bottom:8px;line-height:1.3;">Set your estimated intrinsic value per ticker. Leave blank for auto-calculation. Cost basis fallback has 50% confidence cap. Extreme ratios (&gt;2x or &lt;0.5x) are capped at 30%.</div>
+          <div class="advisor-helper-text">Set your estimated intrinsic value per ticker. Leave blank for auto-calculation. Cost basis fallback has 50% confidence cap. Extreme ratios (&gt;2x or &lt;0.5x) are capped at 30%.</div>
           <div id="advisorFairValueList"></div>
         </div>
         <!-- Conviction (auto + manual override) -->
         <div class="advisor-settings-group">
           <div class="advisor-settings-group-title">Conviction (Auto-Calculated)</div>
-          <div style="font-size:9px;color:var(--text-3);margin-bottom:8px;line-height:1.3;">Auto-scored from holding duration and portfolio weight. Tap stars to set an optional manual override (35% influence). Tap active star again to clear override.</div>
+          <div class="advisor-helper-text">Auto-scored from holding duration and portfolio weight. Tap stars to set an optional manual override (35% influence). Tap active star again to clear override.</div>
           <div id="advisorConvictionList"></div>
         </div>
         <!-- Asset Class Targets -->
         <div class="advisor-settings-group">
           <div class="advisor-settings-group-title">Asset Class Targets (%)</div>
-          <div style="font-size:9px;color:var(--text-3);margin-bottom:8px;line-height:1.3;">Your ideal portfolio split by asset class. Must sum to 100%.</div>
+          <div class="advisor-helper-text">Your ideal portfolio split by asset class. Must sum to 100%.</div>
           <div id="advisorClassTargetList"></div>
           <div id="advisorClassTargetSum"></div>
         </div>
         <!-- Factor Weights -->
         <div class="advisor-settings-group">
           <div class="advisor-settings-group-title">Factor Weights (%)</div>
-          <div style="font-size:9px;color:var(--text-3);margin-bottom:8px;line-height:1.3;">How much each scoring factor matters. Must sum to 100%.</div>
+          <div class="advisor-helper-text">How much each scoring factor matters. Must sum to 100%.</div>
           <div id="advisorFactorWeightList"></div>
           <div id="advisorFactorWeightSum"></div>
           <div class="advisor-weight-bar" id="advisorWeightBar"></div>
@@ -338,7 +330,7 @@
         <!-- Focus & Recency -->
         <div class="advisor-settings-group">
           <div class="advisor-settings-group-title">Focus & Recency</div>
-          <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px;">
+          <div class="advisor-flex-row-lg">
             <div class="advisor-input-row" style="flex:1;padding:8px 12px;">
               <span style="font-size:10px;color:var(--text-3);white-space:nowrap;">Max picks</span>
               <select class="advisor-input" id="advisorMaxPicks" style="font-size:14px;text-align:center;-webkit-appearance:none;">
@@ -360,10 +352,10 @@
             </div>
           </div>
           <div class="advisor-settings-group-title" style="margin-top:8px;">Recency Lookback (days per class)</div>
-          <div style="font-size:9px;color:var(--text-3);margin-bottom:8px;line-height:1.3;">0 = disabled. Penalizes recent buys to spread purchases over time.</div>
+          <div class="advisor-helper-text">0 = disabled. Penalizes recent buys to spread purchases over time.</div>
           <div id="advisorRecencyList"></div>
           <div class="advisor-settings-group-title" style="margin-top:12px;">Allocation Controls</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div class="advisor-flex-wrap">
             <div class="advisor-config-row" style="flex:1;min-width:120px;">
               <div><div class="label" style="font-size:10px;">Aggressiveness</div><div class="sublabel">1=linear 3=cubic</div></div>
               <select class="advisor-config-input" id="advisorConcentrationExp" style="width:56px;">
@@ -382,7 +374,7 @@
               </div>
             </div>
           </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          <div class="advisor-flex-wrap mt-8">
             <div class="advisor-config-row" style="flex:1;min-width:130px;">
               <div><div class="label" style="font-size:10px;">Contrast Stretch</div><div class="sublabel">1.0=off 2.0+=aggressive</div></div>
               <select class="advisor-config-input" id="advisorContrastStrength" style="width:56px;">
@@ -406,9 +398,9 @@
         <!-- Valuation Parameters -->
         <div class="advisor-settings-group">
           <div class="advisor-settings-group-title">Valuation Parameters</div>
-          <div style="font-size:9px;color:var(--text-3);margin-bottom:8px;line-height:1.3;">Sector P/E multiples for stock fair value. ETF historical P/E and REIT target yield.</div>
+          <div class="advisor-helper-text">Sector P/E multiples for stock fair value. ETF historical P/E and REIT target yield.</div>
           <div id="advisorSectorPEList"></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          <div class="advisor-flex-wrap mt-8">
             <div class="advisor-config-row" style="flex:1;min-width:130px;">
               <div><div class="label" style="font-size:10px;">ETF Historical P/E</div><div class="sublabel">Broad market median</div></div>
               <input type="number" class="advisor-config-input" id="advisorEtfPE" value="20" min="5" max="50" step="1" style="width:50px;">
@@ -425,7 +417,7 @@
         <!-- Manual Fundamentals -->
         <div class="advisor-settings-group">
           <div class="advisor-settings-group-title">Manual Fundamentals</div>
-          <div style="font-size:9px;color:var(--text-3);margin-bottom:8px;line-height:1.3;">Enter EPS, P/E, or dividend yield manually. Used when Yahoo data is unavailable. Auto-expires after 180 days.</div>
+          <div class="advisor-helper-text">Enter EPS, P/E, or dividend yield manually. Used when Yahoo data is unavailable. Auto-expires after 180 days.</div>
           <div id="advisorManualFundamentalsList"></div>
         </div>
       </div>
@@ -439,8 +431,6 @@
         <button class="chart-seg-btn" onclick="setAdvisorView('split', this)">By Class</button>
       </div>
     </div>
-    <!-- Keep old pill-track hidden for JS compat -->
-    <div style="display:none"><div class="pill-track" id="advisorViewTrack"><div class="sliding-pill" id="advisorViewPill"></div></div></div>
     <div id="advisorResults"></div>
 
     <div class="advisor-section advisor-suggestions-section">
@@ -452,23 +442,23 @@
   <!-- Tabs (fixed bottom bar) -->
   <div class="tabs txn-tabs txn-bottom-tabs" id="tabRow" role="tablist" aria-label="Portfolio tabs">
     <div class="tab-underline" id="tabUnderline"></div>
-    <div class="tab active" role="tab" aria-selected="true" onclick="switchTab('holdings', this)">
+    <div id="tab-holdings" class="tab active" role="tab" aria-selected="true" onclick="switchTab('holdings', this)">
       <svg class="tab-icon" viewBox="0 0 24 24"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
       <span class="tab-label">Holdings</span>
     </div>
-    <div class="tab" role="tab" aria-selected="false" onclick="switchTab('trades', this)">
+    <div id="tab-trades" class="tab" role="tab" aria-selected="false" onclick="switchTab('trades', this)">
       <svg class="tab-icon" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="17 6 23 6 23 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="tab-label">Trades</span>
     </div>
-    <div class="tab" role="tab" aria-selected="false" onclick="switchTab('charts', this)">
+    <div id="tab-charts" class="tab" role="tab" aria-selected="false" onclick="switchTab('charts', this)">
       <svg class="tab-icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="20" x2="12" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="6" y1="20" x2="6" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       <span class="tab-label">Charts</span>
     </div>
-    <div class="tab" role="tab" aria-selected="false" onclick="switchTab('allocation', this)">
+    <div id="tab-allocation" class="tab" role="tab" aria-selected="false" onclick="switchTab('allocation', this)">
       <svg class="tab-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 2a10 10 0 0 1 10 10h-10z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
       <span class="tab-label">Allocation</span>
     </div>
-    <div class="tab" role="tab" aria-selected="false" onclick="switchTab('advisor', this)">
+    <div id="tab-advisor" class="tab" role="tab" aria-selected="false" onclick="switchTab('advisor', this)">
       <svg class="tab-icon" viewBox="0 0 24 24"><path d="M12 20V10M6 20V4M18 20v-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="tab-label">Advisor</span>
     </div>
@@ -604,7 +594,7 @@
   <div class="filters-spacer" id="filtersSpacer"></div>
 
   <!-- Overview Tab -->
-  <div id="txnOverviewTab">
+  <div id="txnOverviewTab" role="tabpanel" aria-labelledby="tab-overview">
     <!-- Hero Card v2 -->
     <div class="hero-section" id="txnHeroSection">
       <div class="hero-card">
@@ -649,12 +639,12 @@
 
   <!-- Full Tab (Breakdown + Summary side by side) -->
   <!-- Breakdown Tab -->
-  <div id="txnBreakdownTab" class="hidden" style="padding-top:16px">
+  <div id="txnBreakdownTab" class="hidden" role="tabpanel" aria-labelledby="tab-breakdown" style="padding-top:16px">
     <div id="breakdownContent"></div>
   </div>
 
   <!-- Summary Tab -->
-  <div id="txnSummaryTab" class="hidden">
+  <div id="txnSummaryTab" class="hidden" role="tabpanel" aria-labelledby="tab-summary">
     <!-- Row 1: Three metric insight cards -->
     <div class="insights-metrics-row">
       <div class="insight-metric-card" id="insightSavingsRate">
@@ -733,12 +723,10 @@
         <div class="alloc-ranked-list" id="allocRankedList"></div>
       </div>
     </div>
-    <!-- Hidden elements for backward compat with renderAllSectionPies -->
-    
   </div>
 
   <!-- All Transactions Tab -->
-  <div id="txnListTab" class="hidden">
+  <div id="txnListTab" class="hidden" role="tabpanel" aria-labelledby="tab-list">
     <div class="txn-list-container" id="txnListContainer"></div>
     <button class="fab-add-txn" onclick="openAddTxnModal()" aria-label="Add transaction" style="position:fixed;bottom:calc(80px + env(safe-area-inset-bottom, 0px));right:20px;z-index:90;">
       <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -748,19 +736,19 @@
   <!-- Tabs (fixed bottom bar) -->
   <div class="tabs txn-tabs txn-bottom-tabs" id="txnTabRow" role="tablist" aria-label="Dashboard tabs">
     <div class="tab-underline" id="txnTabUnderline"></div>
-    <div class="tab active" role="tab" aria-selected="true" onclick="switchTxnTab('overview', this)">
+    <div id="tab-overview" class="tab active" role="tab" aria-selected="true" onclick="switchTxnTab('overview', this)">
       <svg class="tab-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>
       <span class="tab-label">Overview</span>
     </div>
-    <div class="tab" role="tab" aria-selected="false" onclick="switchTxnTab('breakdown', this)">
+    <div id="tab-breakdown" class="tab" role="tab" aria-selected="false" onclick="switchTxnTab('breakdown', this)">
       <svg class="tab-icon" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
       <span class="tab-label">Breakdown</span>
     </div>
-    <div class="tab" role="tab" aria-selected="false" onclick="switchTxnTab('summary', this)">
+    <div id="tab-summary" class="tab" role="tab" aria-selected="false" onclick="switchTxnTab('summary', this)">
       <svg class="tab-icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
       <span class="tab-label">Insights</span>
     </div>
-    <div class="tab" role="tab" aria-selected="false" onclick="switchTxnTab('list', this)">
+    <div id="tab-list" class="tab" role="tab" aria-selected="false" onclick="switchTxnTab('list', this)">
       <svg class="tab-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
       <span class="tab-label">All Txns</span>
     </div>

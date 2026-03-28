@@ -25,6 +25,10 @@
   }
 
   const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function escapeHTML(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  }
   const TYPE_COLORS = { 'Equity': '#5aa8f5', 'ETF': '#30d158', 'Crypto': '#ff9f0a', 'Bond': '#ac8eff', 'REIT': '#00c7be' };
   function staggerFadeIn(container, selector, delayPerItem = 0.04) {
     container.querySelectorAll(selector).forEach((el, i) => {
@@ -38,8 +42,8 @@
       }); });
     });
   }
-  const CLIENT_ID = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.clientId) || '1008350848317-2pul4n12msbg606khco6h91mrnftv69j.apps.googleusercontent.com';
-  const SHEET_ID = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.sheetId) || '1NNOt_RCDxKyZ-E0YYN1cpvDji_bhRC8sZvoLV0pWX48';
+  const CLIENT_ID = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.clientId) || '';
+  const SHEET_ID = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.sheetId) || '';
   const SHEET_RANGE = 'Investments!G14:M';
   const TXN_RANGE = 'Transactions!B14:G';
   const BUDGET_RANGE = 'Budget Planning!C5:AZ424';
@@ -924,9 +928,9 @@
         const loseSign = loser.pnlPercent >= 0 ? '+' : '\u2212';
         const winClass = winner.pnlPercent >= 0 ? 'winner' : 'loser';
         winCard.className = `summary-card wl-card ${winClass}`;
-        winCard.innerHTML = `<div class="wl-inner"><div class="wl-left"><div class="wl-label">${winner.pnlPercent >= 0 ? '\u25B2' : '\u25BC'} Best</div><div class="wl-ticker">${winner.ticker}</div></div><div class="wl-right"><div class="wl-roi">${winSign}${Math.abs(winner.pnlPercent).toFixed(1)}%</div><div class="wl-pnl">${winner.pnl >= 0 ? '+' : '\u2212'}${formatMoney(Math.abs(winner.pnl))}</div></div></div>`;
+        winCard.innerHTML = `<div class="wl-inner"><div class="wl-left"><div class="wl-label">${winner.pnlPercent >= 0 ? '\u25B2' : '\u25BC'} Best</div><div class="wl-ticker">${escapeHTML(winner.ticker)}</div></div><div class="wl-right"><div class="wl-roi">${winSign}${Math.abs(winner.pnlPercent).toFixed(1)}%</div><div class="wl-pnl">${winner.pnl >= 0 ? '+' : '\u2212'}${formatMoney(Math.abs(winner.pnl))}</div></div></div>`;
         loseCard.className = 'summary-card wl-card loser';
-        loseCard.innerHTML = `<div class="wl-inner"><div class="wl-left"><div class="wl-label">\u25BC Worst</div><div class="wl-ticker">${loser.ticker}</div></div><div class="wl-right"><div class="wl-roi">${loseSign}${Math.abs(loser.pnlPercent).toFixed(1)}%</div><div class="wl-pnl">${loser.pnl >= 0 ? '+' : '\u2212'}${formatMoney(Math.abs(loser.pnl))}</div></div></div>`;
+        loseCard.innerHTML = `<div class="wl-inner"><div class="wl-left"><div class="wl-label">\u25BC Worst</div><div class="wl-ticker">${escapeHTML(loser.ticker)}</div></div><div class="wl-right"><div class="wl-roi">${loseSign}${Math.abs(loser.pnlPercent).toFixed(1)}%</div><div class="wl-pnl">${loser.pnl >= 0 ? '+' : '\u2212'}${formatMoney(Math.abs(loser.pnl))}</div></div></div>`;
       } else {
         winCard.className = 'summary-card wl-card hidden-card'; winCard.innerHTML = '';
         loseCard.className = 'summary-card wl-card hidden-card'; loseCard.innerHTML = '';
@@ -959,8 +963,8 @@
         const wSign = winner.pnlPercent >= 0 ? '+' : '\u2212';
         const lSign = loser.pnlPercent >= 0 ? '+' : '\u2212';
         heroWL.innerHTML = `
-          <span class="port-hero-wl-item" style="color:var(--emerald)"><span class="port-hero-wl-ticker">${winner.ticker}</span> ${wSign}${Math.abs(winner.pnlPercent).toFixed(1)}%</span>
-          <span class="port-hero-wl-item" style="color:var(--red)"><span class="port-hero-wl-ticker">${loser.ticker}</span> ${lSign}${Math.abs(loser.pnlPercent).toFixed(1)}%</span>
+          <span class="port-hero-wl-item" style="color:var(--emerald)"><span class="port-hero-wl-ticker">${escapeHTML(winner.ticker)}</span> ${wSign}${Math.abs(winner.pnlPercent).toFixed(1)}%</span>
+          <span class="port-hero-wl-item" style="color:var(--red)"><span class="port-hero-wl-ticker">${escapeHTML(loser.ticker)}</span> ${lSign}${Math.abs(loser.pnlPercent).toFixed(1)}%</span>
         `;
       } else { heroWL.innerHTML = ''; }
     }
@@ -1209,7 +1213,7 @@
       return `
         <div class="holding-item">
           <div class="holding-left">
-            <h3>${h.ticker}</h3>
+            <h3>${escapeHTML(h.ticker)}</h3>
             <span class="type-badge">${h.type}</span>
             ${priceDisplay}
           </div>
@@ -1333,7 +1337,7 @@
         return `<div class="txn-list-row" onclick="openHoldingDetail(${i})" style="opacity:0;transform:translateY(12px);transition:opacity 0.4s cubic-bezier(0.16,1,0.3,1),transform 0.4s cubic-bezier(0.16,1,0.3,1);transition-delay:${i * 0.03}s">
           <div class="trade-type-badge" style="background:${dotColor}"></div>
           <div class="txn-list-info">
-            <div class="txn-list-category">${r.ticker}</div>
+            <div class="txn-list-category">${escapeHTML(r.ticker)}</div>
             <div class="txn-list-desc">${sharesStr} shares &middot; ${r.weight.toFixed(1)}%</div>
           </div>
           <div class="holding-card-right">
@@ -1349,7 +1353,7 @@
       return `<div class="holding-card" style="animation-delay:${i * 30}ms" onclick="openHoldingDetail(${i})">
         <div class="holding-card-left">
           <div class="holding-card-ticker-row">
-            <span class="holding-card-ticker">${r.ticker}</span>
+            <span class="holding-card-ticker">${escapeHTML(r.ticker)}</span>
             <span class="holding-card-badge" style="background:${badgeBg};color:${badgeFg}">${r.type}</span>
           </div>
           <span class="holding-card-sub">${sharesStr} shares &middot; ${r.weight.toFixed(1)}% of portfolio</span>
@@ -1386,7 +1390,7 @@
     const roiSign = r.roi >= 0 ? '+' : '\u2212';
 
     const fields = [
-      { label: 'Ticker', value: `<strong>${r.ticker}</strong>` },
+      { label: 'Ticker', value: `<strong>${escapeHTML(r.ticker)}</strong>` },
       { label: 'Shares', value: r.shares % 1 === 0 ? r.shares.toFixed(0) : r.shares.toFixed(4) },
       { label: 'Total Invested', value: sym + convert(r.spent).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) },
       { label: 'Avg Cost', value: sym + convert(r.avgCost).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) },
@@ -1403,8 +1407,8 @@
         <div class="txn-modal-value">${f.value}</div>
       </div>`
     ).join('') + `<div class="txn-modal-actions" style="margin-top:12px;gap:8px;">
-      <button class="txn-modal-btn save" onclick="closeTxnModal();openBuyMoreModal('${r.ticker}')">Buy More</button>
-      <button class="txn-modal-btn save" style="background:var(--red);border-color:rgba(255,69,58,0.4);" onclick="closeTxnModal();openSellModal('${r.ticker}')">Sell</button>
+      <button class="txn-modal-btn save" onclick="closeTxnModal();openBuyMoreModal('${escapeHTML(r.ticker)}')">Buy More</button>
+      <button class="txn-modal-btn save" style="background:var(--red);border-color:rgba(255,69,58,0.4);" onclick="closeTxnModal();openSellModal('${escapeHTML(r.ticker)}')">Sell</button>
     </div>`;
 
     openModal();
@@ -1525,8 +1529,8 @@
         html += `<div class="txn-list-row">
           <div class="trade-type-badge" style="background:${badgeColor}"></div>
           <div class="txn-list-info">
-            <div class="txn-list-category">${t.ticker}</div>
-            <div class="txn-list-desc">${desc}</div>
+            <div class="txn-list-category">${escapeHTML(t.ticker)}</div>
+            <div class="txn-list-desc">${escapeHTML(desc)}</div>
           </div>
           <div class="txn-list-amount" style="color:${amtColor}">${prefix}${fm(Math.abs(t.total))}</div>
         </div>`;
@@ -1598,7 +1602,7 @@
       return `
         <div class="alloc-item">
           <div class="alloc-header">
-            <span>${ticker}</span>
+            <span>${escapeHTML(ticker)}</span>
             <span>${pct.toFixed(1)}% &middot; ${formatMoney(val)}</span>
           </div>
           <div class="alloc-bar-bg">
@@ -2450,7 +2454,7 @@
     const buyCount = results.filter(r => r.status === 'BUY').length;
     const topPick = results[0];
     const summary = buyCount > 0
-      ? `${buyCount} pick${buyCount>1?'s':''} this month. Top: ${topPick.ticker} (${topPick.allocationPct.toFixed(0)}%).${cashReserve > 0 ? ` ${formatMoney(cashReserve)} held as cash.` : ''}`
+      ? `${buyCount} pick${buyCount>1?'s':''} this month. Top: ${escapeHTML(topPick.ticker)} (${topPick.allocationPct.toFixed(0)}%).${cashReserve > 0 ? ` ${formatMoney(cashReserve)} held as cash.` : ''}`
       : 'No strong buy signals. Consider holding cash this month.';
 
     return { tickers: results, cashReserve, summary, skipThreshold, ma200CorrelationAdjustment, effectiveExponent: exponent, baseExponent };
@@ -2558,9 +2562,9 @@
       const auto = autoFairValue(h.ticker, h.type, lp, config);
       const autoStr = auto.value ? `${currSym}${auto.value.toFixed(2)} (${auto.method.replace('auto_','')})` : 'N/A';
       return `<div class="advisor-config-row" style="flex-wrap:wrap;">
-        <div style="min-width:80px;"><div class="label">${h.ticker}</div><div class="sublabel">${currSym}${curPrice.toFixed(2)} now</div><div class="sublabel" style="color:${auto.degraded ? '#ff9f0a' : 'var(--emerald)'}">Auto: ${autoStr}</div></div>
+        <div style="min-width:80px;"><div class="label">${escapeHTML(h.ticker)}</div><div class="sublabel">${currSym}${curPrice.toFixed(2)} now</div><div class="sublabel" style="color:${auto.degraded ? '#ff9f0a' : 'var(--emerald)'}">Auto: ${autoStr}</div></div>
         <input type="number" class="advisor-config-input" value="${manualFV}" placeholder="auto"
-          onchange="updateAdvisorFairValue('${h.ticker}', this.value)" step="0.01" title="Manual override (leave blank for auto)">
+          onchange="updateAdvisorFairValue('${escapeHTML(h.ticker)}', this.value)" step="0.01" title="Manual override (leave blank for auto)">
       </div>`;
     }).join('');
 
@@ -2590,12 +2594,12 @@
       const autoColor = autoScore >= 65 ? 'var(--emerald)' : autoScore >= 40 ? '#ff9f0a' : 'var(--red)';
 
       const stars = [1,2,3,4,5].map(n =>
-        `<svg class="advisor-star ${n <= manualRating ? 'active' : ''}" viewBox="0 0 24 24" fill="${n <= manualRating ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.5" width="20" height="20" onclick="updateAdvisorConviction('${h.ticker}', ${n === manualRating ? 0 : n})"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`
+        `<svg class="advisor-star ${n <= manualRating ? 'active' : ''}" viewBox="0 0 24 24" fill="${n <= manualRating ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.5" width="20" height="20" onclick="updateAdvisorConviction('${escapeHTML(h.ticker)}', ${n === manualRating ? 0 : n})"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`
       ).join('');
 
       return `<div class="advisor-config-row" style="flex-wrap:wrap;gap:4px;">
         <div style="flex:1;min-width:100px;">
-          <div class="label">${h.ticker}</div>
+          <div class="label">${escapeHTML(h.ticker)}</div>
           <div class="sublabel">Auto: <span style="color:${autoColor};font-weight:600;">${autoScore.toFixed(0)}/100</span> (${buyCount} buy${buyCount !== 1 ? 's' : ''}, ${(wt*100).toFixed(1)}% weight)</div>
           ${manualRating > 0 ? `<div class="sublabel">Manual override: ★${manualRating} ${lastUp ? '(set ' + lastUp + ')' : ''}</div>` : `<div class="sublabel" style="opacity:0.4;">No manual override — tap to set</div>`}
         </div>
@@ -2771,22 +2775,22 @@
         const ageDays = mf.lastUpdated ? Math.floor((Date.now() - new Date(mf.lastUpdated).getTime()) / (24*60*60*1000)) : null;
         const staleWarning = ageDays !== null ? (ageDays > 180 ? ' ❌ Expired' : ageDays > 90 ? ` ⚠ ${ageDays}d old` : ' ✓') : '';
         return `<div class="advisor-config-row" style="flex-wrap:wrap;gap:4px;">
-          <div style="min-width:80px;"><div class="label">${h.ticker}</div><div class="sublabel">Updated: ${lastUp}${staleWarning}</div></div>
+          <div style="min-width:80px;"><div class="label">${escapeHTML(h.ticker)}</div><div class="sublabel">Updated: ${lastUp}${staleWarning}</div></div>
           <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
             <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
               <span style="font-size:9px;color:var(--text-3);">EPS</span>
               <input type="number" class="advisor-config-input" value="${mf.trailingEPS || ''}" placeholder="—" step="0.01" style="width:52px;font-size:10px;"
-                onchange="updateManualFundamental('${h.ticker}', 'trailingEPS', this.value)">
+                onchange="updateManualFundamental('${escapeHTML(h.ticker)}', 'trailingEPS', this.value)">
             </div>
             <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
               <span style="font-size:9px;color:var(--text-3);">P/E</span>
               <input type="number" class="advisor-config-input" value="${mf.trailingPE || ''}" placeholder="—" step="0.1" style="width:52px;font-size:10px;"
-                onchange="updateManualFundamental('${h.ticker}', 'trailingPE', this.value)">
+                onchange="updateManualFundamental('${escapeHTML(h.ticker)}', 'trailingPE', this.value)">
             </div>
             <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
               <span style="font-size:9px;color:var(--text-3);">Div%</span>
               <input type="number" class="advisor-config-input" value="${mf.dividendYield ? (mf.dividendYield * 100).toFixed(2) : ''}" placeholder="—" step="0.1" style="width:52px;font-size:10px;"
-                onchange="updateManualFundamental('${h.ticker}', 'dividendYield', this.value, true)">
+                onchange="updateManualFundamental('${escapeHTML(h.ticker)}', 'dividendYield', this.value, true)">
             </div>
           </div>
         </div>`;
@@ -2912,12 +2916,12 @@
         const selected = advisorSelectedTickers.includes(h.ticker);
         const lp = livePrices[h.ticker];
         const name = lp?.name || '';
-        html += `<div class="advisor-ticker-row" onclick="toggleAdvisorTicker('${h.ticker}')">
+        html += `<div class="advisor-ticker-row" onclick="toggleAdvisorTicker('${escapeHTML(h.ticker)}')">
           <div class="advisor-ticker-row-left">
             <div class="advisor-ticker-check ${selected ? 'checked' : ''}"></div>
             <div>
-              <div class="advisor-ticker-sym">${h.ticker}</div>
-              <div class="advisor-ticker-name">${name}</div>
+              <div class="advisor-ticker-sym">${escapeHTML(h.ticker)}</div>
+              <div class="advisor-ticker-name">${escapeHTML(name)}</div>
             </div>
           </div>
           <div class="advisor-ticker-type">${type}</div>
@@ -3145,7 +3149,7 @@
         html += `<div class="advisor-pick-row" style="opacity:0;transform:translateY(12px);transition:opacity 0.4s cubic-bezier(0.16,1,0.3,1),transform 0.4s cubic-bezier(0.16,1,0.3,1);transition-delay:${i * 0.03}s" onclick="openAdvisorDetail(${i})">
           <div class="trade-type-badge" style="background:${dotColor}"></div>
           <div class="advisor-pick-info">
-            <div class="advisor-pick-ticker">${r.ticker}</div>
+            <div class="advisor-pick-ticker">${escapeHTML(r.ticker)}</div>
             <div class="advisor-pick-sub">Buy ~${shareStr} @ ${sym}${fmt(r.details.curPriceAED)} <span style="color:${chgColor}">${chgStr}</span></div>
           </div>
           <div class="advisor-pick-right">
@@ -3179,7 +3183,7 @@
         const reason = r.focusSkip ? 'Focus cut' : r.floorSkip ? 'Too small' : 'Low score';
         const reasonColor = r.focusSkip ? '#ff9f0a' : 'var(--text-3)';
         html += `<div class="advisor-skipped-row">
-          <span class="advisor-skipped-ticker">${r.ticker}</span>
+          <span class="advisor-skipped-ticker">${escapeHTML(r.ticker)}</span>
           <span style="color:var(--text-3);font-size:10px;">${r.composite.toFixed(0)}/100</span>
           <span style="color:${reasonColor};font-size:10px;margin-left:auto;">${reason}</span>
         </div>`;
@@ -3380,7 +3384,7 @@
 
     document.getElementById('txnModalContent').innerHTML = `
       <div style="text-align:center;margin-bottom:12px;">
-        <div style="font-size:20px;font-weight:800;color:var(--text-1);font-family:'DM Mono',monospace;">${r.ticker}</div>
+        <div style="font-size:20px;font-weight:800;color:var(--text-1);font-family:'DM Mono',monospace;">${escapeHTML(r.ticker)}</div>
         <div style="font-size:12px;color:var(--text-3);">${r.name}</div>
       </div>
       ${positionSummary}
@@ -3418,7 +3422,7 @@
       const signalType = r.signals.length > 0 ? r.signals[0].type : '';
 
       html += `<tr style="cursor:pointer;${r.skip ? 'opacity:0.45;' : ''}" onclick="openAdvisorDetail(${i})">
-        <td><strong>${r.ticker}</strong></td>
+        <td><strong>${escapeHTML(r.ticker)}</strong></td>
         <td style="font-family:'DM Mono',monospace;font-size:12px;">${priceStr}</td>
         <td style="color:${scoreColor};font-weight:700;font-family:'DM Mono',monospace;">${r.composite.toFixed(0)}</td>
         <td>${r.skip ? '--' : r.allocationPct.toFixed(0) + '%'}</td>
@@ -3496,7 +3500,7 @@
         const tickerPct = totalAmt > 0 ? (r.allocationAmt / totalAmt * 100) : 0;
         return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--divider);">
           <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:var(--text-1);min-width:55px;">${r.ticker}</span>
+            <span style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:var(--text-1);min-width:55px;">${escapeHTML(r.ticker)}</span>
             <span style="font-size:10px;color:var(--text-3);">${priceStr}</span>
             <span style="font-size:9px;color:${chgColor};">${chgStr}</span>
           </div>
@@ -3926,7 +3930,7 @@
     // Stacked bar
     barEl.innerHTML = mainHoldings.map((h, i) => {
       const val = convertCurrency(h.value).toLocaleString('en-US', { maximumFractionDigits: 0 });
-      return `<div class="alloc-bar-seg" style="flex:${h.pct.toFixed(1)};background:${colors[i]}" data-alloc-tip="${h.ticker}: ${sym}${val} (${h.pct.toFixed(1)}%)"></div>`;
+      return `<div class="alloc-bar-seg" style="flex:${h.pct.toFixed(1)};background:${colors[i]}" data-alloc-tip="${escapeHTML(h.ticker)}: ${sym}${val} (${h.pct.toFixed(1)}%)"></div>`;
     }).join('');
 
     // Tooltip for bar
@@ -3964,7 +3968,7 @@
       return `<div class="alloc-rank-row">
         <span class="alloc-rank-num">${i + 1}</span>
         <span class="alloc-rank-dot" style="background:${colors[i]}"></span>
-        <span class="alloc-rank-name">${h.ticker}</span>
+        <span class="alloc-rank-name">${escapeHTML(h.ticker)}</span>
         <span class="alloc-rank-bar"><span class="alloc-rank-bar-fill" style="width:${barPct}%;background:${colors[i]}"></span></span>
         <span class="alloc-rank-val">${sym}${val}</span>
         <span class="alloc-rank-pct">${h.pct.toFixed(1)}%</span>
@@ -5714,8 +5718,8 @@
         html += `<div class="txn-list-row" onclick="openTxnDetail(${idx})">
           <div class="txn-list-dot" style="background:${dotColor}"></div>
           <div class="txn-list-info">
-            <div class="txn-list-category">${txn.category}</div>
-            <div class="txn-list-desc">${desc}</div>
+            <div class="txn-list-category">${escapeHTML(txn.category)}</div>
+            <div class="txn-list-desc">${escapeHTML(desc)}</div>
           </div>
           <div class="txn-list-amount ${isLarge ? 'large' : ''}" style="color:${amtColor}">${amtStr}</div>
         </div>`;
@@ -6471,7 +6475,7 @@
     const sellable = Object.values(holdings).filter(x => x.shares > 0.0001).sort((a, b) => a.ticker.localeCompare(b.ticker));
     const tickerOptions = sellable.map(x => {
       const sh = x.shares % 1 === 0 ? x.shares.toFixed(0) : x.shares.toFixed(4);
-      return `<option value="${x.ticker}" ${x.ticker === ticker ? 'selected' : ''}>${x.ticker} (${sh} shares)</option>`;
+      return `<option value="${escapeHTML(x.ticker)}" ${x.ticker === ticker ? 'selected' : ''}>${escapeHTML(x.ticker)} (${sh} shares)</option>`;
     }).join('');
 
     document.getElementById('txnModalContent').innerHTML = `
