@@ -6842,6 +6842,13 @@
     [data-theme="light"] .hub-tile-planner {
       background: rgba(232, 164, 53, 0.08);
     }
+    .hub-tile-networth {
+      background: rgba(48, 209, 88, 0.12);
+      color: var(--emerald);
+    }
+    [data-theme="light"] .hub-tile-networth {
+      background: rgba(48, 209, 88, 0.08);
+    }
     .hub-tile.hub-tile-active {
       border-color: var(--text-2);
       background: var(--surface-active);
@@ -6997,6 +7004,292 @@
     .tab-hub-btn:hover .tab-icon,
     .tab-hub-btn:hover .tab-label {
       opacity: 1;
+    }
+
+    /* ── Net Worth Page ── */
+    .nw-content {
+      padding: 0 var(--content-px);
+    }
+    .nw-hero {
+      text-align: center;
+      padding: 20px 0 24px;
+    }
+    .nw-hero-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-3);
+      letter-spacing: var(--ls-wide);
+      text-transform: uppercase;
+      line-height: var(--lh-none);
+      margin-bottom: 4px;
+    }
+    .nw-hero-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-1);
+      letter-spacing: var(--ls-tight);
+      line-height: var(--lh-tight);
+    }
+    .nw-hero-sub {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-top: 4px;
+    }
+    .nw-summary-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .nw-summary-card {
+      flex: 1;
+      background: var(--glass-bg);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+    .nw-summary-card-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-3);
+      letter-spacing: var(--ls-wide);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .nw-summary-card-value {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: var(--ls-tight);
+      line-height: var(--lh-tight);
+    }
+    .nw-section {
+      margin-bottom: 20px;
+    }
+    .nw-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .nw-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-1);
+      letter-spacing: var(--ls-slight);
+    }
+    .nw-section-total {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: var(--ls-tight);
+    }
+    .nw-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--glass-bg);
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+    .nw-item-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .nw-item-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-1);
+    }
+    .nw-item-meta {
+      font-size: 10px;
+      color: var(--text-3);
+      letter-spacing: var(--ls-slight);
+    }
+    .nw-item-value {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: var(--ls-tight);
+    }
+    .nw-empty {
+      text-align: center;
+      padding: 40px 0;
+      color: var(--text-3);
+      font-size: 14px;
+    }
+    /* Planning tab */
+    .nw-plan-section {
+      margin-bottom: 24px;
+    }
+    .nw-plan-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .nw-plan-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-1);
+    }
+    .nw-add-btn {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--blue);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: background var(--duration-fast) ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nw-add-btn:active {
+      background: var(--hover-bg);
+    }
+    .nw-plan-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--glass-bg);
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+    .nw-plan-item-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+    }
+    .nw-plan-item-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-1);
+    }
+    .nw-plan-item-type {
+      font-size: 10px;
+      color: var(--text-3);
+      letter-spacing: var(--ls-slight);
+      text-transform: uppercase;
+    }
+    .nw-plan-item-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nw-plan-item-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-1);
+      letter-spacing: var(--ls-tight);
+    }
+    .nw-plan-item-delete {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: none;
+      color: var(--text-3);
+      cursor: pointer;
+      border-radius: 50%;
+      transition: color var(--duration-fast) ease, background var(--duration-fast) ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nw-plan-item-delete:active {
+      color: var(--red);
+      background: var(--hover-bg);
+    }
+    .nw-plan-item-delete svg {
+      width: 16px;
+      height: 16px;
+    }
+    /* Add item modal */
+    .nw-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 9999;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .nw-modal {
+      background: var(--card-bg-solid);
+      border-radius: 20px 20px 0 0;
+      padding: 24px var(--content-px) calc(24px + env(safe-area-inset-bottom, 0px));
+      width: 100%;
+      max-width: 500px;
+      animation: nwModalIn 0.3s var(--ease-out) both;
+    }
+    @keyframes nwModalIn {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .nw-modal-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-1);
+      margin-bottom: 20px;
+    }
+    .nw-modal-field {
+      margin-bottom: 16px;
+    }
+    .nw-modal-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-3);
+      letter-spacing: var(--ls-slight);
+      margin-bottom: 6px;
+      display: block;
+    }
+    .nw-modal-input,
+    .nw-modal-select {
+      width: 100%;
+      padding: 12px;
+      background: var(--glass-bg);
+      border: 1px solid var(--divider);
+      border-radius: 10px;
+      color: var(--text-1);
+      font-size: 16px;
+      font-family: var(--font-sans);
+      outline: none;
+      -webkit-appearance: none;
+      box-sizing: border-box;
+    }
+    .nw-modal-input:focus,
+    .nw-modal-select:focus {
+      border-color: var(--blue);
+    }
+    .nw-modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .nw-modal-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      border: none;
+      transition: opacity var(--duration-fast) ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nw-modal-btn:active {
+      opacity: 0.7;
+    }
+    .nw-modal-btn-cancel {
+      background: var(--glass-bg);
+      color: var(--text-1);
+    }
+    .nw-modal-btn-save {
+      background: var(--blue);
+      color: #fff;
     }
 
     /* Page transition */

@@ -185,6 +185,17 @@
       <span class="tab-label">Categories</span>
     </div>
   </div>
+  <div class="tabs txn-tabs txn-bottom-tabs hidden" id="nwTabRow" role="tablist" aria-label="Net Worth tabs">
+    <div class="tab-underline" id="nwTabUnderline"></div>
+    <div class="tab active" role="tab" aria-selected="true" onclick="switchNwTab('dashboard', this)">
+      <svg class="tab-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>
+      <span class="tab-label">Dashboard</span>
+    </div>
+    <div class="tab" role="tab" aria-selected="false" onclick="switchNwTab('planning', this)">
+      <svg class="tab-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="tab-label">Planning</span>
+    </div>
+  </div>
   <!-- Hub button (always visible inside this bar) -->
   <button class="home-hub-btn" id="floatingHubBtn" onclick="toggleHub()" aria-label="Hub">
     <svg class="hub-icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
@@ -225,6 +236,12 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
       </div>
       <span class="hub-tile-label">Budget Planner</span>
+    </button>
+    <button class="hub-tile" onclick="navigateToPage('networth')" data-page="networth">
+      <div class="hub-tile-icon hub-tile-networth">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <span class="hub-tile-label">Net Worth</span>
     </button>
   </div>
 
@@ -968,6 +985,25 @@
     <div id="budgetOverviewContent"></div>
     <div id="budgetEditContent" class="hidden"></div>
     <div id="budgetCategoriesContent" class="hidden"></div>
+  </div>
+  <div class="txn-tab-spacer"></div>
+</main>
+
+<!-- Net Worth Page -->
+<main id="netWorthApp" class="hidden">
+  <div class="header" id="netWorthHeader">
+    <div class="header-top">
+      <div class="header-left">
+        <span class="mobile-header-logo" id="mobileLogoNetWorth" style="display:none"></span>
+        <h1 class="header-title"><span class="header-page-name">Net Worth</span><span class="header-tab-indicator" id="nwTabIndicator"></span></h1>
+      </div>
+      <div class="header-right"></div>
+    </div>
+  </div>
+  <div class="header-spacer"></div>
+  <div class="nw-content" id="nwContent">
+    <div id="nwDashboardContent"></div>
+    <div id="nwPlanningContent" class="hidden"></div>
   </div>
   <div class="txn-tab-spacer"></div>
 </main>
