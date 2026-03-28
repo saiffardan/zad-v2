@@ -3962,7 +3962,7 @@
     const hub = document.getElementById('hubPage');
     hub.classList.remove('hidden');
     hub.classList.add('hub-enter');
-    setTimeout(() => hub.classList.remove('hub-enter'), 350);
+    setTimeout(() => hub.classList.remove('hub-enter'), 400);
     window.scrollTo(0, 0);
   };
 

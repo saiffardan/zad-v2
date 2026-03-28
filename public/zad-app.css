@@ -6929,12 +6929,12 @@
     }
 
     .hub-enter {
-      animation: hubEnter 0.35s var(--ease-out) both;
+      animation: hubEnter 0.4s var(--ease-out) both;
     }
     @keyframes hubEnter {
       from {
         opacity: 0;
-        transform: translateY(60px);
+        transform: translateY(100%);
       }
       to {
         opacity: 1;
