@@ -3923,12 +3923,22 @@
 
   window.toggleHub = function toggleHub() {
     if (_hubOpen) {
-      // Close hub — animate out then navigate
+      // Show the destination page behind hub immediately
+      const dest = _previousPage === 'home' ? 'homePage'
+        : _previousPage === 'transactions' ? 'transactionsApp'
+        : _previousPage === 'portfolio' ? 'mainApp'
+        : _previousPage === 'budget' ? 'budgetApp'
+        : 'homePage';
+      const destEl = document.getElementById(dest);
+      if (destEl) destEl.classList.remove('hidden');
+      showTabBar(_previousPage === 'home' ? null : _previousPage);
+      setHubBtnState(false);
+
+      // Slide hub down over the revealed page
       const hub = document.getElementById('hubPage');
       hub.classList.add('hub-exit');
       setTimeout(() => {
         hub.classList.remove('hub-exit');
-        setHubBtnState(false);
         if (_previousPage === 'home') {
           navigateToHome();
         } else {

@@ -6669,6 +6669,9 @@
        ══════════════════════════════════════════════════════════ */
     #hubPage {
       min-height: 100dvh;
+      position: relative;
+      z-index: 10;
+      background: var(--bg);
     }
     .hub-header {
       display: flex;
