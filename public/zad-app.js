@@ -3948,16 +3948,16 @@
         const d = parseDate(t.date);
         return d.getMonth() + 1 === curMonth && d.getFullYear() === curYear;
       });
-      const expenses = monthTxns.filter(t => t.type === 'EXPENSES').reduce((s, t) => s + Math.abs(t.amount), 0);
       const income = monthTxns.filter(t => t.type === 'INCOME').reduce((s, t) => s + Math.abs(t.amount), 0);
-      const rem = income - expenses;
+      const totalOut = monthTxns.filter(t => t.type === 'EXPENSES' || t.type === 'SAVINGS' || t.type === 'DEBT')
+        .reduce((s, t) => s + Math.abs(t.amount), 0);
+      const rem = income - totalOut;
       monthSpend.textContent = formatMoney(Math.abs(rem));
       monthSpend.style.color = rem >= 0 ? 'var(--emerald)' : 'var(--red)';
-      // Update label
       const label = document.querySelector('.home-glance-budget .home-glance-label');
       if (label) label.textContent = rem >= 0 ? 'REMAINING' : 'OVER BUDGET';
       if (monthRemaining) {
-        monthRemaining.textContent = `${formatMoney(expenses)} spent`;
+        monthRemaining.textContent = `${formatMoney(totalOut)} total out`;
         monthRemaining.style.color = 'var(--text-3)';
       }
     }
