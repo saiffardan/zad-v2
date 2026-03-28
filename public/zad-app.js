@@ -393,15 +393,9 @@
     budgetDataLoaded = true;
     userFirstName = 'Demo';
 
-    // Smooth exit then show the app
-    const signIn = document.getElementById('signInScreen');
-    signIn.classList.add('exiting');
+    // Hide sign-in, show app
+    hideSignInScreen();
     document.getElementById('appSidebar').classList.remove('hidden');
-    signIn.addEventListener('animationend', function onExit() {
-      signIn.removeEventListener('animationend', onExit);
-      signIn.classList.add('hidden');
-      signIn.classList.remove('exiting');
-    }, { once: true });
     renderDashboard();
   }
 
@@ -469,22 +463,12 @@
     localStorage.setItem('tokenExpiresAt', expiresAt);
     // Fetch user's name from Google
     fetchUserName(accessToken);
-    // Smooth exit: fade sign-in out, then show loading
-    const signIn = document.getElementById('signInScreen');
+    // Hide sign-in, show loading
     const btn = document.getElementById('signInBtn');
     if (btn) btn.classList.remove('loading');
-    signIn.classList.add('exiting');
+    hideSignInScreen();
     document.getElementById('appSidebar').classList.remove('hidden');
-    let exitDone = false;
-    function doExit() {
-      if (exitDone) return;
-      exitDone = true;
-      signIn.classList.add('hidden');
-      signIn.classList.remove('exiting');
-      document.getElementById('loadingScreen').classList.remove('hidden');
-    }
-    signIn.addEventListener('animationend', doExit, { once: true });
-    setTimeout(doExit, 600); // fallback if animation doesn't fire
+    document.getElementById('loadingScreen').classList.remove('hidden');
     fetchSheetData();
   }
 
@@ -503,6 +487,15 @@
 
   function updateDashboardGreeting() {
     // No-op: greeting removed when nav moved to header
+  }
+
+  function hideSignInScreen() {
+    const el = document.getElementById('signInScreen');
+    if (el) {
+      el.classList.add('hidden');
+      el.classList.remove('exiting');
+      el.style.display = 'none';
+    }
   }
 
   function handleSignOut() {
@@ -528,7 +521,9 @@
     document.getElementById('appSidebar').classList.add('hidden');
     document.getElementById('homePage').classList.add('hidden');
     document.getElementById('hubPage').classList.add('hidden');
-    document.getElementById('signInScreen').classList.remove('hidden');
+    const signInEl = document.getElementById('signInScreen');
+    signInEl.style.display = '';
+    signInEl.classList.remove('hidden');
     window.scrollTo(0, 0);
   }
 
@@ -619,7 +614,9 @@
       localStorage.removeItem('tokenExpiresAt');
       showError(e.message);
       document.getElementById('loadingScreen').classList.add('hidden');
-      document.getElementById('signInScreen').classList.remove('hidden');
+      const signInEl = document.getElementById('signInScreen');
+      signInEl.style.display = '';
+      signInEl.classList.remove('hidden');
     }
   }
 
@@ -870,12 +867,7 @@
 
   function renderDashboard() {
     document.getElementById('loadingScreen').classList.add('hidden');
-    // Force-hide sign-in screen (failsafe for animation edge cases)
-    const signInEl = document.getElementById('signInScreen');
-    if (signInEl && !signInEl.classList.contains('hidden')) {
-      signInEl.classList.add('hidden');
-      signInEl.classList.remove('exiting');
-    }
+    hideSignInScreen();
     document.getElementById('mainApp').classList.add('hidden');
     document.getElementById('transactionsApp').classList.add('hidden');
     document.getElementById('budgetApp').classList.add('hidden');
@@ -8715,20 +8707,10 @@
     if (cached && Date.now() < expiresAt - 120000) {
       accessToken = cached;
       userFirstName = localStorage.getItem('userName') || '';
-      // Auto-login: quick fade-out then loading
-      const signIn = document.getElementById('signInScreen');
-      signIn.classList.add('exiting');
+      // Hide sign-in, show loading
+      hideSignInScreen();
       document.getElementById('appSidebar').classList.remove('hidden');
-      let autoDone = false;
-      function doAutoExit() {
-        if (autoDone) return;
-        autoDone = true;
-        signIn.classList.add('hidden');
-        signIn.classList.remove('exiting');
-        document.getElementById('loadingScreen').classList.remove('hidden');
-      }
-      signIn.addEventListener('animationend', doAutoExit, { once: true });
-      setTimeout(doAutoExit, 600);
+      document.getElementById('loadingScreen').classList.remove('hidden');
       fetchSheetData();
     }
   })();
