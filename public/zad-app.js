@@ -521,7 +521,7 @@
     document.getElementById('appSidebar').classList.add('hidden');
     document.getElementById('homePage').classList.add('hidden');
     document.getElementById('hubPage').classList.add('hidden');
-    const hubWrap = document.getElementById('floatingHubWrap');
+    const hubWrap = document.getElementById('bottomBarWrap');
     if (hubWrap) hubWrap.classList.add('hidden');
     const signInEl = document.getElementById('signInScreen');
     signInEl.style.display = '';
@@ -876,10 +876,9 @@
     document.getElementById('budgetApp').classList.add('hidden');
     document.getElementById('hubPage').classList.add('hidden');
     // Show floating hub button and Home page on initial load
-    const hubWrap = document.getElementById('floatingHubWrap');
+    const hubWrap = document.getElementById('bottomBarWrap');
     if (hubWrap) {
       hubWrap.classList.remove('hidden');
-      hubWrap.classList.add('hub-centered');
     }
     document.getElementById('homePage').classList.remove('hidden');
     document.getElementById('homePage').classList.add('page-enter');
@@ -3849,10 +3848,6 @@
     if (btn) btn.classList.toggle('hub-active', open);
   }
 
-  function setHubBtnPosition(centered) {
-    const wrap = document.getElementById('floatingHubWrap');
-    if (wrap) wrap.classList.toggle('hub-centered', centered);
-  }
 
   function showTabBar(section) {
     // Hide all floating tab bars
@@ -3866,25 +3861,6 @@
     if (id) {
       const el = document.getElementById(id);
       if (el) el.classList.remove('hidden');
-      // Align hub button vertically with tab bar center
-      requestAnimationFrame(() => alignHubWithTabBar(el));
-    } else {
-      // No tab bar — reset hub button offset
-      const wrap = document.getElementById('floatingHubWrap');
-      if (wrap) wrap.style.bottom = '';
-    }
-  }
-
-  function alignHubWithTabBar(tabBar) {
-    const wrap = document.getElementById('floatingHubWrap');
-    if (!wrap || !tabBar) return;
-    const tabH = tabBar.offsetHeight;
-    const btnH = wrap.offsetHeight;
-    if (tabH && btnH) {
-      // Both share same CSS bottom; offset hub wrap so centers align
-      const diff = (tabH - btnH) / 2;
-      const base = Math.max(12, parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sai-bottom') || '12'));
-      wrap.style.bottom = `calc(max(12px, env(safe-area-inset-bottom)) + ${diff}px)`;
     }
   }
 
@@ -3899,7 +3875,7 @@
   window.navigateToHome = function navigateToHome() {
     _previousPage = 'home';
     setHubBtnState(false);
-    setHubBtnPosition(true);
+
     showTabBar(null);
     document.getElementById('mainApp').classList.add('hidden');
     document.getElementById('transactionsApp').classList.add('hidden');
@@ -3943,7 +3919,7 @@
 
   window.navigateToHub = function navigateToHub() {
     setHubBtnState(true);
-    setHubBtnPosition(true);
+
     showTabBar(null);
     document.getElementById('mainApp').classList.add('hidden');
     document.getElementById('transactionsApp').classList.add('hidden');
@@ -3964,7 +3940,7 @@
   window.navigateToPage = function navigateToPage(section) {
     _previousPage = section;
     setHubBtnState(false);
-    setHubBtnPosition(false);
+
     showTabBar(section);
     document.getElementById('homePage').classList.add('hidden');
     document.getElementById('hubPage').classList.add('hidden');

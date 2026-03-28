@@ -2403,13 +2403,7 @@
     @media (max-width: 767px) {
       /* ── Floating Pill Tab Bar (matches home hub button) ── */
       .txn-bottom-tabs {
-        position: fixed;
-        bottom: max(12px, env(safe-area-inset-bottom));
-        left: var(--content-px);
-        right: auto;
-        transform: none;
-        width: auto;
-        max-width: calc(100vw - 80px);
+        position: static;
         background: rgba(30,30,30,0.4) !important;
         backdrop-filter: blur(50px) saturate(200%) brightness(1.15) !important;
         -webkit-backdrop-filter: blur(50px) saturate(200%) brightness(1.15) !important;
@@ -6618,21 +6612,16 @@
     }
 
     /* Hub Button (bottom of Home page) */
-    .home-hub-btn-wrap {
+    /* ── Shared bottom bar wrapper (tabs + hub button) ── */
+    .bottom-bar-wrap {
       position: fixed;
       bottom: max(12px, env(safe-area-inset-bottom));
-      right: var(--content-px);
-      left: auto;
-      transform: none;
-      z-index: 90;
-      transition: right var(--duration-normal) var(--ease-out),
-                  left var(--duration-normal) var(--ease-out);
-    }
-    /* Center the hub button when on home page (no tab bar visible) */
-    .home-hub-btn-wrap.hub-centered {
       left: 50%;
-      right: auto;
       transform: translateX(-50%);
+      z-index: 90;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .home-hub-btn {
       display: flex;
