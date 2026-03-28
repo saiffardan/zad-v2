@@ -6465,6 +6465,76 @@
       padding: 8px var(--content-px) 0;
     }
 
+    /* Net Worth */
+    .home-net-worth {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 20px 0 24px;
+    }
+    .home-net-worth-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-3);
+      letter-spacing: var(--ls-wide);
+      text-transform: uppercase;
+      line-height: var(--lh-none);
+      margin-bottom: 4px;
+    }
+    .home-net-worth-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-1);
+      letter-spacing: var(--ls-tight);
+      line-height: var(--lh-tight);
+    }
+
+    /* Quick Actions */
+    .home-quick-actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .home-quick-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 4px;
+      background: var(--glass-bg);
+      border: 1px solid var(--divider);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform var(--duration-fast) var(--ease-out), background var(--duration-fast) ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .home-quick-btn:active {
+      transform: scale(0.95);
+    }
+    .home-quick-btn:hover {
+      background: var(--hover-bg);
+    }
+    .home-quick-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .home-quick-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--text-2);
+    }
+    .home-quick-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-2);
+      letter-spacing: var(--ls-slight);
+    }
+
     /* Glance Cards */
     .home-glance-cards {
       display: grid;

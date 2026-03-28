@@ -4062,9 +4062,10 @@
     // Portfolio glance
     const portVal = document.getElementById('homePortValue');
     const portPnl = document.getElementById('homePortPnl');
+    const allPos = getActiveHoldings();
+    const portfolioTotal = allPos.reduce((s, h) => s + (h.currentValue || 0), 0);
     if (portVal) {
-      const allPos = getActiveHoldings();
-      const total = allPos.reduce((s, h) => s + (h.currentValue || 0), 0);
+      const total = portfolioTotal;
       const pnl = allPos.reduce((s, h) => s + (h.pnl || 0), 0);
       portVal.textContent = total > 0 ? formatMoney(total) : '--';
       if (portPnl && total > 0) {
@@ -4100,6 +4101,17 @@
         monthRemaining.textContent = `${formatMoney(Math.abs(totalOut))} total out`;
         monthRemaining.style.color = 'var(--text-3)';
       }
+    }
+
+    // Net worth (portfolio + savings balance from transactions)
+    const netWorthEl = document.getElementById('homeNetWorth');
+    if (netWorthEl) {
+      // Calculate savings balance from all SAVINGS transactions
+      const savingsBalance = allTransactions
+        .filter(t => t.type === 'SAVINGS')
+        .reduce((s, t) => s + t.amount, 0);
+      const netWorth = portfolioTotal + savingsBalance;
+      netWorthEl.textContent = netWorth > 0 ? formatMoney(netWorth) : '--';
     }
 
     // Recent activity
