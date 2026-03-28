@@ -4103,15 +4103,17 @@
       }
     }
 
-    // Net worth (portfolio + savings balance from transactions)
+    // Net worth = cash remaining + portfolio value
     const netWorthEl = document.getElementById('homeNetWorth');
     if (netWorthEl) {
-      // Calculate savings balance from all SAVINGS transactions
-      const savingsBalance = allTransactions
-        .filter(t => t.type === 'SAVINGS')
-        .reduce((s, t) => s + t.amount, 0);
-      const netWorth = portfolioTotal + savingsBalance;
-      netWorthEl.textContent = netWorth > 0 ? formatMoney(netWorth) : '--';
+      const totalIncome = allTransactions.filter(t => t.type === 'INCOME').reduce((s, t) => s + t.amount, 0);
+      const totalExpenses = allTransactions.filter(t => t.type === 'EXPENSES').reduce((s, t) => s + t.amount, 0);
+      const totalSavings = allTransactions.filter(t => t.type === 'SAVINGS').reduce((s, t) => s + t.amount, 0);
+      const totalDebt = allTransactions.filter(t => t.type === 'DEBT').reduce((s, t) => s + t.amount, 0);
+      const cashRemaining = totalIncome - totalExpenses - totalSavings - totalDebt;
+      const netWorth = cashRemaining + portfolioTotal;
+      netWorthEl.textContent = formatMoney(netWorth);
+      netWorthEl.style.color = netWorth >= 0 ? 'var(--text-1)' : 'var(--red)';
     }
 
     // Recent activity
