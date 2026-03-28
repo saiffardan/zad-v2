@@ -3984,7 +3984,29 @@
     document.getElementById('hubPage').classList.add('hidden');
 
     if (section === 'budget') {
-      pageSwitchTo('budget');
+      currentNavSection = 'budget';
+      document.getElementById('transactionsApp').classList.add('hidden');
+      document.getElementById('mainApp').classList.add('hidden');
+      const budgetApp = document.getElementById('budgetApp');
+      budgetApp.classList.remove('hidden');
+      if (!_skipPageEnter) {
+        budgetApp.classList.add('page-enter');
+        setTimeout(() => budgetApp.classList.remove('page-enter'), 600);
+      }
+      window.scrollTo(0, 0);
+      const mlb = document.getElementById('mobileLogoBudget');
+      if (mlb && !mlb.innerHTML) mlb.innerHTML = zadLogo(28);
+      requestAnimationFrame(() => {
+        const bh = document.querySelector('#budgetApp .header');
+        const spacer = document.querySelector('#budgetApp .header-spacer');
+        if (bh) {
+          if (spacer) spacer.style.height = bh.offsetHeight + 'px';
+          if (window.innerWidth < 768) document.documentElement.style.setProperty('--header-h', bh.offsetHeight + 'px');
+        }
+      });
+      const budgetInd = document.getElementById('budgetTabIndicator');
+      if (budgetInd) budgetInd.textContent = currentBudgetTab === 'overview' ? 'Overview' : 'Budgets';
+      fetchAndRenderBudget();
     } else if (section === 'portfolio') {
       currentNavSection = 'portfolio';
       document.getElementById('transactionsApp').classList.add('hidden');
