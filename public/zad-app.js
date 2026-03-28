@@ -3930,6 +3930,8 @@
       } else {
         navigateToPage(_previousPage);
       }
+      // Strip page-enter animation so destination is fully visible immediately
+      document.querySelectorAll('.page-enter').forEach(el => el.classList.remove('page-enter'));
       // Re-show hub on top and animate it out
       hub.classList.remove('hidden');
       hub.classList.add('hub-exit');
