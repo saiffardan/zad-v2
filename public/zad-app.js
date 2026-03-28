@@ -3945,7 +3945,7 @@
       const curMonth = now.getMonth() + 1;
       const curYear = now.getFullYear();
       const monthTxns = allTransactions.filter(t => {
-        const d = new Date(t.date);
+        const d = parseDate(t.date);
         return d.getMonth() + 1 === curMonth && d.getFullYear() === curYear;
       });
       const expenses = monthTxns.filter(t => t.type === 'EXPENSES').reduce((s, t) => s + Math.abs(t.amount), 0);
@@ -3963,7 +3963,7 @@
     if (recentList && allTransactions.length > 0) {
       const recent = allTransactions
         .filter(t => t.type !== 'TRANSFER')
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .sort((a, b) => parseDate(b.date) - parseDate(a.date))
         .slice(0, 5);
 
       if (recent.length === 0) {
@@ -3974,7 +3974,7 @@
           const isRefund = t.isRefund;
           const prefix = isIncome || isRefund ? '+' : '-';
           const cls = isIncome || isRefund ? 'income' : 'expense';
-          const d = new Date(t.date);
+          const d = parseDate(t.date);
           const dateStr = `${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
           return `<div class="home-recent-row">
             <div class="home-recent-left">

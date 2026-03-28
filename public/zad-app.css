@@ -6445,7 +6445,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 20px var(--content-px) 12px;
+      padding: clamp(10px, 3vw, 16px) var(--content-px) 12px;
+      padding-top: calc(clamp(10px, 3vw, 16px) + env(safe-area-inset-top, 0px));
     }
     .home-header-left {
       display: flex;
@@ -6712,7 +6713,8 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 20px var(--content-px) 24px;
+      padding: clamp(10px, 3vw, 16px) var(--content-px) 24px;
+      padding-top: calc(clamp(10px, 3vw, 16px) + env(safe-area-inset-top, 0px));
     }
     .hub-back-btn {
       width: 36px;
