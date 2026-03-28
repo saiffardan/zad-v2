@@ -113,12 +113,8 @@
       <span class="tab-label">Trades</span>
     </div>
     <div id="tab-charts" class="tab" role="tab" aria-selected="false" onclick="switchTab('charts', this)">
-      <svg class="tab-icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="20" x2="12" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="6" y1="20" x2="6" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      <span class="tab-label">Charts</span>
-    </div>
-    <div id="tab-allocation" class="tab" role="tab" aria-selected="false" onclick="switchTab('allocation', this)">
-      <svg class="tab-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 2a10 10 0 0 1 10 10h-10z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
-      <span class="tab-label">Allocation</span>
+      <svg class="tab-icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="tab-label">Insights</span>
     </div>
     <div id="tab-advisor" class="tab" role="tab" aria-selected="false" onclick="switchTab('advisor', this)">
       <svg class="tab-icon" viewBox="0 0 24 24"><path d="M12 20V10M6 20V4M18 20v-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -348,7 +344,7 @@
     </div>
   </div>
 
-  <!-- Charts Tab -->
+  <!-- Insights Tab (Charts + Allocation combined) -->
   <div id="chartsTab" class="hidden" role="tabpanel" aria-labelledby="tab-charts">
     <div class="charts-section">
       <!-- Segment Control -->
@@ -363,6 +359,10 @@
         <div class="alloc-stacked-bar" id="portfolioAllocBar"></div>
         <div class="alloc-total-row" id="portfolioAllocTotal"></div>
         <div class="alloc-ranked-list" id="portfolioAllocList"></div>
+        <div class="section-title" style="margin-top:20px">By Type (Current Value)</div>
+        <div class="allocation-list" id="typeAllocation"></div>
+        <div class="section-title">By Ticker (Current Value)</div>
+        <div class="allocation-list" id="tickerAllocation"></div>
       </div>
 
       <!-- Performance View -->
@@ -400,14 +400,6 @@
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Allocation Tab -->
-  <div id="allocationTab" class="hidden" role="tabpanel" aria-labelledby="tab-allocation">
-    <div class="section-title">By Type (Current Value)</div>
-    <div class="allocation-list" id="typeAllocation"></div>
-    <div class="section-title">By Ticker (Current Value)</div>
-    <div class="allocation-list" id="tickerAllocation"></div>
   </div>
 
   <!-- Advisor Tab (v2) -->

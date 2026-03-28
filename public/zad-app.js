@@ -3649,7 +3649,6 @@
     document.getElementById('holdingsTab').classList.add('hidden');
     document.getElementById('tradesTab').classList.add('hidden');
     document.getElementById('chartsTab').classList.add('hidden');
-    document.getElementById('allocationTab').classList.add('hidden');
     document.getElementById('advisorTab').classList.add('hidden');
 
     el.classList.add('active');
@@ -3658,7 +3657,7 @@
     document.getElementById(tab + 'Tab').classList.remove('hidden');
 
     // Update header tab indicator
-    const tabNames = { holdings: 'Holdings', trades: 'Trades', charts: 'Charts', allocation: 'Allocation', advisor: 'Advisor' };
+    const tabNames = { holdings: 'Holdings', trades: 'Trades', charts: 'Insights', advisor: 'Advisor' };
     const indicator = document.getElementById('portTabIndicator');
     if (indicator) indicator.textContent = tabNames[tab] || '';
 
@@ -3686,15 +3685,15 @@
     const filterPeriod = document.getElementById('filterPortPeriod');
     const tradeFilterWrap = document.getElementById('tradeFilterWrap');
     const portTypeWrap = document.getElementById('portTypeWrap');
-    // Year/Period: show on Trades/Charts/Allocation
+    // Year/Period: show on Trades/Charts
     if (filterYear) filterYear.classList.toggle('filter-hidden', tab === 'holdings' || tab === 'advisor');
     if (filterPeriod) filterPeriod.classList.toggle('filter-hidden', tab === 'holdings' || tab === 'advisor');
     // Trade filter: show on Trades tab only
     if (tradeFilterWrap) tradeFilterWrap.classList.toggle('filter-hidden', tab !== 'trades');
-    // Type filter: hide on Holdings (inline pills), Charts, Advisor
-    if (portTypeWrap) portTypeWrap.classList.toggle('filter-hidden', tab === 'holdings' || tab === 'charts' || tab === 'advisor');
+    // Type filter: hide on Holdings (inline pills), Advisor
+    if (portTypeWrap) portTypeWrap.classList.toggle('filter-hidden', tab === 'holdings' || tab === 'advisor');
 
-    if (tab === 'charts') renderCharts();
+    if (tab === 'charts') { renderCharts(); renderAllocation(); }
     if (tab === 'advisor') renderAdvisor();
 
     // Update portfolio filter spacer on mobile
