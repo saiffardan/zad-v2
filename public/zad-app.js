@@ -7201,26 +7201,32 @@
       const accentColor = typeColors[sec.type];
 
       // Context-aware headline
-      let headline, headlineColor;
+      let headline, headlineColor, headlineAmt;
       if (totalBudget <= 0) {
-        headline = fmtAmt(totalTracked) + ' tracked';
+        headlineAmt = totalTracked;
+        headline = fmtAmt(headlineAmt) + ' tracked';
         headlineColor = accentColor;
       } else if (sec.type === 'INCOME') {
-        headline = fmtAmt(totalTracked) + ' earned';
+        headlineAmt = totalTracked;
+        headline = fmtAmt(headlineAmt) + ' earned';
         headlineColor = '#ffffff';
       } else if (sec.type === 'EXPENSES') {
         if (gap < 0) {
-          headline = fmtAmt(Math.abs(gap)) + ' over budget';
+          headlineAmt = Math.abs(gap);
+          headline = fmtAmt(headlineAmt) + ' over budget';
           headlineColor = '#ff453a';
         } else {
-          headline = fmtAmt(totalTracked) + ' spent';
+          headlineAmt = totalTracked;
+          headline = fmtAmt(headlineAmt) + ' spent';
           headlineColor = '#ffffff';
         }
       } else if (sec.type === 'SAVINGS') {
-        headline = fmtAmt(totalTracked) + ' saved';
+        headlineAmt = totalTracked;
+        headline = fmtAmt(headlineAmt) + ' saved';
         headlineColor = '#ffffff';
       } else {
-        headline = fmtAmt(totalTracked) + ' settled';
+        headlineAmt = totalTracked;
+        headline = fmtAmt(headlineAmt) + ' settled';
         headlineColor = '#ffffff';
       }
 
@@ -7328,7 +7334,7 @@
                 <span class="bd-item-count">${sorted.length} item${sorted.length !== 1 ? 's' : ''}</span>
                 ${chevronSvg}
               </div>
-            <div class="bd-headline" style="color:${headlineColor}" data-animate-amt="${Math.abs(totalTracked)}" data-suffix="${headline.replace(fmtAmt(Math.abs(totalTracked)), '').replace(fmtAmt(totalTracked), '')}">${headline}</div>
+            <div class="bd-headline" style="color:${headlineColor}" data-animate-amt="${headlineAmt}" data-suffix="${headline.replace(fmtAmt(headlineAmt), '')}">${headline}</div>
             <div class="bd-subtext">${subtext}</div>
             </div>
             ${donutSVG}
