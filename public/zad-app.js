@@ -1097,22 +1097,19 @@
     if (h && spacer) spacer.style.height = h.offsetHeight + 'px';
   }
 
-  // Move txn tabs into header on desktop, back to bottom on mobile
+  // Move txn tabs into header on desktop; on mobile they stay as top-level fixed elements
   function syncTabPlacement() {
     const tabRow = document.getElementById('txnTabRow');
     const headerAnchor = document.getElementById('headerTabsAnchor');
-    const txnApp = document.getElementById('transactionsApp');
-    if (!tabRow || !txnApp) return;
+    if (!tabRow) return;
     const isDesktop = window.innerWidth >= 768;
     if (isDesktop && headerAnchor) {
+      tabRow.classList.remove('hidden');
       headerAnchor.appendChild(tabRow);
     } else {
-      // Move back to bottom of transactionsApp (before closing div)
-      const tabSpacer = txnApp.querySelector('.txn-tab-spacer');
-      if (tabSpacer) {
-        txnApp.insertBefore(tabRow, tabSpacer);
-      } else {
-        txnApp.appendChild(tabRow);
+      // On mobile, move back to body if it was in the header
+      if (tabRow.parentElement === headerAnchor) {
+        document.body.appendChild(tabRow);
       }
     }
     // Re-sync underline after move
@@ -3857,6 +3854,21 @@
     if (wrap) wrap.classList.toggle('hub-centered', centered);
   }
 
+  function showTabBar(section) {
+    // Hide all floating tab bars
+    ['tabRow', 'txnTabRow', 'budgetTabRow'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    });
+    // Show the one for the active section
+    const map = { portfolio: 'tabRow', transactions: 'txnTabRow', budget: 'budgetTabRow' };
+    const id = map[section];
+    if (id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('hidden');
+    }
+  }
+
   function highlightActiveHubTile() {
     const tiles = document.querySelectorAll('#hubPage .hub-tile');
     tiles.forEach(t => {
@@ -3869,6 +3881,7 @@
     _previousPage = 'home';
     setHubBtnState(false);
     setHubBtnPosition(true);
+    showTabBar(null);
     document.getElementById('mainApp').classList.add('hidden');
     document.getElementById('transactionsApp').classList.add('hidden');
     document.getElementById('budgetApp').classList.add('hidden');
@@ -3912,6 +3925,7 @@
   window.navigateToHub = function navigateToHub() {
     setHubBtnState(true);
     setHubBtnPosition(true);
+    showTabBar(null);
     document.getElementById('mainApp').classList.add('hidden');
     document.getElementById('transactionsApp').classList.add('hidden');
     document.getElementById('budgetApp').classList.add('hidden');
@@ -3932,6 +3946,7 @@
     _previousPage = section;
     setHubBtnState(false);
     setHubBtnPosition(false);
+    showTabBar(section);
     document.getElementById('homePage').classList.add('hidden');
     document.getElementById('hubPage').classList.add('hidden');
 

@@ -2440,12 +2440,6 @@
       [data-theme="light"] .txn-bottom-tabs.scrolled {
         background: rgba(255,255,255,0.45) !important;
       }
-      /* Prevent page-enter animation from affecting fixed tab bar */
-      .page-enter .txn-bottom-tabs,
-      .txn-bottom-tabs {
-        animation: none !important;
-        opacity: 1 !important;
-      }
       .txn-bottom-tabs .tab {
         display: flex;
         flex-direction: column;
