@@ -2405,11 +2405,11 @@
       .txn-bottom-tabs {
         position: fixed;
         bottom: max(12px, env(safe-area-inset-bottom));
-        left: 50%;
-        transform: translateX(-50%);
+        left: var(--content-px);
         right: auto;
+        transform: none;
         width: auto;
-        max-width: calc(100vw - 32px);
+        max-width: calc(100vw - 80px);
         background: rgba(30,30,30,0.4) !important;
         backdrop-filter: blur(50px) saturate(200%) brightness(1.15) !important;
         -webkit-backdrop-filter: blur(50px) saturate(200%) brightness(1.15) !important;
@@ -6620,10 +6620,19 @@
     /* Hub Button (bottom of Home page) */
     .home-hub-btn-wrap {
       position: fixed;
-      bottom: max(20px, env(safe-area-inset-bottom));
-      left: 50%;
-      transform: translateX(-50%);
+      bottom: max(12px, env(safe-area-inset-bottom));
+      right: var(--content-px);
+      left: auto;
+      transform: none;
       z-index: 90;
+      transition: right var(--duration-normal) var(--ease-out),
+                  left var(--duration-normal) var(--ease-out);
+    }
+    /* Center the hub button when on home page (no tab bar visible) */
+    .home-hub-btn-wrap.hub-centered {
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
     }
     .home-hub-btn {
       display: flex;

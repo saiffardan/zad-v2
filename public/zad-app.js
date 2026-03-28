@@ -877,7 +877,10 @@
     document.getElementById('hubPage').classList.add('hidden');
     // Show floating hub button and Home page on initial load
     const hubWrap = document.getElementById('floatingHubWrap');
-    if (hubWrap) hubWrap.classList.remove('hidden');
+    if (hubWrap) {
+      hubWrap.classList.remove('hidden');
+      hubWrap.classList.add('hub-centered');
+    }
     document.getElementById('homePage').classList.remove('hidden');
     document.getElementById('homePage').classList.add('page-enter');
     setTimeout(() => document.getElementById('homePage').classList.remove('page-enter'), 600);
@@ -3849,6 +3852,11 @@
     if (btn) btn.classList.toggle('hub-active', open);
   }
 
+  function setHubBtnPosition(centered) {
+    const wrap = document.getElementById('floatingHubWrap');
+    if (wrap) wrap.classList.toggle('hub-centered', centered);
+  }
+
   function highlightActiveHubTile() {
     const tiles = document.querySelectorAll('#hubPage .hub-tile');
     tiles.forEach(t => {
@@ -3860,6 +3868,7 @@
   window.navigateToHome = function navigateToHome() {
     _previousPage = 'home';
     setHubBtnState(false);
+    setHubBtnPosition(true);
     document.getElementById('mainApp').classList.add('hidden');
     document.getElementById('transactionsApp').classList.add('hidden');
     document.getElementById('budgetApp').classList.add('hidden');
@@ -3902,6 +3911,7 @@
 
   window.navigateToHub = function navigateToHub() {
     setHubBtnState(true);
+    setHubBtnPosition(true);
     document.getElementById('mainApp').classList.add('hidden');
     document.getElementById('transactionsApp').classList.add('hidden');
     document.getElementById('budgetApp').classList.add('hidden');
@@ -3921,6 +3931,7 @@
   window.navigateToPage = function navigateToPage(section) {
     _previousPage = section;
     setHubBtnState(false);
+    setHubBtnPosition(false);
     document.getElementById('homePage').classList.add('hidden');
     document.getElementById('hubPage').classList.add('hidden');
 
