@@ -3866,6 +3866,25 @@
     if (id) {
       const el = document.getElementById(id);
       if (el) el.classList.remove('hidden');
+      // Align hub button vertically with tab bar center
+      requestAnimationFrame(() => alignHubWithTabBar(el));
+    } else {
+      // No tab bar — reset hub button offset
+      const wrap = document.getElementById('floatingHubWrap');
+      if (wrap) wrap.style.bottom = '';
+    }
+  }
+
+  function alignHubWithTabBar(tabBar) {
+    const wrap = document.getElementById('floatingHubWrap');
+    if (!wrap || !tabBar) return;
+    const tabH = tabBar.offsetHeight;
+    const btnH = wrap.offsetHeight;
+    if (tabH && btnH) {
+      // Both share same CSS bottom; offset hub wrap so centers align
+      const diff = (tabH - btnH) / 2;
+      const base = Math.max(12, parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sai-bottom') || '12'));
+      wrap.style.bottom = `calc(max(12px, env(safe-area-inset-bottom)) + ${diff}px)`;
     }
   }
 
