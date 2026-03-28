@@ -3923,13 +3923,18 @@
 
   window.toggleHub = function toggleHub() {
     if (_hubOpen) {
-      // Close hub — go back to previous page
-      setHubBtnState(false);
-      if (_previousPage === 'home') {
-        navigateToHome();
-      } else {
-        navigateToPage(_previousPage);
-      }
+      // Close hub — animate out then navigate
+      const hub = document.getElementById('hubPage');
+      hub.classList.add('hub-exit');
+      setTimeout(() => {
+        hub.classList.remove('hub-exit');
+        setHubBtnState(false);
+        if (_previousPage === 'home') {
+          navigateToHome();
+        } else {
+          navigateToPage(_previousPage);
+        }
+      }, 300);
     } else {
       // Open hub
       // Remember current page before opening
