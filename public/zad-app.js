@@ -3961,8 +3961,8 @@
 
     const hub = document.getElementById('hubPage');
     hub.classList.remove('hidden');
-    hub.classList.add('page-enter');
-    setTimeout(() => hub.classList.remove('page-enter'), 600);
+    hub.classList.add('hub-enter');
+    setTimeout(() => hub.classList.remove('hub-enter'), 350);
     window.scrollTo(0, 0);
   };
 

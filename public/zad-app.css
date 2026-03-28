@@ -6928,6 +6928,20 @@
       }
     }
 
+    .hub-enter {
+      animation: hubEnter 0.35s var(--ease-out) both;
+    }
+    @keyframes hubEnter {
+      from {
+        opacity: 0;
+        transform: translateY(60px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     /* Remove page-switcher styles since header titles are no longer clickable */
     .page-switcher-chevron { display: none; }
 
