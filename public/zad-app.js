@@ -148,11 +148,11 @@
     updateNavPill(document.querySelector('.nav-item.active'), false);
     // Update logo color immediately after theme change
     const sidebarLogoEl = document.getElementById('sidebarLogo');
-    if (sidebarLogoEl) sidebarLogoEl.innerHTML = zadFullLogo(60);
+    if (sidebarLogoEl) sidebarLogoEl.innerHTML = zadLogo(28);
     const mldEl = document.getElementById('mobileLogoDash');
     const mlpEl = document.getElementById('mobileLogoPort');
-    if (mldEl) mldEl.innerHTML = zadFullLogo(50);
-    if (mlpEl) mlpEl.innerHTML = zadFullLogo(50);
+    if (mldEl) mldEl.innerHTML = zadLogo(28);
+    if (mlpEl) mlpEl.innerHTML = zadLogo(28);
     if (window.Chart && pieChartInstance) renderCharts();
     // Re-render all theme-dependent components immediately
     if (typeof renderThemeDependentComponents === 'function') renderThemeDependentComponents();
@@ -8930,12 +8930,12 @@
 
   // Init
   document.getElementById('signInLogo').innerHTML = zadFullLogo(Math.min(window.innerWidth * 0.28, 120));
-  document.getElementById('sidebarLogo').innerHTML = zadFullLogo(60);
+  document.getElementById('sidebarLogo').innerHTML = zadLogo(28);
   // Mobile header logos
   const mld = document.getElementById('mobileLogoDash');
   const mlp = document.getElementById('mobileLogoPort');
-  if (mld) mld.innerHTML = zadFullLogo(50);
-  if (mlp) mlp.innerHTML = zadFullLogo(50);
+  if (mld) mld.innerHTML = zadLogo(28);
+  if (mlp) mlp.innerHTML = zadLogo(28);
   // Loading screen logo (full wordmark)
   const loadLogoEl = document.getElementById('loadingLogo');
   if (loadLogoEl) loadLogoEl.innerHTML = zadFullLogo(120);
@@ -9032,7 +9032,7 @@ function pageSwitchTo(section) {
     window.scrollTo(0, 0);
     // Init logo
     const mlb = document.getElementById('mobileLogoBudget');
-    if (mlb && !mlb.innerHTML) mlb.innerHTML = zadFullLogo(50);
+    if (mlb && !mlb.innerHTML) mlb.innerHTML = zadLogo(28);
     // Sync header height + spacer
     requestAnimationFrame(() => {
       const bh = document.querySelector('#budgetApp .header');
