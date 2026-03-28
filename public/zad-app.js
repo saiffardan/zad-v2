@@ -3948,16 +3948,18 @@
         const d = parseDate(t.date);
         return d.getMonth() + 1 === curMonth && d.getFullYear() === curYear;
       });
-      const income = monthTxns.filter(t => t.type === 'INCOME').reduce((s, t) => s + Math.abs(t.amount), 0);
-      const totalOut = monthTxns.filter(t => t.type === 'EXPENSES' || t.type === 'SAVINGS' || t.type === 'DEBT')
-        .reduce((s, t) => s + Math.abs(t.amount), 0);
+      const income = monthTxns.filter(t => t.type === 'INCOME').reduce((s, t) => s + t.amount, 0);
+      const expenses = monthTxns.filter(t => t.type === 'EXPENSES').reduce((s, t) => s + t.amount, 0);
+      const savings = monthTxns.filter(t => t.type === 'SAVINGS').reduce((s, t) => s + t.amount, 0);
+      const debt = monthTxns.filter(t => t.type === 'DEBT').reduce((s, t) => s + t.amount, 0);
+      const totalOut = expenses + savings + debt;
       const rem = income - totalOut;
       monthSpend.textContent = formatMoney(Math.abs(rem));
       monthSpend.style.color = rem >= 0 ? 'var(--emerald)' : 'var(--red)';
       const label = document.querySelector('.home-glance-budget .home-glance-label');
       if (label) label.textContent = rem >= 0 ? 'REMAINING' : 'OVER BUDGET';
       if (monthRemaining) {
-        monthRemaining.textContent = `${formatMoney(totalOut)} total out`;
+        monthRemaining.textContent = `${formatMoney(Math.abs(totalOut))} total out`;
         monthRemaining.style.color = 'var(--text-3)';
       }
     }
