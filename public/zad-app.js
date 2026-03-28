@@ -4907,8 +4907,10 @@
     const circ = 2 * Math.PI * r;
     const GAP = 3;
 
-    // Segments: portions of income
-    const total = Math.max(income, 0.01);
+    // Segments: portions of income (or total outflows if overspent)
+    const totalOut = expenses + savings + debt;
+    const isOverspent = totalOut > income;
+    const total = isOverspent ? Math.max(totalOut, 0.01) : Math.max(income, 0.01);
     const convert = (v) => currentCurrency === 'USD' ? v / AED_USD_RATE : v;
     const sym = currentCurrency === 'AED' ? 'AED ' : '$';
     const segments = [
