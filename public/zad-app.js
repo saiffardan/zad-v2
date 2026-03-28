@@ -393,9 +393,15 @@
     budgetDataLoaded = true;
     userFirstName = 'Demo';
 
-    // Show the app
-    document.getElementById('signInScreen').classList.add('hidden');
+    // Smooth exit then show the app
+    const signIn = document.getElementById('signInScreen');
+    signIn.classList.add('exiting');
     document.getElementById('appSidebar').classList.remove('hidden');
+    signIn.addEventListener('animationend', function onExit() {
+      signIn.removeEventListener('animationend', onExit);
+      signIn.classList.add('hidden');
+      signIn.classList.remove('exiting');
+    }, { once: true });
     renderDashboard();
   }
 
@@ -414,12 +420,16 @@
 
   function handleSignIn() {
     if (tokenClient) {
+      const btn = document.getElementById('signInBtn');
+      if (btn) btn.classList.add('loading');
       tokenClient.requestAccessToken();
     }
   }
 
   function handleTokenResponse(response) {
     if (response.error) {
+      const btn = document.getElementById('signInBtn');
+      if (btn) btn.classList.remove('loading');
       showError('Sign-in failed: ' + response.error);
       return;
     }
@@ -430,9 +440,18 @@
     localStorage.setItem('tokenExpiresAt', expiresAt);
     // Fetch user's name from Google
     fetchUserName(accessToken);
-    document.getElementById('signInScreen').classList.add('hidden');
+    // Smooth exit: fade sign-in out, then show loading
+    const signIn = document.getElementById('signInScreen');
+    const btn = document.getElementById('signInBtn');
+    if (btn) btn.classList.remove('loading');
+    signIn.classList.add('exiting');
     document.getElementById('appSidebar').classList.remove('hidden');
-    document.getElementById('loadingScreen').classList.remove('hidden');
+    signIn.addEventListener('animationend', function onExit() {
+      signIn.removeEventListener('animationend', onExit);
+      signIn.classList.add('hidden');
+      signIn.classList.remove('exiting');
+      document.getElementById('loadingScreen').classList.remove('hidden');
+    }, { once: true });
     fetchSheetData();
   }
 
@@ -8559,7 +8578,7 @@
   }
 
   // Init
-  document.getElementById('signInLogo').innerHTML = zadFullLogo(220);
+  document.getElementById('signInLogo').innerHTML = zadFullLogo(Math.min(window.innerWidth * 0.28, 120));
   document.getElementById('sidebarLogo').innerHTML = zadFullLogo(60);
   // Mobile header logos
   const mld = document.getElementById('mobileLogoDash');
@@ -8615,9 +8634,16 @@
     if (cached && Date.now() < expiresAt - 120000) {
       accessToken = cached;
       userFirstName = localStorage.getItem('userName') || '';
-      document.getElementById('signInScreen').classList.add('hidden');
+      // Auto-login: quick fade-out then loading
+      const signIn = document.getElementById('signInScreen');
+      signIn.classList.add('exiting');
       document.getElementById('appSidebar').classList.remove('hidden');
-      document.getElementById('loadingScreen').classList.remove('hidden');
+      signIn.addEventListener('animationend', function onExit() {
+        signIn.removeEventListener('animationend', onExit);
+        signIn.classList.add('hidden');
+        signIn.classList.remove('exiting');
+        document.getElementById('loadingScreen').classList.remove('hidden');
+      }, { once: true });
       fetchSheetData();
     }
   })();

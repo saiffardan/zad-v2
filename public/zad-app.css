@@ -1176,10 +1176,25 @@
       justify-content: space-between;
       min-height: 100vh;
       min-height: 100dvh;
-      padding: env(safe-area-inset-top, 0px) 20px env(safe-area-inset-bottom, 32px);
+      padding: env(safe-area-inset-top, 0px) clamp(20px, 5vw, 60px) env(safe-area-inset-bottom, 32px);
       text-align: center;
       position: relative;
       z-index: 10;
+      overflow: hidden;
+    }
+    /* Atmospheric radial gradient behind logo */
+    .sign-in-container::before {
+      content: '';
+      position: absolute;
+      top: 35%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.035) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 0;
     }
     .sign-in-brand {
       flex: 1;
@@ -1187,6 +1202,9 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      margin-top: -4vh;
+      position: relative;
+      z-index: 1;
     }
     .sign-in-brand .brand-mark {
       display: flex;
@@ -1194,16 +1212,28 @@
       justify-content: center;
       position: relative;
     }
-    /* Ambient glow pulse behind logo */
+    /* Primary ambient glow pulse behind logo */
     .brand-mark::before {
       content: '';
       position: absolute;
-      width: 180px;
-      height: 180px;
+      width: 260px;
+      height: 260px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(255,255,255,0.13) 0%, transparent 70%);
       opacity: 0;
-      animation: glowPulse 3s ease-in-out 1.2s forwards;
+      animation: glowPulse 3s ease-in-out 1.3s forwards;
+      pointer-events: none;
+    }
+    /* Secondary outer glow — diffused halo for depth */
+    .brand-mark::after {
+      content: '';
+      position: absolute;
+      width: 440px;
+      height: 440px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 65%);
+      opacity: 0;
+      animation: glowPulse 3s ease-in-out 1.5s forwards;
       pointer-events: none;
     }
     @keyframes glowPulse {
@@ -1211,82 +1241,173 @@
       50% { opacity: 1; transform: scale(1); }
       100% { opacity: 0.5; transform: scale(1.1); }
     }
-    /* Logo SVG entrance */
+    /* Logo SVG entrance — with vertical travel */
     .brand-mark svg {
       overflow: visible;
       opacity: 0;
-      transform: scale(0.7);
-      animation: logoEntrance 1.4s var(--ease-out) 0.2s forwards;
+      transform: scale(0.7) translateY(20px);
+      animation: logoEntrance 1.2s var(--ease-out) 0.2s forwards;
+      position: relative;
+      z-index: 1;
     }
     @keyframes logoEntrance {
-      0% { opacity: 0; transform: scale(0.7); filter: blur(12px); }
-      60% { opacity: 1; transform: scale(1.06); filter: blur(0px); }
-      100% { opacity: 1; transform: scale(1); filter: blur(0px); }
+      0% { opacity: 0; transform: scale(0.7) translateY(20px); filter: blur(12px); }
+      60% { opacity: 1; transform: scale(1.04) translateY(-2px); filter: blur(0px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0px); }
     }
-    /* Each letter path fades in with staggered slide-up */
+    /* Each letter path fades in with staggered slide-up — delayed after logo settles */
     .brand-mark svg path {
       opacity: 0;
       animation: pathSlideIn 0.9s var(--ease-out) forwards;
     }
-    .brand-mark svg path:nth-of-type(1) { animation-delay: 0.3s; } /* Z */
-    .brand-mark svg path:nth-of-type(2) { animation-delay: 0.5s; } /* d dot */
-    .brand-mark svg path:nth-of-type(3) { animation-delay: 0.65s; } /* d body */
-    .brand-mark svg path:nth-of-type(4) { animation-delay: 0.45s; } /* a */
+    .brand-mark svg path:nth-of-type(1) { animation-delay: 0.8s; }  /* Z */
+    .brand-mark svg path:nth-of-type(2) { animation-delay: 1.1s; }  /* d dot */
+    .brand-mark svg path:nth-of-type(3) { animation-delay: 1.25s; } /* d body */
+    .brand-mark svg path:nth-of-type(4) { animation-delay: 0.95s; } /* a */
     @keyframes pathSlideIn {
       0% { opacity: 0; transform: translateY(12px); }
       100% { opacity: 1; transform: translateY(0); }
     }
-    [data-theme="light"] .brand-mark::before {
-      background: radial-gradient(circle, rgba(0,0,0,0.04) 0%, transparent 70%);
+    /* Tagline below logo */
+    .sign-in-tagline {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: var(--ls-wide);
+      color: rgba(255,255,255,0.25);
+      margin-top: 20px;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: taglineFade 0.8s var(--ease-out) 1.4s forwards;
     }
-    /* Sign-in button */
+    @keyframes taglineFade {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Light theme — sign-in overrides */
+    [data-theme="light"] .sign-in-container::before {
+      background: radial-gradient(circle, rgba(0,0,0,0.025) 0%, transparent 65%);
+    }
+    [data-theme="light"] .brand-mark::before {
+      background: radial-gradient(circle, rgba(0,0,0,0.06) 0%, transparent 70%);
+    }
+    [data-theme="light"] .brand-mark::after {
+      background: radial-gradient(circle, rgba(0,0,0,0.02) 0%, transparent 65%);
+    }
+    [data-theme="light"] .sign-in-tagline {
+      color: rgba(0,0,0,0.3);
+    }
+    /* Sign-in button area */
     .sign-in-bottom {
       padding-bottom: max(32px, env(safe-area-inset-bottom, 32px));
       width: 100%;
       max-width: 360px;
       opacity: 0;
       transform: translateY(20px);
-      animation: btnReveal 0.9s var(--ease-out) 1.6s forwards;
+      animation: btnReveal 0.9s var(--ease-out) 1.8s forwards;
+      position: relative;
+      z-index: 1;
     }
     @keyframes btnReveal {
       to { opacity: 1; transform: translateY(0); }
     }
     /* Ambient light sweep across the whole container */
-    .sign-in-container::after {
-      content: '';
+    .sign-in-container > .light-sweep {
       position: absolute;
       top: 0;
       left: -100%;
       width: 60%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.02), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
       animation: lightSweep 2.5s ease-in-out 0.8s forwards;
       pointer-events: none;
+      z-index: 0;
+    }
+    [data-theme="light"] .sign-in-container > .light-sweep {
+      background: linear-gradient(90deg, transparent, rgba(0,0,0,0.03), transparent);
     }
     @keyframes lightSweep {
       to { left: 200%; }
     }
+    /* Sign-in screen exit animation */
+    .sign-in-container.exiting {
+      animation: signInExit 0.5s var(--ease-out) forwards;
+    }
+    @keyframes signInExit {
+      to { opacity: 0; transform: scale(0.96); }
+    }
 
-    .btn-glass {
-      background: rgba(255,255,255,0.08) !important;
+    .sign-in-bottom .btn-glass {
+      background: rgba(255,255,255,0.08);
       backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid rgba(255,255,255,0.1) !important;
-      box-shadow: var(--shadow-lg) !important;
-      color: rgba(245,245,247,0.8) !important;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: var(--shadow-lg);
+      color: rgba(245,245,247,0.85);
       width: 100%;
       font-weight: 400;
       letter-spacing: var(--ls-slight);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background var(--duration-normal) ease, border-color var(--duration-normal) ease, box-shadow var(--duration-normal) ease, transform var(--duration-fast) ease;
     }
-    .btn-glass:active {
-      background: rgba(255,255,255,0.15) !important;
+    .sign-in-bottom .btn-glass:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.18);
+      box-shadow: var(--shadow-lg), 0 0 30px rgba(255,255,255,0.04);
+    }
+    .sign-in-bottom .btn-glass:focus-visible {
+      outline: 2px solid rgba(255,255,255,0.4);
+      outline-offset: 2px;
+    }
+    .sign-in-bottom .btn-glass:active {
+      background: rgba(255,255,255,0.15);
       transform: scale(0.97);
+    }
+    .sign-in-bottom .btn-glass .btn-spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: rgba(255,255,255,0.8);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .sign-in-bottom .btn-glass.loading .btn-spinner { display: block; }
+    .sign-in-bottom .btn-glass.loading .btn-label { opacity: 0.6; }
+    /* Google icon in sign-in button */
+    .btn-glass .google-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+    /* Light theme buttons */
+    [data-theme="light"] .sign-in-bottom .btn-glass {
+      background: rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.1);
+      color: rgba(0,0,0,0.75);
+    }
+    [data-theme="light"] .sign-in-bottom .btn-glass:hover {
+      background: rgba(0,0,0,0.08);
+      border-color: rgba(0,0,0,0.15);
+      box-shadow: var(--shadow-lg), 0 0 30px rgba(0,0,0,0.03);
+    }
+    [data-theme="light"] .sign-in-bottom .btn-glass:focus-visible {
+      outline-color: rgba(0,0,0,0.3);
+    }
+    [data-theme="light"] .sign-in-bottom .btn-glass:active {
+      background: rgba(0,0,0,0.1);
+    }
+    [data-theme="light"] .sign-in-bottom .btn-glass .btn-spinner {
+      border-color: rgba(0,0,0,0.15);
+      border-top-color: rgba(0,0,0,0.7);
     }
 
     .btn-demo {
       background: none;
       border: none;
-      color: rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.4);
       font-family: var(--font-sans);
       font-size: 14px;
       font-weight: 400;
@@ -1294,11 +1415,26 @@
       padding: 12px;
       margin-top: 8px;
       cursor: pointer;
-      transition: color var(--duration-normal) ease;
+      transition: color var(--duration-normal) ease, transform var(--duration-fast) ease;
       width: 100%;
     }
-    .btn-demo:hover { color: rgba(255,255,255,0.6); }
+    .btn-demo:hover { color: rgba(255,255,255,0.65); }
+    .btn-demo:focus-visible {
+      outline: 2px solid rgba(255,255,255,0.3);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
     .btn-demo:active { transform: scale(0.97); }
+    .btn-demo .demo-arrow {
+      display: inline-block;
+      transition: transform var(--duration-normal) ease;
+      margin-left: 4px;
+    }
+    .btn-demo:hover .demo-arrow { transform: translateX(3px); }
+    /* Light theme demo button */
+    [data-theme="light"] .btn-demo { color: rgba(0,0,0,0.4); }
+    [data-theme="light"] .btn-demo:hover { color: rgba(0,0,0,0.65); }
+    [data-theme="light"] .btn-demo:focus-visible { outline-color: rgba(0,0,0,0.2); }
 
     .btn {
       background: linear-gradient(135deg, var(--emerald), var(--emerald-dim));
@@ -1317,6 +1453,27 @@
     .btn:hover { opacity: 0.9; }
     .btn:active { transform: scale(0.97); }
 
+    /* Reduced motion — disable sign-in animations */
+    @media (prefers-reduced-motion: reduce) {
+      .brand-mark svg,
+      .brand-mark svg path,
+      .brand-mark::before,
+      .brand-mark::after,
+      .sign-in-tagline,
+      .sign-in-bottom,
+      .sign-in-container > .light-sweep {
+        animation: none;
+        opacity: 1;
+        transform: none;
+        filter: none;
+      }
+      .brand-mark::before { opacity: 0.5; }
+      .brand-mark::after { opacity: 0.5; }
+      .sign-in-container.exiting { animation: none; opacity: 0; }
+      .loading-logo { animation: none; opacity: 1; }
+      .loading-dot { animation: none; opacity: 0.6; }
+    }
+
     /* ── Loading ── */
     .loading {
       display: flex;
@@ -1328,6 +1485,12 @@
       background: var(--bg);
       color: var(--text-2);
       z-index: 9999;
+      opacity: 0;
+      animation: loadingEnter 0.4s ease 0.1s forwards;
+    }
+    @keyframes loadingEnter {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .loading p {
@@ -1335,11 +1498,9 @@
       font-weight: 400;
       letter-spacing: var(--ls-slight);
       opacity: 0;
-      animation: loadTextFade 0.4s ease forwards;
+      animation: loadTextFade 0.4s ease 0.3s forwards;
       transition: opacity var(--duration-slow) ease;
     }
-
-    /* Progress bar removed */
 
     .loading-dots {
       display: flex;
@@ -1382,6 +1543,10 @@
     @keyframes logoPulse {
       0%, 100% { opacity: 0.3; transform: scale(0.95); }
       50% { opacity: 1; transform: scale(1.05); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .loading { animation: none; opacity: 1; }
+      .loading p { animation: none; opacity: 1; }
     }
 
     /* ── Summary Cards ── */
