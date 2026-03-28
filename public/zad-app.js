@@ -3835,6 +3835,161 @@
     }
   }
 
+  // ── Hub & Spoke Navigation ──
+  window.navigateToHome = function navigateToHome() {
+    document.getElementById('mainApp').classList.add('hidden');
+    document.getElementById('transactionsApp').classList.add('hidden');
+    document.getElementById('budgetApp').classList.add('hidden');
+    document.getElementById('hubPage').classList.add('hidden');
+    const catApp = document.getElementById('categoriesApp');
+    if (catApp) catApp.classList.add('hidden');
+
+    const home = document.getElementById('homePage');
+    home.classList.remove('hidden');
+    home.classList.add('page-enter');
+    setTimeout(() => home.classList.remove('page-enter'), 600);
+    window.scrollTo(0, 0);
+    updateHomePage();
+  };
+
+  window.navigateToHub = function navigateToHub() {
+    document.getElementById('mainApp').classList.add('hidden');
+    document.getElementById('transactionsApp').classList.add('hidden');
+    document.getElementById('budgetApp').classList.add('hidden');
+    document.getElementById('homePage').classList.add('hidden');
+    const catApp = document.getElementById('categoriesApp');
+    if (catApp) catApp.classList.add('hidden');
+
+    const hub = document.getElementById('hubPage');
+    hub.classList.remove('hidden');
+    hub.classList.add('page-enter');
+    setTimeout(() => hub.classList.remove('page-enter'), 600);
+    window.scrollTo(0, 0);
+  };
+
+  window.navigateToPage = function navigateToPage(section) {
+    document.getElementById('homePage').classList.add('hidden');
+    document.getElementById('hubPage').classList.add('hidden');
+
+    if (section === 'budget') {
+      pageSwitchTo('budget');
+    } else if (section === 'portfolio') {
+      currentNavSection = 'portfolio';
+      document.getElementById('transactionsApp').classList.add('hidden');
+      document.getElementById('budgetApp').classList.add('hidden');
+      const mainAppEl = document.getElementById('mainApp');
+      mainAppEl.classList.remove('hidden');
+      mainAppEl.classList.add('page-enter');
+      setTimeout(() => mainAppEl.classList.remove('page-enter'), 600);
+      window.scrollTo(0, 0);
+      syncPortfolioTabPlacement();
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        initAllPills();
+        const activeTab = document.querySelector('#mainApp .tabs .tab.active');
+        if (activeTab) moveTabUnderline(activeTab);
+        syncHeaderSpacer();
+      }));
+    } else {
+      currentNavSection = 'transactions';
+      document.getElementById('mainApp').classList.add('hidden');
+      document.getElementById('budgetApp').classList.add('hidden');
+      const txnApp = document.getElementById('transactionsApp');
+      txnApp.classList.remove('hidden');
+      txnApp.classList.add('page-enter');
+      setTimeout(() => txnApp.classList.remove('page-enter'), 600);
+      window.scrollTo(0, 0);
+      syncHeaderSpacer();
+      if (txnDataLoaded) {
+        renderTransactionsDashboard();
+      } else {
+        fetchTransactions();
+      }
+    }
+  };
+
+  function updateHomePage() {
+    const hour = new Date().getHours();
+    let greeting = 'Good evening';
+    if (hour < 12) greeting = 'Good morning';
+    else if (hour < 17) greeting = 'Good afternoon';
+
+    const greetEl = document.getElementById('homeGreeting');
+    const nameEl = document.getElementById('homeUserName');
+    if (greetEl) greetEl.textContent = greeting;
+    if (nameEl) nameEl.textContent = userFirstName || 'there';
+
+    const logo = document.getElementById('homeLogo');
+    if (logo && !logo.innerHTML) logo.innerHTML = zadLogo(28);
+
+    // Portfolio glance
+    const portVal = document.getElementById('homePortValue');
+    const portPnl = document.getElementById('homePortPnl');
+    if (portVal) {
+      const allPos = getActiveHoldings();
+      const total = allPos.reduce((s, h) => s + (h.currentValue || 0), 0);
+      const pnl = allPos.reduce((s, h) => s + (h.pnl || 0), 0);
+      portVal.textContent = total > 0 ? formatMoney(total) : '--';
+      if (portPnl && total > 0) {
+        const invested = allPos.reduce((s, h) => s + (h.netInvested || 0), 0);
+        const roi = invested > 0 ? ((pnl / invested) * 100).toFixed(1) : '0.0';
+        portPnl.textContent = `${pnl >= 0 ? '+' : ''}${formatMoney(pnl)} (${roi}%)`;
+        portPnl.style.color = pnl >= 0 ? 'var(--emerald)' : 'var(--red)';
+      }
+    }
+
+    // Monthly spend glance
+    const monthSpend = document.getElementById('homeMonthSpend');
+    const monthRemaining = document.getElementById('homeMonthRemaining');
+    if (monthSpend && allTransactions.length > 0) {
+      const now = new Date();
+      const curMonth = now.getMonth() + 1;
+      const curYear = now.getFullYear();
+      const monthTxns = allTransactions.filter(t => {
+        const d = new Date(t.date);
+        return d.getMonth() + 1 === curMonth && d.getFullYear() === curYear;
+      });
+      const expenses = monthTxns.filter(t => t.type === 'EXPENSES').reduce((s, t) => s + Math.abs(t.amount), 0);
+      const income = monthTxns.filter(t => t.type === 'INCOME').reduce((s, t) => s + Math.abs(t.amount), 0);
+      monthSpend.textContent = formatMoney(expenses);
+      if (monthRemaining) {
+        const rem = income - expenses;
+        monthRemaining.textContent = rem >= 0 ? `${formatMoney(rem)} remaining` : `${formatMoney(Math.abs(rem))} over`;
+        monthRemaining.style.color = rem >= 0 ? 'var(--emerald)' : 'var(--red)';
+      }
+    }
+
+    // Recent activity
+    const recentList = document.getElementById('homeRecentList');
+    if (recentList && allTransactions.length > 0) {
+      const recent = allTransactions
+        .filter(t => t.type !== 'TRANSFER')
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 5);
+
+      if (recent.length === 0) {
+        recentList.innerHTML = '<div class="home-empty-state">No recent transactions</div>';
+      } else {
+        recentList.innerHTML = recent.map(t => {
+          const isIncome = t.type === 'INCOME';
+          const isRefund = t.isRefund;
+          const prefix = isIncome || isRefund ? '+' : '-';
+          const cls = isIncome || isRefund ? 'income' : 'expense';
+          const d = new Date(t.date);
+          const dateStr = `${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
+          return `<div class="home-recent-row">
+            <div class="home-recent-left">
+              <span class="home-recent-cat">${escapeHTML(t.category || t.subcategory || '--')}</span>
+              <span class="home-recent-date">${dateStr}</span>
+            </div>
+            <span class="home-recent-amt ${cls}">${prefix}${formatMoney(Math.abs(t.amount))}</span>
+          </div>`;
+        }).join('');
+      }
+    } else if (recentList) {
+      recentList.innerHTML = '<div class="home-empty-state">No transactions yet</div>';
+    }
+  }
+
   async function refreshData() {
     const btn = document.getElementById('refreshBtn');
     btn.classList.add('spinning');
@@ -9594,169 +9749,6 @@ function editBudgetCategory(type, cat) {
     <div class="txn-edit-status" id="editBudgetStatus"></div>
   `;
   openModal();
-}
-
-// ── Hub & Spoke Navigation ──
-function navigateToHome() {
-  // Hide all main pages
-  document.getElementById('mainApp').classList.add('hidden');
-  document.getElementById('transactionsApp').classList.add('hidden');
-  document.getElementById('budgetApp').classList.add('hidden');
-  document.getElementById('hubPage').classList.add('hidden');
-  const catApp = document.getElementById('categoriesApp');
-  if (catApp) catApp.classList.add('hidden');
-
-  const home = document.getElementById('homePage');
-  home.classList.remove('hidden');
-  home.classList.add('page-enter');
-  setTimeout(() => home.classList.remove('page-enter'), 600);
-  window.scrollTo(0, 0);
-
-  // Populate home page data
-  updateHomePage();
-}
-
-function navigateToHub() {
-  // Hide all main pages
-  document.getElementById('mainApp').classList.add('hidden');
-  document.getElementById('transactionsApp').classList.add('hidden');
-  document.getElementById('budgetApp').classList.add('hidden');
-  document.getElementById('homePage').classList.add('hidden');
-  const catApp = document.getElementById('categoriesApp');
-  if (catApp) catApp.classList.add('hidden');
-
-  const hub = document.getElementById('hubPage');
-  hub.classList.remove('hidden');
-  hub.classList.add('page-enter');
-  setTimeout(() => hub.classList.remove('page-enter'), 600);
-  window.scrollTo(0, 0);
-}
-
-function navigateToPage(section) {
-  // Hide home and hub
-  document.getElementById('homePage').classList.add('hidden');
-  document.getElementById('hubPage').classList.add('hidden');
-
-  if (section === 'budget') {
-    pageSwitchTo('budget');
-  } else if (section === 'portfolio') {
-    currentNavSection = 'portfolio';
-    document.getElementById('transactionsApp').classList.add('hidden');
-    document.getElementById('budgetApp').classList.add('hidden');
-    const mainApp = document.getElementById('mainApp');
-    mainApp.classList.remove('hidden');
-    mainApp.classList.add('page-enter');
-    setTimeout(() => mainApp.classList.remove('page-enter'), 600);
-    window.scrollTo(0, 0);
-    syncPortfolioTabPlacement();
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      initAllPills();
-      const activeTab = document.querySelector('#mainApp .tabs .tab.active');
-      if (activeTab) moveTabUnderline(activeTab);
-      syncHeaderSpacer();
-    }));
-  } else {
-    // transactions/dashboard
-    currentNavSection = 'transactions';
-    document.getElementById('mainApp').classList.add('hidden');
-    document.getElementById('budgetApp').classList.add('hidden');
-    const txnApp = document.getElementById('transactionsApp');
-    txnApp.classList.remove('hidden');
-    txnApp.classList.add('page-enter');
-    setTimeout(() => txnApp.classList.remove('page-enter'), 600);
-    window.scrollTo(0, 0);
-    syncHeaderSpacer();
-    if (txnDataLoaded) {
-      renderTransactionsDashboard();
-    } else {
-      fetchTransactions();
-    }
-  }
-}
-
-function updateHomePage() {
-  // Greeting
-  const hour = new Date().getHours();
-  let greeting = 'Good evening';
-  if (hour < 12) greeting = 'Good morning';
-  else if (hour < 17) greeting = 'Good afternoon';
-
-  const greetEl = document.getElementById('homeGreeting');
-  const nameEl = document.getElementById('homeUserName');
-  if (greetEl) greetEl.textContent = greeting;
-  if (nameEl) nameEl.textContent = userFirstName || 'there';
-
-  // Logo
-  const logo = document.getElementById('homeLogo');
-  if (logo && !logo.innerHTML) logo.innerHTML = zadLogo(28);
-
-  // Portfolio glance
-  const portVal = document.getElementById('homePortValue');
-  const portPnl = document.getElementById('homePortPnl');
-  if (portVal) {
-    const allPos = getActiveHoldings();
-    const total = allPos.reduce((s, h) => s + (h.currentValue || 0), 0);
-    const pnl = allPos.reduce((s, h) => s + (h.pnl || 0), 0);
-    portVal.textContent = total > 0 ? fmtAmt(total) : '--';
-    if (portPnl && total > 0) {
-      const pnlPct = allPos.reduce((s, h) => s + (h.netInvested || 0), 0);
-      const roi = pnlPct > 0 ? ((pnl / pnlPct) * 100).toFixed(1) : '0.0';
-      portPnl.textContent = `${pnl >= 0 ? '+' : ''}${fmtAmt(pnl)} (${roi}%)`;
-      portPnl.style.color = pnl >= 0 ? 'var(--emerald)' : 'var(--red)';
-    }
-  }
-
-  // Monthly spend glance
-  const monthSpend = document.getElementById('homeMonthSpend');
-  const monthRemaining = document.getElementById('homeMonthRemaining');
-  if (monthSpend && allTransactions.length > 0) {
-    const now = new Date();
-    const curMonth = now.getMonth() + 1;
-    const curYear = now.getFullYear();
-    const monthTxns = allTransactions.filter(t => {
-      const d = new Date(t.date);
-      return d.getMonth() + 1 === curMonth && d.getFullYear() === curYear;
-    });
-    const expenses = monthTxns.filter(t => t.type === 'EXPENSES').reduce((s, t) => s + Math.abs(t.amount), 0);
-    const income = monthTxns.filter(t => t.type === 'INCOME').reduce((s, t) => s + Math.abs(t.amount), 0);
-    monthSpend.textContent = fmtAmt(expenses);
-    if (monthRemaining) {
-      const rem = income - expenses;
-      monthRemaining.textContent = rem >= 0 ? `${fmtAmt(rem)} remaining` : `${fmtAmt(Math.abs(rem))} over`;
-      monthRemaining.style.color = rem >= 0 ? 'var(--emerald)' : 'var(--red)';
-    }
-  }
-
-  // Recent activity
-  const recentList = document.getElementById('homeRecentList');
-  if (recentList && allTransactions.length > 0) {
-    const recent = allTransactions
-      .filter(t => t.type !== 'TRANSFER')
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 5);
-
-    if (recent.length === 0) {
-      recentList.innerHTML = '<div class="home-empty-state">No recent transactions</div>';
-    } else {
-      recentList.innerHTML = recent.map(t => {
-        const isIncome = t.type === 'INCOME';
-        const isRefund = t.isRefund;
-        const prefix = isIncome || isRefund ? '+' : '-';
-        const cls = isIncome || isRefund ? 'income' : 'expense';
-        const d = new Date(t.date);
-        const dateStr = `${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
-        return `<div class="home-recent-row">
-          <div class="home-recent-left">
-            <span class="home-recent-cat">${escapeHTML(t.category || t.subcategory || '--')}</span>
-            <span class="home-recent-date">${dateStr}</span>
-          </div>
-          <span class="home-recent-amt ${cls}">${prefix}${fmtAmt(Math.abs(t.amount))}</span>
-        </div>`;
-      }).join('');
-    }
-  } else if (recentList) {
-    recentList.innerHTML = '<div class="home-empty-state">No transactions yet</div>';
-  }
 }
 
 async function saveBudgetCategory(type, cat) {
