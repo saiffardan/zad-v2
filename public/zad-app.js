@@ -521,6 +521,8 @@
     document.getElementById('appSidebar').classList.add('hidden');
     document.getElementById('homePage').classList.add('hidden');
     document.getElementById('hubPage').classList.add('hidden');
+    const hubWrap = document.getElementById('floatingHubWrap');
+    if (hubWrap) hubWrap.classList.add('hidden');
     const signInEl = document.getElementById('signInScreen');
     signInEl.style.display = '';
     signInEl.classList.remove('hidden');
@@ -873,7 +875,9 @@
     document.getElementById('transactionsApp').classList.add('hidden');
     document.getElementById('budgetApp').classList.add('hidden');
     document.getElementById('hubPage').classList.add('hidden');
-    // Show Home page on initial load
+    // Show floating hub button and Home page on initial load
+    const hubWrap = document.getElementById('floatingHubWrap');
+    if (hubWrap) hubWrap.classList.remove('hidden');
     document.getElementById('homePage').classList.remove('hidden');
     document.getElementById('homePage').classList.add('page-enter');
     setTimeout(() => document.getElementById('homePage').classList.remove('page-enter'), 600);
