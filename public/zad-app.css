@@ -2401,8 +2401,77 @@
       display: none;
     }
     @media (max-width: 767px) {
-      /* ── Hide bottom tab bars on mobile — navigation via Hub ── */
+      /* ── Floating Pill Tab Bar (matches home hub button) ── */
       .txn-bottom-tabs {
+        position: fixed;
+        bottom: max(12px, env(safe-area-inset-bottom));
+        left: 50%;
+        transform: translateX(-50%);
+        right: auto;
+        width: auto;
+        max-width: calc(100vw - 32px);
+        background: rgba(30,30,30,0.4) !important;
+        backdrop-filter: blur(50px) saturate(200%) brightness(1.15) !important;
+        -webkit-backdrop-filter: blur(50px) saturate(200%) brightness(1.15) !important;
+        border-radius: 24px !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+        border-top: none !important;
+        box-shadow: var(--shadow-lg) !important;
+        padding: 4px 6px !important;
+        justify-content: center;
+        gap: 0 !important;
+        overflow: hidden;
+      }
+      .txn-bottom-tabs::before,
+      .txn-bottom-tabs::after {
+        display: none !important;
+      }
+      .txn-bottom-tabs.scrolled {
+        background: rgba(30,30,30,0.4) !important;
+        backdrop-filter: blur(50px) saturate(200%) brightness(1.15) !important;
+        -webkit-backdrop-filter: blur(50px) saturate(200%) brightness(1.15) !important;
+        box-shadow: var(--shadow-lg) !important;
+      }
+      [data-theme="light"] .txn-bottom-tabs {
+        background: rgba(255,255,255,0.45) !important;
+        border-color: rgba(255,255,255,0.6) !important;
+        box-shadow: var(--shadow-lg) !important;
+      }
+      [data-theme="light"] .txn-bottom-tabs.scrolled {
+        background: rgba(255,255,255,0.45) !important;
+      }
+      .txn-bottom-tabs .tab {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        padding: 6px 16px 4px;
+        flex: 1;
+        font-size: 10px;
+        font-weight: 500;
+        border-radius: 16px;
+        color: var(--text-3);
+        transition: color var(--duration-normal) ease;
+      }
+      .txn-bottom-tabs .tab-icon {
+        display: block;
+        width: 24px;
+        height: 24px;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        fill: none;
+        transition: stroke-width var(--duration-normal) ease;
+      }
+      .txn-bottom-tabs .tab.active {
+        color: var(--text-1);
+      }
+      .txn-bottom-tabs .tab.active .tab-icon {
+        stroke-width: 2;
+      }
+      .txn-bottom-tabs .tab-underline,
+      .txn-bottom-tabs #txnTabUnderline {
         display: none !important;
       }
     }
