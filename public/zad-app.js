@@ -3841,6 +3841,36 @@
   let _previousPage = 'home'; // tracks which page was open before hub
   let _hubOpen = false;
 
+  window.openHubSettings = function openHubSettings() {
+    const grid = document.getElementById('hubGrid');
+    const settings = document.getElementById('hubSettings');
+    const settingsBtn = document.querySelector('.hub-settings-btn');
+    const hubTitle = document.querySelector('.hub-title');
+    if (grid) grid.classList.add('hidden');
+    if (settings) settings.classList.remove('hidden');
+    if (settingsBtn) settingsBtn.style.display = 'none';
+    if (hubTitle) hubTitle.style.display = 'none';
+    // Sync labels
+    const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const tl = document.getElementById('hubThemeLabel');
+    if (tl) tl.textContent = theme === 'dark' ? 'Dark' : 'Light';
+    const dl = document.getElementById('hubDemoLabel');
+    if (dl) dl.textContent = (typeof txnDemoMode !== 'undefined' && txnDemoMode) ? 'On' : 'Off';
+    const cl = document.getElementById('hubCurrLabel');
+    if (cl) cl.textContent = (typeof currentCurrency !== 'undefined') ? currentCurrency : 'AED';
+  };
+
+  window.closeHubSettings = function closeHubSettings() {
+    const grid = document.getElementById('hubGrid');
+    const settings = document.getElementById('hubSettings');
+    const settingsBtn = document.querySelector('.hub-settings-btn');
+    const hubTitle = document.querySelector('.hub-title');
+    if (settings) settings.classList.add('hidden');
+    if (grid) grid.classList.remove('hidden');
+    if (settingsBtn) settingsBtn.style.display = '';
+    if (hubTitle) hubTitle.style.display = '';
+  };
+
   function setHubBtnState(open) {
     _hubOpen = open;
     const btn = document.getElementById('floatingHubBtn');
@@ -3918,7 +3948,7 @@
 
   window.navigateToHub = function navigateToHub() {
     setHubBtnState(true);
-
+    closeHubSettings();
     showTabBar(null);
     document.getElementById('mainApp').classList.add('hidden');
     document.getElementById('transactionsApp').classList.add('hidden');
