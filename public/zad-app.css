@@ -6945,14 +6945,6 @@
       }
     }
     .hub-exit {
-      position: fixed !important;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100dvh;
-      z-index: 10000;
-      background: var(--bg) !important;
-      overflow: hidden;
       animation: hubExit 0.3s ease-in both;
     }
     @keyframes hubExit {

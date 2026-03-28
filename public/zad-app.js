@@ -3927,21 +3927,17 @@
 
   window.toggleHub = function toggleHub() {
     if (_hubOpen) {
-      // Navigate to destination page without enter animation, then overlay hub and slide it out
+      // Animate hub out, then navigate to destination
       const hub = document.getElementById('hubPage');
-      _skipPageEnter = true;
-      if (_previousPage === 'home') {
-        navigateToHome();
-      } else {
-        navigateToPage(_previousPage);
-      }
-      _skipPageEnter = false;
-      // Re-show hub on top and animate it out
-      hub.classList.remove('hidden');
       hub.classList.add('hub-exit');
       setTimeout(() => {
         hub.classList.remove('hub-exit');
-        hub.classList.add('hidden');
+        setHubBtnState(false);
+        if (_previousPage === 'home') {
+          navigateToHome();
+        } else {
+          navigateToPage(_previousPage);
+        }
       }, 300);
     } else {
       // Open hub
