@@ -122,6 +122,20 @@ Use multiples of 4: `4px`, `8px`, `12px`, `16px`, `20px`, `24px`. The content ho
 
 Common values: `0`, `0.3`, `0.4`, `0.5`, `0.6`, `0.7`, `1`.
 
+### Floating Pill (standard surface style)
+
+All floating UI elements (tab bars, hub button, action pills) use the same frosted-glass pill treatment. Never add shimmer `::before` or glow `::after` pseudo-elements — keep it clean.
+
+| Property | Dark | Light |
+|----------|------|-------|
+| `background` | `rgba(30,30,30,0.4)` | `rgba(255,255,255,0.45)` |
+| `backdrop-filter` | `blur(50px) saturate(200%) brightness(1.15)` | same |
+| `border` | `1px solid rgba(255,255,255,0.15)` | `1px solid rgba(255,255,255,0.6)` |
+| `border-radius` | `24px` (pills/bars), `50%` (circle buttons) | same |
+| `box-shadow` | `var(--shadow-lg)` | `var(--shadow-lg)` |
+
+Apply to: `.txn-bottom-tabs` (mobile), `#floatingHubBtn`, and any future floating controls.
+
 ## Rules
 
 - Always use design tokens over raw values

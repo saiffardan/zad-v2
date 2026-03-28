@@ -2401,7 +2401,7 @@
       display: none;
     }
     @media (max-width: 767px) {
-      /* ── Liquid Glass Tab Bar ── */
+      /* ── Floating Pill Tab Bar ── */
       .txn-bottom-tabs {
         position: fixed;
         bottom: max(12px, env(safe-area-inset-bottom));
@@ -2410,83 +2410,32 @@
         right: auto;
         width: auto;
         max-width: calc(100vw - 32px);
-        background: rgba(30,30,30,0.25) !important;
+        background: rgba(30,30,30,0.4) !important;
         backdrop-filter: blur(50px) saturate(200%) brightness(1.15) !important;
         -webkit-backdrop-filter: blur(50px) saturate(200%) brightness(1.15) !important;
         border-radius: 24px !important;
         border: 1px solid rgba(255,255,255,0.15) !important;
-        border-top: 1px solid rgba(255,255,255,0.25) !important;
-        box-shadow:
-          var(--shadow-lg) !important;
+        box-shadow: var(--shadow-lg) !important;
         padding: 4px 6px 4px !important;
         justify-content: center;
         gap: 0 !important;
         overflow: hidden;
       }
-      /* Shimmer border overlay — screen blend for light-catching edge */
-      .txn-bottom-tabs::before {
-        content: '' !important;
-        display: block !important;
-        position: absolute;
-        inset: 0;
-        border-radius: 24px;
-        padding: 2px;
-        background: linear-gradient(
-          135deg,
-          rgba(255,255,255,0) 0%,
-          rgba(255,255,255,0.2) 35%,
-          rgba(255,255,255,0.3) 50%,
-          rgba(255,255,255,0.2) 65%,
-          rgba(255,255,255,0) 100%
-        );
-        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-        -webkit-mask-composite: xor;
-        mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-        mask-composite: exclude;
-        mix-blend-mode: screen;
-        opacity: 0.5;
-        pointer-events: none;
-        z-index: 1;
-      }
-      /* Inner highlight glow — top edge catch */
+      .txn-bottom-tabs::before,
       .txn-bottom-tabs::after {
-        content: '' !important;
-        display: block !important;
-        position: absolute;
-        top: 0;
-        left: 10%;
-        right: 10%;
-        height: 50%;
-        border-radius: 24px 24px 50% 50%;
-        background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.08) 0%, transparent 70%);
-        pointer-events: none;
-        z-index: 1;
+        display: none !important;
       }
       .txn-bottom-tabs.scrolled {
-        background: rgba(30,30,30,0.25) !important;
-        box-shadow:
-          var(--shadow-lg) !important;
+        background: rgba(30,30,30,0.4) !important;
+        box-shadow: var(--shadow-lg) !important;
       }
       [data-theme="light"] .txn-bottom-tabs {
-        background: rgba(255,255,255,0.3) !important;
-        border-color: rgba(255,255,255,0.5) !important;
-        border-top-color: rgba(255,255,255,0.7) !important;
-        box-shadow:
-          var(--shadow-lg) !important;
+        background: rgba(255,255,255,0.45) !important;
+        border-color: rgba(255,255,255,0.6) !important;
+        box-shadow: var(--shadow-lg) !important;
       }
       [data-theme="light"] .txn-bottom-tabs.scrolled {
-        background: rgba(255,255,255,0.3) !important;
-      }
-      [data-theme="light"] .txn-bottom-tabs::before {
-        background: linear-gradient(
-          135deg,
-          rgba(255,255,255,0) 0%,
-          rgba(255,255,255,0.4) 35%,
-          rgba(255,255,255,0.7) 50%,
-          rgba(255,255,255,0.4) 65%,
-          rgba(255,255,255,0) 100%
-        );
-        opacity: 0.6;
+        background: rgba(255,255,255,0.45) !important;
       }
       .txn-bottom-tabs .tab {
         display: flex;
