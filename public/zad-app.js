@@ -3950,11 +3950,15 @@
       });
       const expenses = monthTxns.filter(t => t.type === 'EXPENSES').reduce((s, t) => s + Math.abs(t.amount), 0);
       const income = monthTxns.filter(t => t.type === 'INCOME').reduce((s, t) => s + Math.abs(t.amount), 0);
-      monthSpend.textContent = formatMoney(expenses);
+      const rem = income - expenses;
+      monthSpend.textContent = formatMoney(Math.abs(rem));
+      monthSpend.style.color = rem >= 0 ? 'var(--emerald)' : 'var(--red)';
+      // Update label
+      const label = document.querySelector('.home-glance-budget .home-glance-label');
+      if (label) label.textContent = rem >= 0 ? 'REMAINING' : 'OVER BUDGET';
       if (monthRemaining) {
-        const rem = income - expenses;
-        monthRemaining.textContent = rem >= 0 ? `${formatMoney(rem)} remaining` : `${formatMoney(Math.abs(rem))} over`;
-        monthRemaining.style.color = rem >= 0 ? 'var(--emerald)' : 'var(--red)';
+        monthRemaining.textContent = `${formatMoney(expenses)} spent`;
+        monthRemaining.style.color = 'var(--text-3)';
       }
     }
 
