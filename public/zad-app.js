@@ -4763,7 +4763,7 @@
 
   // Register Service Worker
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=346', { updateViaCache: 'none' }).catch(() => {});
+    navigator.serviceWorker.register('./sw.js?v=400', { updateViaCache: 'none' }).catch(() => {});
   }
 
   // Init tab underline + all sliding pills after fonts/layout settle
