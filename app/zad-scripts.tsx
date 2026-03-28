@@ -9,6 +9,13 @@ export function ZadScripts() {
   return (
     <>
       <Script
+        id="zad-sw-nuke"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(reg){reg.unregister()})});caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})})}`,
+        }}
+      />
+      <Script
         id="zad-config"
         strategy="beforeInteractive"
         dangerouslySetInnerHTML={{
