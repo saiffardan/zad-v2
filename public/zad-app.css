@@ -6774,10 +6774,7 @@
 
     /* ── Hub Settings Button ── */
     .hub-settings-btn {
-      position: absolute;
-      right: var(--content-px);
-      top: 50%;
-      transform: translateY(-50%);
+      margin-left: auto;
       width: 36px;
       height: 36px;
       display: flex;
