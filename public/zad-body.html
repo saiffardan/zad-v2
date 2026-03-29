@@ -165,6 +165,10 @@
       <svg class="tab-icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
       <span class="tab-label">Insights</span>
     </div>
+    <div id="tab-accounts" class="tab" role="tab" aria-selected="false" onclick="switchTxnTab('accounts', this)">
+      <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      <span class="tab-label">Accounts</span>
+    </div>
     <div id="tab-list" class="tab" role="tab" aria-selected="false" onclick="switchTxnTab('list', this)">
       <svg class="tab-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
       <span class="tab-label">All Txns</span>
@@ -932,6 +936,10 @@
   </div>
 
   <!-- All Transactions Tab -->
+  <div id="txnAccountsTab" class="hidden" role="tabpanel" aria-labelledby="tab-accounts">
+    <div id="accountsContainer" style="padding: 0 var(--content-px)"></div>
+  </div>
+
   <div id="txnListTab" class="hidden" role="tabpanel" aria-labelledby="tab-list">
     <div class="txn-list-container" id="txnListContainer"></div>
     <button class="fab-add-txn" onclick="openAddTxnModal()" aria-label="Add transaction" style="position:fixed;bottom:calc(80px + env(safe-area-inset-bottom, 0px));right:20px;z-index:90;">

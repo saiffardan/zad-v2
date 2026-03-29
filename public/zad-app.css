@@ -7241,6 +7241,104 @@
       margin: 0;
     }
 
+    /* ── Accounts Tab ── */
+    .acct-hero {
+      text-align: center;
+      padding: 24px 0 20px;
+    }
+    .acct-hero-label {
+      font-size: 12px;
+      color: var(--text-3);
+      letter-spacing: var(--ls-wide);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .acct-hero-value {
+      font-size: 28px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--text-1);
+      letter-spacing: var(--ls-tight);
+      line-height: var(--lh-none);
+    }
+    .acct-hero-sub {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-top: 6px;
+      font-family: var(--font-mono);
+    }
+    .acct-section-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-3);
+      letter-spacing: var(--ls-wide);
+      text-transform: uppercase;
+      padding: 20px 0 8px;
+    }
+    .acct-group {
+      background: var(--card-bg-solid);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .acct-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--divider);
+    }
+    .acct-group-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      letter-spacing: var(--ls-wide);
+      text-transform: uppercase;
+    }
+    .acct-group-total {
+      font-size: 14px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--text-1);
+      letter-spacing: var(--ls-tight);
+    }
+    .acct-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--divider);
+    }
+    .acct-item:last-child {
+      border-bottom: none;
+    }
+    .acct-item-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      flex: 1;
+    }
+    .acct-item-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-1);
+    }
+    .acct-item-flow {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      letter-spacing: var(--ls-slight);
+    }
+    .acct-item-balance {
+      font-size: 14px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--text-1);
+      letter-spacing: var(--ls-tight);
+      flex-shrink: 0;
+      margin-left: 12px;
+    }
+
     /* Page transition */
     .page-enter {
       animation: pageEnter var(--duration-enter) var(--ease-out) both;

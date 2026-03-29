@@ -7179,7 +7179,7 @@
   }
 
   let _prevTxnTabIdx = 0;
-  const _txnTabOrder = ['overview', 'breakdown', 'summary', 'list'];
+  const _txnTabOrder = ['overview', 'breakdown', 'summary', 'accounts', 'list'];
 
   function switchTxnTab(tab, el) {
     document.querySelectorAll('#txnTabRow .tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
@@ -7187,7 +7187,7 @@
     el.setAttribute('aria-selected', 'true');
 
     // Update header tab indicator
-    const tabNames = { overview: 'Overview', breakdown: 'Breakdown', summary: 'Insights', list: 'All Txns' };
+    const tabNames = { overview: 'Overview', breakdown: 'Breakdown', summary: 'Insights', accounts: 'Accounts', list: 'All Txns' };
     const indicator = document.getElementById('dashTabIndicator');
     if (indicator) indicator.textContent = tabNames[tab] || '';
     moveTxnTabUnderline(el);
@@ -7213,8 +7213,8 @@
     const slideDir = newIdx > _prevTxnTabIdx ? 'slide-left' : 'slide-right';
     _prevTxnTabIdx = newIdx >= 0 ? newIdx : _prevTxnTabIdx;
 
-    const allTabs = ['txnOverviewTab', 'txnBreakdownTab', 'txnSummaryTab', 'txnListTab'];
-    const tabMap = { overview: 'txnOverviewTab', breakdown: 'txnBreakdownTab', summary: 'txnSummaryTab', list: 'txnListTab' };
+    const allTabs = ['txnOverviewTab', 'txnBreakdownTab', 'txnSummaryTab', 'txnAccountsTab', 'txnListTab'];
+    const tabMap = { overview: 'txnOverviewTab', breakdown: 'txnBreakdownTab', summary: 'txnSummaryTab', accounts: 'txnAccountsTab', list: 'txnListTab' };
     allTabs.forEach(id => { const e = document.getElementById(id); if (e) { e.classList.add('hidden'); e.style.transform = ''; e.style.opacity = ''; e.style.transition = ''; } });
     const target = document.getElementById(tabMap[tab]);
     if (target) {
@@ -7235,13 +7235,13 @@
     const searchFilter = document.getElementById('filterTxnSearch');
     const calFilter = document.getElementById('filterTxnCal');
     const bdTypeFilter = document.getElementById('filterBdType');
-    const hideExtras = (tab === 'overview' || tab === 'list' || tab === 'summary');
+    const hideExtras = (tab === 'overview' || tab === 'list' || tab === 'summary' || tab === 'accounts');
     if (hideExtras) {
       extras.forEach(el => el.classList.add('filter-hidden'));
     } else {
       extras.forEach(el => el.classList.remove('filter-hidden'));
     }
-    if (tab === 'overview' || tab === 'summary') {
+    if (tab === 'overview' || tab === 'summary' || tab === 'accounts') {
       if (typeFilter) typeFilter.classList.add('filter-hidden');
       if (searchFilter) searchFilter.classList.add('filter-hidden');
       if (calFilter) calFilter.classList.add('filter-hidden');
@@ -7264,6 +7264,152 @@
     if (tab === 'summary') {
       loadChartJS().then(() => { renderInsightsPage(); renderTxnSummaryChart(); renderAllSectionPies(); });
     }
+    if (tab === 'accounts') {
+      renderAccountsTab();
+    }
+  }
+
+  function renderAccountsTab() {
+    const container = document.getElementById('accountsContainer');
+    if (!container) return;
+
+    // Build account balances from Net Worth Planning data (current month)
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const curMonth = now.getMonth() + 1;
+
+    // Use NW sheet data if available — accounts are assets grouped by category
+    if (nwDataLoaded && nwAssets.length > 0) {
+      const accountFlows = getMonthlyAccountFlows();
+      const curKey = curYear + '-' + curMonth;
+
+      // Group assets by category
+      const grouped = {};
+      let grandTotal = 0;
+      nwAssets.forEach(item => {
+        const cat = item.category || 'Uncategorized';
+        if (!grouped[cat]) grouped[cat] = { items: [], total: 0 };
+        const val = getNwValueForPeriod(item, curYear, curMonth);
+        const flow = accountFlows[item.name] ? (accountFlows[item.name][curKey] || 0) : 0;
+        grouped[cat].items.push({ name: item.name, balance: val, flow });
+        grouped[cat].total += val;
+        grandTotal += val;
+      });
+
+      // Also add portfolio value
+      const portfolioTotal = getActiveHoldings().reduce((s, h) => s + (h.currentValue || 0), 0);
+      if (portfolioTotal > 0) {
+        if (!grouped['Portfolio']) grouped['Portfolio'] = { items: [], total: 0 };
+        grouped['Portfolio'].items.push({ name: 'Live Portfolio', balance: portfolioTotal, flow: 0 });
+        grouped['Portfolio'].total += portfolioTotal;
+        grandTotal += portfolioTotal;
+      }
+
+      // Also add liabilities
+      let totalLiabilities = 0;
+      const liabGrouped = {};
+      nwLiabilities.forEach(item => {
+        const cat = item.category || 'Uncategorized';
+        if (!liabGrouped[cat]) liabGrouped[cat] = { items: [], total: 0 };
+        const val = getNwValueForPeriod(item, curYear, curMonth);
+        liabGrouped[cat].items.push({ name: item.name, balance: val, flow: 0 });
+        liabGrouped[cat].total += Math.abs(val);
+        totalLiabilities += Math.abs(val);
+      });
+
+      let html = `<div class="acct-hero">
+        <div class="acct-hero-label">Total Balance</div>
+        <div class="acct-hero-value">${formatMoney(grandTotal)}</div>
+        ${totalLiabilities > 0 ? `<div class="acct-hero-sub">Liabilities: <span style="color:var(--red)">${formatMoney(totalLiabilities)}</span></div>` : ''}
+      </div>`;
+
+      // Render asset groups
+      Object.keys(grouped).forEach(cat => {
+        const group = grouped[cat];
+        html += `<div class="acct-group">
+          <div class="acct-group-header">
+            <span class="acct-group-name">${escapeHTML(cat)}</span>
+            <span class="acct-group-total">${formatMoney(group.total)}</span>
+          </div>
+          ${group.items.map(a => {
+            const flowColor = a.flow >= 0 ? 'var(--emerald)' : 'var(--red)';
+            const flowSign = a.flow >= 0 ? '+' : '';
+            return `<div class="acct-item">
+              <div class="acct-item-left">
+                <span class="acct-item-name">${escapeHTML(a.name)}</span>
+                ${a.flow !== 0 ? `<span class="acct-item-flow" style="color:${flowColor}">${flowSign}${formatMoney(a.flow)} this month</span>` : ''}
+              </div>
+              <span class="acct-item-balance">${formatMoney(a.balance)}</span>
+            </div>`;
+          }).join('')}
+        </div>`;
+      });
+
+      // Render liability groups
+      if (Object.keys(liabGrouped).length > 0) {
+        html += `<div class="acct-section-label">Liabilities</div>`;
+        Object.keys(liabGrouped).forEach(cat => {
+          const group = liabGrouped[cat];
+          html += `<div class="acct-group acct-group-liab">
+            <div class="acct-group-header">
+              <span class="acct-group-name">${escapeHTML(cat)}</span>
+              <span class="acct-group-total" style="color:var(--red)">${formatMoney(group.total)}</span>
+            </div>
+            ${group.items.map(a => `<div class="acct-item">
+              <div class="acct-item-left">
+                <span class="acct-item-name">${escapeHTML(a.name)}</span>
+              </div>
+              <span class="acct-item-balance" style="color:var(--red)">${formatMoney(Math.abs(a.balance))}</span>
+            </div>`).join('')}
+          </div>`;
+        });
+      }
+
+      container.innerHTML = html;
+      return;
+    }
+
+    // Fallback: calculate from transactions only
+    const accounts = {};
+    allTransactions.forEach(t => {
+      if (!t.account || t.account === '--') return;
+      if (!accounts[t.account]) accounts[t.account] = { total: 0, monthFlow: 0 };
+      const d = parseTxnDate(t.date);
+      const isCurrentMonth = d.getFullYear() === curYear && d.getMonth() + 1 === curMonth;
+      let flow = 0;
+      if (t.type === 'INCOME') flow = t.amount;
+      else if (t.type === 'TRANSFER') flow = t.amount;
+      else flow = -t.amount;
+      accounts[t.account].total += flow;
+      if (isCurrentMonth) accounts[t.account].monthFlow += flow;
+    });
+
+    const sorted = Object.entries(accounts).sort((a, b) => b[1].total - a[1].total);
+    const total = sorted.reduce((s, [, a]) => s + a.total, 0);
+
+    let html = `<div class="acct-hero">
+      <div class="acct-hero-label">Total Balance</div>
+      <div class="acct-hero-value">${formatMoney(total)}</div>
+    </div>
+    <div class="acct-group">
+      <div class="acct-group-header">
+        <span class="acct-group-name">All Accounts</span>
+        <span class="acct-group-total">${formatMoney(total)}</span>
+      </div>
+      ${sorted.map(([name, a]) => {
+        const flowColor = a.monthFlow >= 0 ? 'var(--emerald)' : 'var(--red)';
+        const flowSign = a.monthFlow >= 0 ? '+' : '';
+        return `<div class="acct-item">
+          <div class="acct-item-left">
+            <span class="acct-item-name">${escapeHTML(name)}</span>
+            ${a.monthFlow !== 0 ? `<span class="acct-item-flow" style="color:${flowColor}">${flowSign}${formatMoney(a.monthFlow)} this month</span>` : ''}
+          </div>
+          <span class="acct-item-balance">${formatMoney(a.total)}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+
+    container.innerHTML = html;
   }
 
   function moveTxnTabUnderline(activeTab) {
