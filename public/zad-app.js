@@ -6405,6 +6405,11 @@
         if (cb) cb.checked = false;
       }
     }
+    // Show/hide transfer direction
+    const transferDirRow = document.getElementById('txnTransferDirRow');
+    if (transferDirRow) {
+      transferDirRow.style.display = newType === 'TRANSFER' ? '' : 'none';
+    }
   }
 
   function openTxnDetail(idx) {
@@ -6444,6 +6449,13 @@
       <div class="txn-modal-row" id="txnRefundRow" style="${t.type === 'EXPENSES' ? '' : 'display:none'}">
         <div class="txn-modal-label">Refund</div>
         <label class="txn-refund-label"><input type="checkbox" id="txnRefundToggle" ${t.isRefund ? 'checked' : ''}> This is a refund (+)</label>
+      </div>
+      <div class="txn-modal-row" id="txnTransferDirRow" style="${t.type === 'TRANSFER' ? '' : 'display:none'}">
+        <div class="txn-modal-label">Direction</div>
+        <select class="txn-edit-select" id="txnTransferDir">
+          <option value="out" ${t.amount < 0 ? 'selected' : ''}>Out (−)</option>
+          <option value="in" ${t.amount >= 0 ? 'selected' : ''}>In (+)</option>
+        </select>
       </div>
       <div class="txn-modal-row">
         <div class="txn-modal-label">Amount</div>
@@ -6489,9 +6501,12 @@
     }
 
     // For EXPENSES: negative in sheet (money out). Positive = refund.
+    // For TRANSFER: direction determines sign.
     const isRefund = document.getElementById('txnRefundToggle')?.checked || false;
+    const transferDir = document.getElementById('txnTransferDir')?.value || 'out';
     let sheetAmount = newAmount;
     if (newType === 'EXPENSES' && !isRefund) sheetAmount = -newAmount;
+    if (newType === 'TRANSFER' && transferDir === 'out') sheetAmount = -newAmount;
 
     const rowValues = [newDate, newType, newCategory, newAccount, sheetAmount, newDesc];
     const range = `Transactions!B${t.sheetRow}:G${t.sheetRow}`;
@@ -6586,6 +6601,13 @@
         <div class="txn-modal-label">Refund</div>
         <label class="txn-refund-label"><input type="checkbox" id="txnRefundToggle"> This is a refund (+)</label>
       </div>
+      <div class="txn-modal-row" id="txnTransferDirRow" style="display:none">
+        <div class="txn-modal-label">Direction</div>
+        <select class="txn-edit-select" id="txnTransferDir">
+          <option value="out">Out (−)</option>
+          <option value="in">In (+)</option>
+        </select>
+      </div>
       <div class="txn-modal-row">
         <div class="txn-modal-label">Amount</div>
         <input type="number" class="txn-edit-input" id="txnEditAmount" value="" step="0.01" min="0" placeholder="0.00">
@@ -6628,9 +6650,12 @@
     }
 
     // For EXPENSES: store as negative in sheet, unless it's a refund
+    // For TRANSFER: direction determines sign
     const isRefund = document.getElementById('txnRefundToggle')?.checked || false;
+    const transferDir = document.getElementById('txnTransferDir')?.value || 'out';
     let sheetAmount = newAmount;
     if (newType === 'EXPENSES' && !isRefund) sheetAmount = -newAmount;
+    if (newType === 'TRANSFER' && transferDir === 'out') sheetAmount = -newAmount;
 
     const rowValues = [newDate, newType, newCategory, newAccount, sheetAmount, newDesc];
 
