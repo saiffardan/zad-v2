@@ -9478,11 +9478,14 @@ window.autoFillNwItem = async function autoFillNwItem(btn, type, sheetRow, year,
     }
   }
 
-  // Find March of the first year as the default seed month
-  // Walk forward from there: each month = prev value + prev month flow
+  // Seed from the month before the current month
+  // e.g. if today is April, seed from March; if May, seed from April
+  const now = new Date();
+  const seedMonth = now.getMonth() === 0 ? 12 : now.getMonth(); // getMonth() is 0-based, so April=3 → seedMonth=3 (March)
+  const seedYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
   let seedIdx = -1;
   for (let i = 0; i < allPeriods.length; i++) {
-    if (allPeriods[i].month === 3) {
+    if (allPeriods[i].year === seedYear && allPeriods[i].month === seedMonth) {
       seedIdx = i;
       break;
     }
