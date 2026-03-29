@@ -6441,8 +6441,10 @@
 
     const catOptions = buildCatOptions(t.type, t.category);
 
-    // Gather known accounts
-    const allAccounts = [...new Set(allTransactions.filter(tx => tx.account && tx.account !== '--').map(tx => tx.account))].sort();
+    // Gather known accounts (from transactions + Supabase accounts table)
+    const _txnAccts = allTransactions.filter(tx => tx.account && tx.account !== '--').map(tx => tx.account);
+    const _sbAccts = window._supabaseAccounts || [];
+    const allAccounts = [...new Set([..._txnAccts, ..._sbAccts])].sort();
     const acctOptions = allAccounts.map(a => `<option value="${a}" ${a === t.account ? 'selected' : ''}>${a}</option>`).join('')
       + '<option value="__custom__">+ Custom...</option>';
 
@@ -6596,7 +6598,9 @@
 
     const catOptions = buildCatOptions('INCOME', '');
 
-    const allAccounts = [...new Set(allTransactions.filter(tx => tx.account && tx.account !== '--').map(tx => tx.account))].sort();
+    const txnAccounts = allTransactions.filter(tx => tx.account && tx.account !== '--').map(tx => tx.account);
+    const sbAccounts = window._supabaseAccounts || [];
+    const allAccounts = [...new Set([...txnAccounts, ...sbAccounts])].sort();
     const acctOptions = allAccounts.map(a => `<option value="${a}">${a}</option>`).join('')
       + '<option value="__custom__">+ Custom...</option>';
 
@@ -10821,6 +10825,34 @@ async function handleSupabaseSession(session) {
   }
 }
 
+async function seedDefaultCategories(sb, uid) {
+  const defaults = {
+    INCOME: ['Salary', 'Freelance', 'Dividends', 'Rental Income', 'Other Income'],
+    EXPENSES: ['Rent', 'Groceries', 'Dining Out', 'Transport', 'Utilities', 'Entertainment', 'Shopping', 'Health', 'Education', 'Subscriptions', 'Personal Care', 'Gifts', 'Travel', 'Other Expenses'],
+    SAVINGS: ['Emergency Fund', 'Investments', 'Retirement', 'Vacation Fund', 'Other Savings'],
+    DEBT: ['Credit Card', 'Car Loan', 'Student Loan', 'Mortgage', 'Other Debt']
+  };
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const rows = [];
+  for (const [type, cats] of Object.entries(defaults)) {
+    for (const cat of cats) {
+      rows.push({ user_id: uid, type, category: cat, year, month, amount: 0 });
+      const key = type + ':' + cat;
+      if (!budgetCategories[type]) budgetCategories[type] = [];
+      budgetCategories[type].push(key);
+      budgetData[key] = {};
+      budgetData[key][year + '-' + String(month).padStart(2, '0')] = 0;
+    }
+  }
+  try {
+    await sb.from('budget_items').insert(rows);
+  } catch (e) {
+    console.warn('[Zad] Seed categories error:', e);
+  }
+}
+
 async function fetchSupabaseData() {
   const sb = supabaseClient;
   if (!sb) return;
@@ -10899,9 +10931,9 @@ async function fetchSupabaseData() {
     }
 
     // Process budget
-    if (budgetRes.data) {
-      budgetData = {};
-      budgetCategories = { INCOME: [], EXPENSES: [], SAVINGS: [], DEBT: [] };
+    budgetData = {};
+    budgetCategories = { INCOME: [], EXPENSES: [], SAVINGS: [], DEBT: [] };
+    if (budgetRes.data && budgetRes.data.length > 0) {
       budgetRes.data.forEach(b => {
         const key = b.type + ':' + b.category;
         const periodKey = b.year + '-' + String(b.month).padStart(2, '0');
@@ -10912,7 +10944,15 @@ async function fetchSupabaseData() {
         }
         if (b.parent_category) categoryParentMap[key] = b.parent_category;
       });
-      budgetDataLoaded = true;
+    } else {
+      // First login — seed default categories so dropdowns aren't empty
+      await seedDefaultCategories(sb, uid);
+    }
+    budgetDataLoaded = true;
+
+    // Store Supabase accounts for transaction dropdown
+    if (accountsRes.data) {
+      window._supabaseAccounts = accountsRes.data.map(a => a.name);
     }
 
     // Process net worth
