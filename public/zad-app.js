@@ -6125,10 +6125,12 @@
 
       group.items.forEach(({ txn, idx }) => {
         const dotColor = typeColors[txn.type] || 'rgba(255,255,255,0.2)';
-        const amtColor = txn.isRefund ? 'var(--emerald)' : (amtColors[txn.type] || 'var(--text-1)');
+        const isTransferIn = txn.type === 'TRANSFER' && txn.amount > 0;
+        const isTransferOut = txn.type === 'TRANSFER' && txn.amount < 0;
+        const amtColor = txn.isRefund ? 'var(--emerald)' : isTransferIn ? 'var(--emerald)' : isTransferOut ? 'var(--red)' : (amtColors[txn.type] || 'var(--text-1)');
         const cv = convert(Math.abs(txn.amount));
         const isLarge = cv >= 1000;
-        const prefix = txn.isRefund ? '+' : (txn.type === 'INCOME' ? '+' : txn.type === 'EXPENSES' ? '-' : '');
+        const prefix = txn.isRefund ? '+' : (txn.type === 'INCOME' ? '+' : txn.type === 'EXPENSES' ? '-' : isTransferIn ? '+' : isTransferOut ? '-' : '');
         const amtStr = prefix + fmtAmt(txn.amount);
         const desc = txn.description || txn.account || txn.type.charAt(0) + txn.type.slice(1).toLowerCase();
 
