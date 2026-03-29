@@ -6497,7 +6497,8 @@
 
   async function saveTxnEdit() {
     const t = displayedTxns[editingTxnIdx];
-    if (!t || !t.sheetRow || !accessToken) return;
+    if (!t) return;
+    if (!supabaseMode && (!t.sheetRow || !accessToken)) return;
 
     const statusEl = document.getElementById('txnEditStatus');
     const saveBtn = document.getElementById('txnSaveBtn');
@@ -6519,39 +6520,47 @@
       return;
     }
 
-    // For EXPENSES: negative in sheet (money out). Positive = refund.
-    // For TRANSFER: direction determines sign.
     const isRefund = document.getElementById('txnRefundToggle')?.checked || false;
     const transferDir = document.getElementById('txnTransferDir')?.value || 'out';
     let sheetAmount = newAmount;
     if (newType === 'EXPENSES' && !isRefund) sheetAmount = -newAmount;
     if (newType === 'TRANSFER' && transferDir === 'out') sheetAmount = -newAmount;
 
-    const rowValues = [newDate, newType, newCategory, newAccount, sheetAmount, newDesc];
-    const range = `Transactions!B${t.sheetRow}:G${t.sheetRow}`;
-
     try {
+      if (supabaseMode && t.supabaseId) {
+        const sb = supabaseClient;
+        const uid = (await sb.auth.getUser()).data.user?.id;
+        let accountId = null;
+        if (newAccount && newAccount !== '--') {
+          const { data: existingAcct } = await sb.from('accounts').select('id').eq('user_id', uid).eq('name', newAccount).maybeSingle();
+          if (existingAcct) { accountId = existingAcct.id; }
+          else {
+            const { data: newAcct, error: acctErr } = await sb.from('accounts').insert({ user_id: uid, name: newAccount }).select('id').single();
+            if (acctErr) throw acctErr;
+            accountId = newAcct.id;
+          }
+        }
+        const dateParts = newDate.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+        const isoDate = dateParts ? `${dateParts[3]}-${dateParts[2].padStart(2,'0')}-${dateParts[1].padStart(2,'0')}` : newDate;
+        const { error: updErr } = await sb.from('transactions').update({
+          date: isoDate, type: newType, category: newCategory, account_id: accountId,
+          amount: Math.abs(sheetAmount), description: newDesc, is_refund: isRefund
+        }).eq('id', t.supabaseId);
+        if (updErr) throw updErr;
+      } else {
+      const rowValues = [newDate, newType, newCategory, newAccount, sheetAmount, newDesc];
+      const range = `Transactions!B${t.sheetRow}:G${t.sheetRow}`;
       const res = await fetch(
         `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`,
-        {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ range, majorDimension: 'ROWS', values: [rowValues] })
-        }
+        { method: 'PUT', headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ range, majorDimension: 'ROWS', values: [rowValues] }) }
       );
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error?.message || 'Update failed');
+      if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error?.message || 'Update failed'); }
       }
 
       statusEl.textContent = 'Saved';
       statusEl.style.color = 'var(--emerald)';
 
-      // Update local data
       const isExpenseRefund = (newType === 'EXPENSES' && sheetAmount > 0);
       t.date = newDate;
       t.type = newType;
@@ -6561,17 +6570,10 @@
       t.isRefund = isExpenseRefund;
       t.description = newDesc;
 
-      // Also update in allTransactions
-      const mainIdx = allTransactions.findIndex(tx => tx.sheetRow === t.sheetRow);
-      if (mainIdx >= 0) {
-        Object.assign(allTransactions[mainIdx], t);
-      }
+      const mainIdx = allTransactions.findIndex(tx => supabaseMode ? tx.supabaseId === t.supabaseId : tx.sheetRow === t.sheetRow);
+      if (mainIdx >= 0) Object.assign(allTransactions[mainIdx], t);
 
-      setTimeout(() => {
-        closeTxnModal();
-        renderTransactionsDashboard();
-      }, 600);
-
+      setTimeout(() => { closeTxnModal(); renderTransactionsDashboard(); }, 600);
     } catch (err) {
       console.error('Save error:', err);
       statusEl.textContent = 'Error: ' + err.message;
@@ -6692,7 +6694,7 @@
           if (existingAcct) {
             accountId = existingAcct.id;
           } else {
-            const { data: newAcct, error: acctErr } = await sb.from('accounts').insert({ user_id: uid, name: newAccount, type: 'bank' }).select('id').single();
+            const { data: newAcct, error: acctErr } = await sb.from('accounts').insert({ user_id: uid, name: newAccount }).select('id').single();
             if (acctErr) throw acctErr;
             accountId = newAcct.id;
           }
@@ -6922,27 +6924,27 @@
     const rowValues = [date, ticker, action, shares, price, type, total];
 
     try {
+      if (supabaseMode) {
+        const sb = supabaseClient;
+        const uid = (await sb.auth.getUser()).data.user?.id;
+        const dateParts = date.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+        const isoDate = dateParts ? `${dateParts[3]}-${dateParts[2].padStart(2,'0')}-${dateParts[1].padStart(2,'0')}` : date;
+        const { error: tradeErr } = await sb.from('portfolio_trades').insert({
+          user_id: uid, date: isoDate, ticker, action, shares, price, asset_type: type, total
+        });
+        if (tradeErr) throw tradeErr;
+      } else {
       const res = await fetch(
         `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent('Investments!G:M')}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ majorDimension: 'ROWS', values: [rowValues] })
-        }
+        { method: 'POST', headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ majorDimension: 'ROWS', values: [rowValues] }) }
       );
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error?.message || 'Add failed');
+      if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error?.message || 'Add failed'); }
       }
 
       statusEl.textContent = 'Trade added';
       statusEl.style.color = 'var(--emerald)';
 
-      // Update local data
       allTrades.push({ date, ticker, action, shares, price, type, total });
 
       // Update holdings
@@ -7109,27 +7111,27 @@
     const rowValues = [date, ticker, 'SELL', shares, price, type, total];
 
     try {
+      if (supabaseMode) {
+        const sb = supabaseClient;
+        const uid = (await sb.auth.getUser()).data.user?.id;
+        const dateParts = date.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+        const isoDate = dateParts ? `${dateParts[3]}-${dateParts[2].padStart(2,'0')}-${dateParts[1].padStart(2,'0')}` : date;
+        const { error: sellErr } = await sb.from('portfolio_trades').insert({
+          user_id: uid, date: isoDate, ticker, action: 'SELL', shares, price, asset_type: type, total
+        });
+        if (sellErr) throw sellErr;
+      } else {
       const res = await fetch(
         `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent('Investments!G:M')}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ majorDimension: 'ROWS', values: [rowValues] })
-        }
+        { method: 'POST', headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ majorDimension: 'ROWS', values: [rowValues] }) }
       );
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error?.message || 'Sell failed');
+      if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error?.message || 'Sell failed'); }
       }
 
       statusEl.textContent = 'Sold';
       statusEl.style.color = 'var(--emerald)';
 
-      // Update local data
       allTrades.push({ date, ticker, action: 'SELL', shares, price, type, total });
       holdings[ticker].shares -= shares;
       holdings[ticker].totalSold += Math.abs(total);
@@ -7157,45 +7159,35 @@
 
   async function deleteTxnRow() {
     const t = displayedTxns[editingTxnIdx];
-    if (!t || !t.sheetRow || !accessToken) return;
+    if (!t) return;
+    if (!supabaseMode && (!t.sheetRow || !accessToken)) return;
 
-    if (!confirm('Delete this transaction? This will clear the row from your Google Sheet.')) return;
+    if (!confirm('Delete this transaction?')) return;
 
     const statusEl = document.getElementById('txnEditStatus');
     statusEl.textContent = 'Deleting...';
     statusEl.style.color = 'var(--text-2)';
 
-    const range = `Transactions!B${t.sheetRow}:G${t.sheetRow}`;
-
     try {
-      const res = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}:clear`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error?.message || 'Delete failed');
+      if (supabaseMode && t.supabaseId) {
+        const { error } = await supabaseClient.from('transactions').delete().eq('id', t.supabaseId);
+        if (error) throw error;
+      } else {
+        const range = `Transactions!B${t.sheetRow}:G${t.sheetRow}`;
+        const res = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}:clear`,
+          { method: 'POST', headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' } }
+        );
+        if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error?.message || 'Delete failed'); }
       }
 
       statusEl.textContent = 'Deleted';
       statusEl.style.color = 'var(--red)';
 
-      // Remove from local data
-      const mainIdx = allTransactions.findIndex(tx => tx.sheetRow === t.sheetRow);
+      const mainIdx = allTransactions.findIndex(tx => supabaseMode ? tx.supabaseId === t.supabaseId : tx.sheetRow === t.sheetRow);
       if (mainIdx >= 0) allTransactions.splice(mainIdx, 1);
 
-      setTimeout(() => {
-        closeTxnModal();
-        renderTransactionsDashboard();
-      }, 600);
-
+      setTimeout(() => { closeTxnModal(); renderTransactionsDashboard(); }, 600);
     } catch (err) {
       console.error('Delete error:', err);
       statusEl.textContent = 'Error: ' + err.message;
@@ -10326,25 +10318,35 @@ async function addNewBudgetItem() {
   if (!window._budgetDisplayNames) window._budgetDisplayNames = {};
   window._budgetDisplayNames[compositeKey] = name;
 
-  // Find next empty row
-  const sec = BUDGET_SECTION_ROWS[type];
-  if (sec && accessToken) {
-    const usedRows = Object.values(window._budgetCatRowMap || {});
-    let newRow = sec.start;
-    for (let r = sec.start; r <= sec.end; r++) {
-      if (!usedRows.includes(r)) { newRow = r; break; }
-    }
-    window._budgetCatRowMap[compositeKey] = newRow;
-
-    // Write category + name
-    try {
+  try {
+    if (supabaseMode) {
+      const sb = supabaseClient;
+      const uid = (await sb.auth.getUser()).data.user?.id;
+      const months = scope === 'year' ? [1,2,3,4,5,6,7,8,9,10,11,12] : [currentBudgetMonth];
+      const rows = months.map(m => ({
+        user_id: uid, type, category: name, parent_category: parentCat || null,
+        year: currentBudgetYear, month: m, amount: amount || 0
+      }));
+      const { error: budgetErr } = await sb.from('budget_items').insert(rows);
+      if (budgetErr) throw budgetErr;
+      months.forEach(m => {
+        const k = `${currentBudgetYear}-${String(m).padStart(2, '0')}`;
+        budgetData[compositeKey][k] = amount;
+      });
+    } else {
+    const sec = BUDGET_SECTION_ROWS[type];
+    if (sec && accessToken) {
+      const usedRows = Object.values(window._budgetCatRowMap || {});
+      let newRow = sec.start;
+      for (let r = sec.start; r <= sec.end; r++) {
+        if (!usedRows.includes(r)) { newRow = r; break; }
+      }
+      window._budgetCatRowMap[compositeKey] = newRow;
       await fetch(
         `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(`'Budget Planning'!C${newRow}:D${newRow}`)}?valueInputOption=USER_ENTERED`,
         { method: 'PUT', headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ values: [[parentCat, name]] }) }
       );
-
-      // Write amount(s)
       if (scope === 'year') {
         for (let m = 1; m <= 12; m++) {
           const k = `${currentBudgetYear}-${String(m).padStart(2, '0')}`;
@@ -10356,12 +10358,12 @@ async function addNewBudgetItem() {
         budgetData[compositeKey][k] = amount;
         if (amount > 0) writeBudgetCell(compositeKey, k, amount);
       }
-
-      statusEl.textContent = 'Added'; statusEl.style.color = 'var(--emerald)';
-      setTimeout(() => { closeTxnModal(); renderBudgetPage(); }, 400);
-    } catch (err) {
-      statusEl.textContent = 'Error: ' + err.message; statusEl.style.color = 'var(--red)';
     }
+    }
+    statusEl.textContent = 'Added'; statusEl.style.color = 'var(--emerald)';
+    setTimeout(() => { closeTxnModal(); renderBudgetPage(); }, 400);
+  } catch (err) {
+    statusEl.textContent = 'Error: ' + err.message; statusEl.style.color = 'var(--red)';
   }
 }
 
@@ -10540,22 +10542,36 @@ function updateBudgetAmount(input) {
 
 async function writeBudgetCell(category, key, value) {
   if (!accessToken && !supabaseMode) return;
-  const sheetRow = window._budgetCatRowMap?.[category];
-  const colLetter = window._budgetKeyToCol?.[key];
-  if (!sheetRow || !colLetter) {
-    console.warn('Budget write: no mapping for', category, key);
-    return;
-  }
-  const cellRef = `'Budget Planning'!${colLetter}${sheetRow}`;
   try {
-    await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(cellRef)}?valueInputOption=USER_ENTERED`,
-      {
-        method: 'PUT',
-        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ values: [[value || 0]] })
+    if (supabaseMode) {
+      const sb = supabaseClient;
+      const uid = (await sb.auth.getUser()).data.user?.id;
+      const [yearStr, monthStr] = key.split('-');
+      const catName = category.replace(/^[A-Z]+:/, '');
+      const catType = category.split(':')[0];
+      // Upsert: update if exists, insert if not
+      const { data: existing } = await sb.from('budget_items').select('id')
+        .eq('user_id', uid).eq('type', catType).eq('category', catName)
+        .eq('year', parseInt(yearStr)).eq('month', parseInt(monthStr)).maybeSingle();
+      if (existing) {
+        await sb.from('budget_items').update({ amount: value || 0 }).eq('id', existing.id);
+      } else {
+        await sb.from('budget_items').insert({
+          user_id: uid, type: catType, category: catName,
+          year: parseInt(yearStr), month: parseInt(monthStr), amount: value || 0
+        });
       }
-    );
+    } else {
+      const sheetRow = window._budgetCatRowMap?.[category];
+      const colLetter = window._budgetKeyToCol?.[key];
+      if (!sheetRow || !colLetter) { console.warn('Budget write: no mapping for', category, key); return; }
+      const cellRef = `'Budget Planning'!${colLetter}${sheetRow}`;
+      await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(cellRef)}?valueInputOption=USER_ENTERED`,
+        { method: 'PUT', headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ values: [[value || 0]] }) }
+      );
+    }
   } catch (err) {
     console.error('Budget write error:', err);
   }
