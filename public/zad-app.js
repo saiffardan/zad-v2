@@ -9234,14 +9234,19 @@
     });
   }, { passive: true });
 
-  // Auto-login: only handle Supabase OAuth redirect, then Google cached token
+  // Auto-login: Supabase OAuth redirect → Supabase session restore → Google cached token
   (async function tryAutoLogin() {
-    // Only check Supabase if returning from OAuth redirect (hash has tokens)
+    // 1. Check Supabase if returning from OAuth redirect (hash has tokens)
     if (SUPABASE_URL && SUPABASE_ANON_KEY && window.location.hash && window.location.hash.includes('access_token')) {
       const didLogin = await trySupabaseAutoLogin();
       if (didLogin) return;
     }
-    // Fall back to cached Google token
+    // 2. Restore existing Supabase session (e.g. PWA reopened)
+    if (SUPABASE_URL && SUPABASE_ANON_KEY && localStorage.getItem('supabaseMode') === 'true') {
+      const didRestore = await trySupabaseSessionRestore();
+      if (didRestore) return;
+    }
+    // 3. Fall back to cached Google token
     const cached = localStorage.getItem('cachedToken');
     const expiresAt = parseInt(localStorage.getItem('tokenExpiresAt') || '0', 10);
     if (cached && Date.now() < expiresAt - 120000) {
@@ -10805,6 +10810,32 @@ async function trySupabaseAutoLogin() {
 
     setTimeout(() => { subscription.unsubscribe(); done(false); }, 6000);
   });
+}
+
+async function trySupabaseSessionRestore() {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return false;
+  if (typeof supabase === 'undefined' || !supabase.createClient) return false;
+
+  if (!supabaseClient) {
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { detectSessionInUrl: false, flowType: 'implicit' }
+    });
+  }
+
+  try {
+    const { data: { session }, error } = await supabaseClient.auth.getSession();
+    if (error || !session) {
+      // Session expired or missing — clear stale flag
+      localStorage.removeItem('supabaseMode');
+      return false;
+    }
+    await handleSupabaseSession(session);
+    return true;
+  } catch (err) {
+    console.error('[Zad] Supabase session restore error:', err);
+    localStorage.removeItem('supabaseMode');
+    return false;
+  }
 }
 
 async function handleSupabaseSession(session) {

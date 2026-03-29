@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zad-v9';
+const CACHE_NAME = 'zad-v10';
 const PRECACHE_URLS = [
   '/',
   '/zad-app.css',
