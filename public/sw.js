@@ -1,20 +1,21 @@
-// Self-destruct: clear all caches and unregister
-self.addEventListener('install', (event) => {
+// Noop service worker — network-first, no precaching
+// Clears any old caches from previous SW versions on activation
+
+self.addEventListener('install', function(event) {
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', function(event) {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.map((k) => caches.delete(k)))
-    ).then(() => self.clients.claim())
-    .then(() => {
-      // Tell all clients to reload
-      self.clients.matchAll().then((clients) => {
-        clients.forEach((client) => client.navigate(client.url));
-      });
-      // Unregister self
-      self.registration.unregister();
+    caches.keys().then(function(keys) {
+      return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+    }).then(function() {
+      return self.clients.claim();
     })
   );
+});
+
+self.addEventListener('fetch', function(event) {
+  // Always go to network — no caching
+  event.respondWith(fetch(event.request));
 });

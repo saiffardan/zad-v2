@@ -48,6 +48,17 @@
   const SUPABASE_ANON_KEY = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.supabaseAnonKey) || '';
   let supabaseClient = null;
   let supabaseMode = false; // true when logged in via Supabase
+
+  // Promise that resolves when Supabase SDK is loaded (handles race condition with CDN)
+  const _supabaseReady = new Promise(function(resolve) {
+    if (typeof supabase !== 'undefined' && supabase.createClient) { resolve(); return; }
+    var _sdkChecks = 0;
+    var _sdkTimer = setInterval(function() {
+      _sdkChecks++;
+      if (typeof supabase !== 'undefined' && supabase.createClient) { clearInterval(_sdkTimer); resolve(); }
+      else if (_sdkChecks > 100) { clearInterval(_sdkTimer); resolve(); } // 5s max wait
+    }, 50);
+  });
   const SHEET_RANGE = 'Investments!G14:M';
   const TXN_RANGE = 'Transactions!B14:G';
   const BUDGET_RANGE = 'Budget Planning!C5:AZ424';
@@ -4811,13 +4822,9 @@
   }
 
   // Register Service Worker
+  // Register service worker (noop pass-through, no caching)
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(regs => {
-      regs.forEach(r => r.unregister());
-    }).then(() => {
-      caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
-      navigator.serviceWorker.register('./sw.js?v=401', { updateViaCache: 'none' }).catch(() => {});
-    });
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).catch(() => {});
   }
 
   // Init tab underline + all sliding pills after fonts/layout settle
@@ -9238,11 +9245,13 @@
   (async function tryAutoLogin() {
     // 1. Check Supabase if returning from OAuth redirect (hash has tokens)
     if (SUPABASE_URL && SUPABASE_ANON_KEY && window.location.hash && window.location.hash.includes('access_token')) {
+      await _supabaseReady; // Wait for Supabase SDK to load
       const didLogin = await trySupabaseAutoLogin();
       if (didLogin) return;
     }
     // 2. Restore existing Supabase session (e.g. PWA reopened)
     if (SUPABASE_URL && SUPABASE_ANON_KEY && localStorage.getItem('supabaseMode') === 'true') {
+      await _supabaseReady; // Wait for Supabase SDK to load
       const didRestore = await trySupabaseSessionRestore();
       if (didRestore) return;
     }
@@ -10823,9 +10832,13 @@ async function trySupabaseSessionRestore() {
   }
 
   try {
-    const { data: { session }, error } = await supabaseClient.auth.getSession();
-    if (error || !session) {
-      // Session expired or missing — clear stale flag
+    // Timeout getSession to prevent indefinite hangs
+    const result = await Promise.race([
+      supabaseClient.auth.getSession(),
+      new Promise(function(_, reject) { setTimeout(function() { reject(new Error('getSession timeout')); }, 5000); })
+    ]);
+    const session = result.data && result.data.session;
+    if (result.error || !session) {
       localStorage.removeItem('supabaseMode');
       return false;
     }
