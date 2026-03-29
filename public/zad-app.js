@@ -1,3 +1,8 @@
+// Capture raw URL before any SDK processes it
+var _rawUrlOnLoad = window.location.href;
+var _rawHashOnLoad = window.location.hash;
+var _rawSearchOnLoad = window.location.search;
+
 // === Script Block 1 ===
   // ── SUL Logo SVG generator ──
   // Zad logo — theme-aware (light logo on dark bg, dark logo on light bg)
@@ -10687,7 +10692,7 @@ window.handleSupabaseSignIn = async function handleSupabaseSignIn() {
   if (btn) btn.classList.add('loading');
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin }
+    options: { redirectTo: window.location.origin + '/' }
   });
   if (error) {
     if (btn) btn.classList.remove('loading');
@@ -10700,9 +10705,10 @@ window.handleSupabaseSignIn = async function handleSupabaseSignIn() {
 async function trySupabaseAutoLogin() {
   // Temporary debug: show what URL we landed on after redirect
   var _dbg = [];
-  _dbg.push('URL: ' + window.location.href);
-  _dbg.push('Hash: ' + (window.location.hash ? window.location.hash.substring(0, 60) + '...' : '(none)'));
-  _dbg.push('Search: ' + (window.location.search || '(none)'));
+  _dbg.push('RAW URL: ' + (_rawUrlOnLoad || '(not captured)'));
+  _dbg.push('RAW Hash: ' + (_rawHashOnLoad ? _rawHashOnLoad.substring(0, 80) : '(none)'));
+  _dbg.push('RAW Search: ' + (_rawSearchOnLoad || '(none)'));
+  _dbg.push('NOW URL: ' + window.location.href);
   _dbg.push('SB_URL: ' + (SUPABASE_URL ? 'set' : 'MISSING'));
   _dbg.push('SB_KEY: ' + (SUPABASE_ANON_KEY ? 'set' : 'MISSING'));
   _dbg.push('supabase global: ' + (typeof supabase !== 'undefined' ? 'loaded' : 'MISSING'));

@@ -25,7 +25,7 @@ export function ZadScripts() {
         }}
       />
       <Script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" strategy="beforeInteractive" />
-      <Script src="/zad-app.js?v=20260329aj" strategy="afterInteractive" />
+      <Script src="/zad-app.js?v=20260329ak" strategy="afterInteractive" />
     </>
   )
 }
