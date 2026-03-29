@@ -9425,7 +9425,8 @@ function renderNwPlanning() {
           <span class="nw-cat-name">${escapeHTML(cat)}</span>
         </div>
         ${catItems.map(item => {
-          const val = getNwValueForPeriod(item, nwFilterYear, nwFilterMonth) || '';
+          const rawVal = getNwValueForPeriod(item, nwFilterYear, nwFilterMonth);
+          const inputVal = rawVal ? parseFloat(rawVal.toFixed(2)) : '';
           const prevMo = nwFilterMonth === 1 ? 12 : nwFilterMonth - 1;
           const prevYr = nwFilterMonth === 1 ? nwFilterYear - 1 : nwFilterYear;
           const prevKey = prevYr + '-' + prevMo;
@@ -9435,10 +9436,11 @@ function renderNwPlanning() {
           return `<div class="nw-plan-item">
             <div class="nw-plan-item-left">
               <span class="nw-plan-item-name">${escapeHTML(item.name)}</span>
+              <span class="nw-plan-item-display">${rawVal ? formatMoney(rawVal) : '—'}</span>
               ${hasFlow ? `<span class="nw-plan-item-flow" style="color: ${prevFlow >= 0 ? 'var(--emerald)' : 'var(--red)'}">${NW_MONTH_NAMES[prevMo - 1]} flow: ${prevFlow >= 0 ? '+' : ''}${formatMoney(prevFlow)}</span>` : ''}
             </div>
             <div class="nw-plan-item-right">
-              <input class="nw-plan-input" type="number" inputmode="decimal" value="${val}" placeholder="—"
+              <input class="nw-plan-input" type="number" inputmode="decimal" value="${inputVal}" placeholder="—"
                 data-row="${item.sheetRow}" data-type="${type}"
                 onchange="updateNwItemValue(this, '${type}', ${item.sheetRow}, ${nwFilterYear}, ${nwFilterMonth})" />
             </div>
@@ -9576,7 +9578,7 @@ async function projectNextMonth() {
       if (curVal === undefined || curVal === null) return; // truly no data at all
       const itemFlow = getItemFlows(item, type, accountFlows, debtFlows);
       const curFlow = Object.keys(itemFlow).length > 0 ? (itemFlow[curKey] || 0) : 0;
-      const newVal = Math.round((curVal + curFlow) * 100) / 100;
+      const newVal = parseFloat((curVal + curFlow).toFixed(2));
       item.values[nextKey] = newVal;
       const col = getNwSheetCol(nextYear, nextMonth);
       if (col) writeData.push({ range: `Net Worth Planning!${col}${item.sheetRow}`, values: [[newVal]] });

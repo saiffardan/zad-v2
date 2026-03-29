@@ -7194,6 +7194,13 @@
       font-weight: 500;
       color: var(--text-1);
     }
+    .nw-plan-item-display {
+      font-size: 14px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--text-1);
+      letter-spacing: var(--ls-tight);
+    }
     .nw-plan-item-flow {
       font-size: 10px;
       font-family: var(--font-mono);
