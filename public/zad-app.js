@@ -6692,7 +6692,7 @@
           if (existingAcct) {
             accountId = existingAcct.id;
           } else {
-            const { data: newAcct, error: acctErr } = await sb.from('accounts').insert({ user_id: uid, name: newAccount, type: 'checking' }).select('id').single();
+            const { data: newAcct, error: acctErr } = await sb.from('accounts').insert({ user_id: uid, name: newAccount, type: 'bank' }).select('id').single();
             if (acctErr) throw acctErr;
             accountId = newAcct.id;
           }
