@@ -7179,7 +7179,7 @@
   }
 
   let _prevTxnTabIdx = 0;
-  const _txnTabOrder = ['overview', 'breakdown', 'summary', 'accounts', 'list'];
+  const _txnTabOrder = ['overview', 'breakdown', 'summary', 'list'];
 
   function switchTxnTab(tab, el) {
     document.querySelectorAll('#txnTabRow .tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
@@ -7187,7 +7187,7 @@
     el.setAttribute('aria-selected', 'true');
 
     // Update header tab indicator
-    const tabNames = { overview: 'Overview', breakdown: 'Breakdown', summary: 'Insights', accounts: 'Accounts', list: 'All Txns' };
+    const tabNames = { overview: 'Overview', breakdown: 'Breakdown', summary: 'Insights', list: 'All Txns' };
     const indicator = document.getElementById('dashTabIndicator');
     if (indicator) indicator.textContent = tabNames[tab] || '';
     moveTxnTabUnderline(el);
@@ -7213,8 +7213,8 @@
     const slideDir = newIdx > _prevTxnTabIdx ? 'slide-left' : 'slide-right';
     _prevTxnTabIdx = newIdx >= 0 ? newIdx : _prevTxnTabIdx;
 
-    const allTabs = ['txnOverviewTab', 'txnBreakdownTab', 'txnSummaryTab', 'txnAccountsTab', 'txnListTab'];
-    const tabMap = { overview: 'txnOverviewTab', breakdown: 'txnBreakdownTab', summary: 'txnSummaryTab', accounts: 'txnAccountsTab', list: 'txnListTab' };
+    const allTabs = ['txnOverviewTab', 'txnBreakdownTab', 'txnSummaryTab', 'txnListTab'];
+    const tabMap = { overview: 'txnOverviewTab', breakdown: 'txnBreakdownTab', summary: 'txnSummaryTab', list: 'txnListTab' };
     allTabs.forEach(id => { const e = document.getElementById(id); if (e) { e.classList.add('hidden'); e.style.transform = ''; e.style.opacity = ''; e.style.transition = ''; } });
     const target = document.getElementById(tabMap[tab]);
     if (target) {
@@ -7235,13 +7235,13 @@
     const searchFilter = document.getElementById('filterTxnSearch');
     const calFilter = document.getElementById('filterTxnCal');
     const bdTypeFilter = document.getElementById('filterBdType');
-    const hideExtras = (tab === 'overview' || tab === 'list' || tab === 'summary' || tab === 'accounts');
+    const hideExtras = (tab === 'overview' || tab === 'list' || tab === 'summary');
     if (hideExtras) {
       extras.forEach(el => el.classList.add('filter-hidden'));
     } else {
       extras.forEach(el => el.classList.remove('filter-hidden'));
     }
-    if (tab === 'overview' || tab === 'summary' || tab === 'accounts') {
+    if (tab === 'overview' || tab === 'summary') {
       if (typeFilter) typeFilter.classList.add('filter-hidden');
       if (searchFilter) searchFilter.classList.add('filter-hidden');
       if (calFilter) calFilter.classList.add('filter-hidden');
@@ -7264,9 +7264,6 @@
     if (tab === 'summary') {
       loadChartJS().then(() => { renderInsightsPage(); renderTxnSummaryChart(); renderAllSectionPies(); });
     }
-    if (tab === 'accounts') {
-      renderAccountsTab();
-    }
   }
 
   function renderAccountsTab() {
@@ -7274,35 +7271,38 @@
     if (!container) return;
 
     const now = new Date();
-    const curYear = now.getFullYear();
-    const curMonth = now.getMonth() + 1;
+    const year = nwFilterYear || now.getFullYear();
+    const month = nwFilterMonth || (now.getMonth() + 1);
+    const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1;
 
     // Use NW sheet data if available
     if (nwDataLoaded && nwAssets.length > 0) {
       const accountFlows = getMonthlyAccountFlows();
       const debtFlows = getMonthlyDebtFlows();
-      const curKey = curYear + '-' + curMonth;
+      const periodKey = year + '-' + month;
       const grouped = {};
       let grandTotal = 0;
       nwAssets.forEach(item => {
         const cat = item.category || 'Uncategorized';
         if (!grouped[cat]) grouped[cat] = { items: [], total: 0 };
-        const startVal = getNwValueForPeriod(item, curYear, curMonth);
+        const startVal = getNwValueForPeriod(item, year, month);
         const itemFlow = getItemFlows(item, 'asset', accountFlows, debtFlows);
-        const flow = Object.keys(itemFlow).length > 0 ? (itemFlow[curKey] || 0) : 0;
+        const flow = Object.keys(itemFlow).length > 0 ? (itemFlow[periodKey] || 0) : 0;
         const val = startVal + flow;
         grouped[cat].items.push({ name: item.name, balance: val });
         grouped[cat].total += val;
         grandTotal += val;
       });
 
-      // Add live portfolio
-      const portfolioTotal = getActiveHoldings().reduce((s, h) => s + (h.currentValue || 0), 0);
-      if (portfolioTotal > 0) {
-        if (!grouped['Portfolio']) grouped['Portfolio'] = { items: [], total: 0 };
-        grouped['Portfolio'].items.push({ name: 'Live Portfolio', balance: portfolioTotal });
-        grouped['Portfolio'].total += portfolioTotal;
-        grandTotal += portfolioTotal;
+      // Add live portfolio only for current month
+      if (isCurrentMonth) {
+        const portfolioTotal = getActiveHoldings().reduce((s, h) => s + (h.currentValue || 0), 0);
+        if (portfolioTotal > 0) {
+          if (!grouped['Portfolio']) grouped['Portfolio'] = { items: [], total: 0 };
+          grouped['Portfolio'].items.push({ name: 'Live Portfolio', balance: portfolioTotal });
+          grouped['Portfolio'].total += portfolioTotal;
+          grandTotal += portfolioTotal;
+        }
       }
 
       let html = `<div class="acct-hero">
@@ -9208,7 +9208,8 @@ const NW_MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','O
 window.switchNwTab = function switchNwTab(tab, el) {
   currentNwTab = tab;
   const indicator = document.getElementById('nwTabIndicator');
-  if (indicator) indicator.textContent = tab === 'dashboard' ? 'Dashboard' : 'Planning';
+  const tabNames = { dashboard: 'Dashboard', accounts: 'Accounts', planning: 'Planning' };
+  if (indicator) indicator.textContent = tabNames[tab] || '';
   const tabs = el.parentElement.querySelectorAll('.tab');
   tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
   el.classList.add('active');
@@ -9219,16 +9220,14 @@ window.switchNwTab = function switchNwTab(tab, el) {
     underline.style.transform = `translateX(${el.offsetLeft}px)`;
   }
   const dashboard = document.getElementById('nwDashboardContent');
+  const accounts = document.getElementById('nwAccountsContent');
   const planning = document.getElementById('nwPlanningContent');
-  if (tab === 'dashboard') {
-    dashboard.classList.remove('hidden');
-    planning.classList.add('hidden');
-    renderNwDashboard();
-  } else {
-    dashboard.classList.add('hidden');
-    planning.classList.remove('hidden');
-    renderNwPlanning();
-  }
+  dashboard.classList.toggle('hidden', tab !== 'dashboard');
+  accounts.classList.toggle('hidden', tab !== 'accounts');
+  planning.classList.toggle('hidden', tab !== 'planning');
+  if (tab === 'dashboard') renderNwDashboard();
+  if (tab === 'accounts') renderAccountsTab();
+  if (tab === 'planning') renderNwPlanning();
 };
 
 // ── Data Fetching ──
@@ -9425,6 +9424,7 @@ window.changeNwFilter = function changeNwFilter() {
   if (ys) nwFilterYear = parseInt(ys.value);
   if (ms) nwFilterMonth = parseInt(ms.value);
   if (currentNwTab === 'dashboard') renderNwDashboard();
+  else if (currentNwTab === 'accounts') renderAccountsTab();
   else renderNwPlanning();
 };
 
