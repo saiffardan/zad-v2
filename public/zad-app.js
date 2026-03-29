@@ -9485,7 +9485,7 @@ function colNumToLetter(num) {
 }
 
 window.updateNwItemValue = async function updateNwItemValue(input, type, sheetRow, year, month) {
-  const val = parseFloat(input.value) || 0;
+  const val = Math.round((parseFloat(input.value) || 0) * 100) / 100;
   const items = type === 'asset' ? nwAssets : nwLiabilities;
   const item = items.find(i => i.sheetRow === sheetRow);
   if (item) item.values[year + '-' + month] = val;
@@ -9550,11 +9550,11 @@ async function projectNextMonth() {
 
   const processItems = (items, type) => {
     items.forEach(item => {
+      const curVal = item.values[curKey];
+      if (curVal === undefined || curVal === null) return; // no current month value to carry forward
       const itemFlow = getItemFlows(item, type, accountFlows, debtFlows);
-      if (Object.keys(itemFlow).length === 0) return;
-      const curVal = item.values[curKey] || 0;
-      const curFlow = itemFlow[curKey] || 0;
-      const newVal = curVal + curFlow;
+      const curFlow = Object.keys(itemFlow).length > 0 ? (itemFlow[curKey] || 0) : 0;
+      const newVal = Math.round((curVal + curFlow) * 100) / 100;
       item.values[nextKey] = newVal;
       const col = getNwSheetCol(nextYear, nextMonth);
       if (col) writeData.push({ range: `Net Worth Planning!${col}${item.sheetRow}`, values: [[newVal]] });
