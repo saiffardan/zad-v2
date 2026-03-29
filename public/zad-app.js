@@ -10793,6 +10793,8 @@ async function trySupabaseAutoLogin() {
   }
   const sb = supabaseClient;
 
+  const hashHasToken = window.location.hash && window.location.hash.includes('access_token');
+
   return new Promise((resolve) => {
     let resolved = false;
     function done(val) { if (!resolved) { resolved = true; resolve(val); } }
@@ -10801,12 +10803,16 @@ async function trySupabaseAutoLogin() {
       try {
         if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
           subscription.unsubscribe();
-          if (window.location.hash && window.location.hash.includes('access_token')) {
+          if (hashHasToken) {
             window.history.replaceState({}, '', window.location.pathname);
           }
           await handleSupabaseSession(session);
           done(true);
-        } else if (event === 'INITIAL_SESSION' && !session) {
+        } else if (event === 'INITIAL_SESSION' && !session && !hashHasToken) {
+          // Only bail on INITIAL_SESSION with no session if we're NOT
+          // waiting for hash token processing. When hash has access_token,
+          // the SDK fires INITIAL_SESSION(null) first, then SIGNED_IN after
+          // processing the hash — so we must keep listening.
           subscription.unsubscribe();
           done(false);
         }
@@ -10817,7 +10823,7 @@ async function trySupabaseAutoLogin() {
       }
     });
 
-    setTimeout(() => { subscription.unsubscribe(); done(false); }, 6000);
+    setTimeout(() => { subscription.unsubscribe(); done(false); }, 8000);
   });
 }
 
@@ -10861,40 +10867,21 @@ async function handleSupabaseSession(session) {
   document.getElementById('appSidebar').classList.remove('hidden');
   document.getElementById('loadingScreen').classList.remove('hidden');
 
-  // Debug: show status on loading screen
-  var _dbgEl = document.createElement('div');
-  _dbgEl.style.cssText = 'position:fixed;bottom:20px;left:0;right:0;text-align:center;color:#888;font-size:11px;z-index:99999;font-family:monospace';
-  _dbgEl.textContent = '[debug] handleSupabaseSession started...';
-  document.body.appendChild(_dbgEl);
-
   // Safety timeout — force-hide loading after 12s no matter what
   const _loadTimeout = setTimeout(function() {
     console.warn('[Zad] Loading timeout — forcing hide');
-    _dbgEl.textContent = '[debug] TIMEOUT — forcing past loading';
     document.getElementById('loadingScreen').classList.add('hidden');
     try { showSetupScreen(); } catch(e) { try { renderDashboard(); } catch(e2) { console.error(e2); } }
   }, 12000);
 
   try {
-    _dbgEl.textContent = '[debug] calling fetchSupabaseData...';
     await fetchSupabaseData();
-    _dbgEl.textContent = '[debug] fetchSupabaseData done, showing setup...';
   } catch (err) {
     console.error('[Zad] fetchSupabaseData failed:', err);
-    _dbgEl.textContent = '[debug] fetchSupabaseData FAILED: ' + err.message;
   }
   clearTimeout(_loadTimeout);
   document.getElementById('loadingScreen').classList.add('hidden');
-  // Show setup screen for Supabase mode
-  try {
-    showSetupScreen();
-    _dbgEl.textContent = '[debug] setup screen shown';
-    setTimeout(function() { _dbgEl.remove(); }, 5000);
-  } catch (err2) {
-    console.error('[Zad] showSetupScreen failed:', err2);
-    _dbgEl.textContent = '[debug] showSetupScreen FAILED: ' + err2.message;
-    try { renderDashboard(); } catch(e) { console.error(e); }
-  }
+  showSetupScreen();
 }
 
 function showSetupScreen() {
