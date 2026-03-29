@@ -9374,17 +9374,26 @@ function getNwValueForPeriod(item, year, month) {
 }
 
 function calculateNwForPeriod(year, month) {
-  const portfolioTotal = (year === new Date().getFullYear() && month === new Date().getMonth() + 1)
+  const now = new Date();
+  const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1;
+  const portfolioTotal = isCurrentMonth
     ? getActiveHoldings().reduce((s, h) => s + (h.currentValue || 0), 0)
     : 0;
+
+  const accountFlows = getMonthlyAccountFlows();
+  const debtFlows = getMonthlyDebtFlows();
+  const periodKey = year + '-' + month;
 
   let totalAssets = portfolioTotal;
   let totalLiabilities = 0;
 
-  // Group assets by category
+  // Group assets by category — starting balance + transaction flow
   const assetsByCategory = {};
   nwAssets.forEach(item => {
-    const val = getNwValueForPeriod(item, year, month);
+    const startVal = getNwValueForPeriod(item, year, month);
+    const itemFlow = getItemFlows(item, 'asset', accountFlows, debtFlows);
+    const flow = Object.keys(itemFlow).length > 0 ? (itemFlow[periodKey] || 0) : 0;
+    const val = startVal + flow;
     const cat = item.category || 'Uncategorized';
     if (!assetsByCategory[cat]) assetsByCategory[cat] = [];
     assetsByCategory[cat].push({ ...item, periodValue: val });
@@ -9394,10 +9403,13 @@ function calculateNwForPeriod(year, month) {
     }
   });
 
-  // Group liabilities by category
+  // Group liabilities by category — starting balance + debt payment flow
   const liabsByCategory = {};
   nwLiabilities.forEach(item => {
-    const val = getNwValueForPeriod(item, year, month);
+    const startVal = getNwValueForPeriod(item, year, month);
+    const itemFlow = getItemFlows(item, 'liability', accountFlows, debtFlows);
+    const flow = Object.keys(itemFlow).length > 0 ? (itemFlow[periodKey] || 0) : 0;
+    const val = startVal + flow;
     const cat = item.category || 'Uncategorized';
     if (!liabsByCategory[cat]) liabsByCategory[cat] = [];
     liabsByCategory[cat].push({ ...item, periodValue: val });
