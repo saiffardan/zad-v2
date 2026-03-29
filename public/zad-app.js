@@ -10847,14 +10847,41 @@ async function handleSupabaseSession(session) {
   hideSignInScreen();
   document.getElementById('appSidebar').classList.remove('hidden');
   document.getElementById('loadingScreen').classList.remove('hidden');
+
+  // Debug: show status on loading screen
+  var _dbgEl = document.createElement('div');
+  _dbgEl.style.cssText = 'position:fixed;bottom:20px;left:0;right:0;text-align:center;color:#888;font-size:11px;z-index:99999;font-family:monospace';
+  _dbgEl.textContent = '[debug] handleSupabaseSession started...';
+  document.body.appendChild(_dbgEl);
+
+  // Safety timeout — force-hide loading after 12s no matter what
+  const _loadTimeout = setTimeout(function() {
+    console.warn('[Zad] Loading timeout — forcing hide');
+    _dbgEl.textContent = '[debug] TIMEOUT — forcing past loading';
+    document.getElementById('loadingScreen').classList.add('hidden');
+    try { showSetupScreen(); } catch(e) { try { renderDashboard(); } catch(e2) { console.error(e2); } }
+  }, 12000);
+
   try {
+    _dbgEl.textContent = '[debug] calling fetchSupabaseData...';
     await fetchSupabaseData();
+    _dbgEl.textContent = '[debug] fetchSupabaseData done, showing setup...';
   } catch (err) {
     console.error('[Zad] fetchSupabaseData failed:', err);
+    _dbgEl.textContent = '[debug] fetchSupabaseData FAILED: ' + err.message;
   }
+  clearTimeout(_loadTimeout);
   document.getElementById('loadingScreen').classList.add('hidden');
   // Show setup screen for Supabase mode
-  showSetupScreen();
+  try {
+    showSetupScreen();
+    _dbgEl.textContent = '[debug] setup screen shown';
+    setTimeout(function() { _dbgEl.remove(); }, 5000);
+  } catch (err2) {
+    console.error('[Zad] showSetupScreen failed:', err2);
+    _dbgEl.textContent = '[debug] showSetupScreen FAILED: ' + err2.message;
+    try { renderDashboard(); } catch(e) { console.error(e); }
+  }
 }
 
 function showSetupScreen() {
@@ -11091,9 +11118,10 @@ async function seedDefaultCategories(sb, uid) {
 
 async function fetchSupabaseData() {
   const sb = supabaseClient;
-  if (!sb) return;
+  if (!sb) { console.warn('[Zad] fetchSupabaseData: no client'); return; }
   const uid = (await sb.auth.getUser()).data.user?.id;
-  if (!uid) return;
+  if (!uid) { console.warn('[Zad] fetchSupabaseData: no uid'); return; }
+  console.log('[Zad] fetchSupabaseData: starting queries for uid', uid);
 
   try {
 
@@ -11145,9 +11173,15 @@ async function fetchSupabaseData() {
       });
     }
 
-    // Fetch live prices
-
-    await fetchLivePrices();
+    // Fetch live prices (with 8s timeout so loading doesn't hang)
+    try {
+      await Promise.race([
+        fetchLivePrices(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Price fetch timeout')), 8000))
+      ]);
+    } catch (e) {
+      console.warn('[Zad] Live prices skipped:', e.message);
+    }
 
     // Process transactions
     if (txnRes.data) {
