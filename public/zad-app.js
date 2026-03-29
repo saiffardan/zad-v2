@@ -9425,7 +9425,7 @@ function renderNwPlanning() {
           <span class="nw-cat-name">${escapeHTML(cat)}</span>
         </div>
         ${catItems.map(item => {
-          const val = item.values[periodKey] || '';
+          const val = getNwValueForPeriod(item, nwFilterYear, nwFilterMonth) || '';
           const prevMo = nwFilterMonth === 1 ? 12 : nwFilterMonth - 1;
           const prevYr = nwFilterMonth === 1 ? nwFilterYear - 1 : nwFilterYear;
           const prevKey = prevYr + '-' + prevMo;
