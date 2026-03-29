@@ -7284,8 +7284,8 @@
       let grandTotal = 0;
       nwAssets.forEach(item => {
         const cat = item.category || 'Uncategorized';
-        // Skip Investment Account — live portfolio covers it
-        if (cat.toLowerCase() === 'investment account') return;
+        // Skip Investment Account(s) — live portfolio covers it
+        if (cat.toLowerCase().includes('investment account')) return;
         if (!grouped[cat]) grouped[cat] = { items: [], total: 0 };
         const startVal = getNwValueForPeriod(item, year, month);
         const itemFlow = getItemFlows(item, 'asset', accountFlows, debtFlows);
