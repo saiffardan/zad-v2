@@ -9237,6 +9237,35 @@ function getMonthlyAccountFlows() {
   return flows;
 }
 
+// Calculates monthly payment totals per DEBT category (for liability matching)
+function getMonthlyDebtFlows() {
+  const flows = {}; // { 'HSBC Car Loan': { '2026-3': -2500, ... } }
+  allTransactions.forEach(t => {
+    if (t.type !== 'DEBT') return;
+    const d = parseTxnDate(t.date);
+    if (!d || d.getTime() === 0) return;
+    const key = d.getFullYear() + '-' + (d.getMonth() + 1);
+    const cat = t.category || '';
+    if (!cat) return;
+    if (!flows[cat]) flows[cat] = {};
+    if (!flows[cat][key]) flows[cat][key] = 0;
+    flows[cat][key] -= t.amount; // debt payments reduce the liability
+  });
+  return flows;
+}
+
+// Get the appropriate flow source for a net worth item
+// Assets: match by account name
+// Liabilities: match by transaction debt category first, then account name
+function getItemFlows(item, type, accountFlows, debtFlows) {
+  if (type === 'liability' || type === 'liabilities') {
+    // Try matching liability name to a debt transaction category
+    if (debtFlows[item.name]) return debtFlows[item.name];
+  }
+  // Default: match by account name
+  return accountFlows[item.name] || {};
+}
+
 // ── Calculation ──
 function getNwValueForPeriod(item, year, month) {
   return item.values[year + '-' + month] || 0;
@@ -9368,6 +9397,7 @@ function renderNwPlanning() {
 
   const periodKey = nwFilterYear + '-' + nwFilterMonth;
   const accountFlows = getMonthlyAccountFlows();
+  const debtFlows = getMonthlyDebtFlows();
 
   const renderPlanItems = (items, type) => {
     if (items.length === 0) return `<div class="nw-empty">No ${type}s defined in the sheet.</div>`;
@@ -9389,18 +9419,19 @@ function renderNwPlanning() {
           const prevMo = nwFilterMonth === 1 ? 12 : nwFilterMonth - 1;
           const prevYr = nwFilterMonth === 1 ? nwFilterYear - 1 : nwFilterYear;
           const prevKey = prevYr + '-' + prevMo;
-          const prevFlow = accountFlows[item.name] ? (accountFlows[item.name][prevKey] || 0) : null;
-          const hasAccount = accountFlows[item.name] !== undefined;
+          const itemFlow = getItemFlows(item, type, accountFlows, debtFlows);
+          const prevFlow = Object.keys(itemFlow).length > 0 ? (itemFlow[prevKey] || 0) : null;
+          const hasFlow = Object.keys(itemFlow).length > 0;
           return `<div class="nw-plan-item">
             <div class="nw-plan-item-left">
               <span class="nw-plan-item-name">${escapeHTML(item.name)}</span>
-              ${hasAccount ? `<span class="nw-plan-item-flow" style="color: ${prevFlow >= 0 ? 'var(--emerald)' : 'var(--red)'}">${NW_MONTH_NAMES[prevMo - 1]} flow: ${prevFlow >= 0 ? '+' : ''}${formatMoney(prevFlow)}</span>` : ''}
+              ${hasFlow ? `<span class="nw-plan-item-flow" style="color: ${prevFlow >= 0 ? 'var(--emerald)' : 'var(--red)'}">${NW_MONTH_NAMES[prevMo - 1]} flow: ${prevFlow >= 0 ? '+' : ''}${formatMoney(prevFlow)}</span>` : ''}
             </div>
             <div class="nw-plan-item-right">
               <input class="nw-plan-input" type="number" inputmode="decimal" value="${val}" placeholder="—"
                 data-row="${item.sheetRow}" data-type="${type}"
                 onchange="updateNwItemValue(this, '${type}', ${item.sheetRow}, ${nwFilterYear}, ${nwFilterMonth})" />
-              ${hasAccount ? `<button class="nw-autofill-btn" title="Auto-fill: ${NW_MONTH_NAMES[prevMo - 1]} value + ${NW_MONTH_NAMES[prevMo - 1]} flow" onclick="autoFillNwItem(this, '${type}', ${item.sheetRow}, ${nwFilterYear}, ${nwFilterMonth})">
+              ${hasFlow ? `<button class="nw-autofill-btn" title="Auto-fill: ${NW_MONTH_NAMES[prevMo - 1]} value + ${NW_MONTH_NAMES[prevMo - 1]} flow" onclick="autoFillNwItem(this, '${type}', ${item.sheetRow}, ${nwFilterYear}, ${nwFilterMonth})">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
               </button>` : ''}
             </div>
@@ -9476,8 +9507,9 @@ window.autoFillNwItem = async function autoFillNwItem(btn, type, sheetRow, year,
   const item = items.find(i => i.sheetRow === sheetRow);
   if (!item || !accessToken) return;
 
-  const flows = getMonthlyAccountFlows();
-  const accountFlows = flows[item.name] || {};
+  const accountFlows = getMonthlyAccountFlows();
+  const debtFlows = getMonthlyDebtFlows();
+  const itemFlows = getItemFlows(item, type, accountFlows, debtFlows);
 
   // Build a sorted list of all year-month periods across all available years
   const allPeriods = [];
@@ -9511,7 +9543,7 @@ window.autoFillNwItem = async function autoFillNwItem(btn, type, sheetRow, year,
     const cur = allPeriods[i];
     const prevKey = prev.year + '-' + prev.month;
     const curKey = cur.year + '-' + cur.month;
-    const prevFlow = accountFlows[prevKey] || 0;
+    const prevFlow = itemFlows[prevKey] || 0;
     runningVal = runningVal + prevFlow;
     item.values[curKey] = runningVal;
 
@@ -9564,9 +9596,8 @@ async function checkMonthlyAutoFill() {
   const lastFill = localStorage.getItem('nw_autofill_month');
   if (lastFill === curKey) return; // already done this month
 
-  const flows = getMonthlyAccountFlows();
-  const allAccounts = Object.keys(flows);
-  if (allAccounts.length === 0) return;
+  const accountFlows = getMonthlyAccountFlows();
+  const debtFlows = getMonthlyDebtFlows();
 
   const curYear = now.getFullYear();
   const curMonth = now.getMonth() + 1;
@@ -9575,13 +9606,25 @@ async function checkMonthlyAutoFill() {
   const prevKey = prevYear + '-' + prevMonth;
 
   const writeData = [];
-  const allItems = [...nwAssets, ...nwLiabilities];
 
-  allItems.forEach(item => {
-    // Only auto-fill items that match a transaction account
-    if (!flows[item.name]) return;
+  // Auto-fill assets (matched by account name)
+  nwAssets.forEach(item => {
+    const itemFlow = getItemFlows(item, 'asset', accountFlows, debtFlows);
+    if (Object.keys(itemFlow).length === 0) return;
     const prevVal = item.values[prevKey] || 0;
-    const prevFlow = flows[item.name][prevKey] || 0;
+    const prevFlow = itemFlow[prevKey] || 0;
+    const newVal = prevVal + prevFlow;
+    item.values[curKey] = newVal;
+    const col = getNwSheetCol(curYear, curMonth);
+    if (col) writeData.push({ range: `Net Worth Planning!${col}${item.sheetRow}`, values: [[newVal]] });
+  });
+
+  // Auto-fill liabilities (matched by debt transaction category)
+  nwLiabilities.forEach(item => {
+    const itemFlow = getItemFlows(item, 'liability', accountFlows, debtFlows);
+    if (Object.keys(itemFlow).length === 0) return;
+    const prevVal = item.values[prevKey] || 0;
+    const prevFlow = itemFlow[prevKey] || 0;
     const newVal = prevVal + prevFlow;
     item.values[curKey] = newVal;
 

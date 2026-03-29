@@ -22,7 +22,7 @@ export function ZadScripts() {
           __html: `window.__ZAD_CONFIG={clientId:${JSON.stringify(clientId)},sheetId:${JSON.stringify(sheetId)}};`,
         }}
       />
-      <Script src="/zad-app.js?v=20260329o" strategy="afterInteractive" />
+      <Script src="/zad-app.js?v=20260329p" strategy="afterInteractive" />
     </>
   )
 }
