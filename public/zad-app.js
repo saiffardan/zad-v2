@@ -10826,26 +10826,69 @@ async function handleSupabaseSession(session) {
 }
 
 async function seedDefaultCategories(sb, uid) {
+  // Structure: { TYPE: { 'Parent Category': ['Subcategory1', 'Subcategory2', ...] } }
   const defaults = {
-    INCOME: ['Salary', 'Freelance', 'Dividends', 'Rental Income', 'Other Income'],
-    EXPENSES: ['Rent', 'Groceries', 'Dining Out', 'Transport', 'Utilities', 'Entertainment', 'Shopping', 'Health', 'Education', 'Subscriptions', 'Personal Care', 'Gifts', 'Travel', 'Other Expenses'],
-    SAVINGS: ['Emergency Fund', 'Investments', 'Retirement', 'Vacation Fund', 'Other Savings'],
-    DEBT: ['Credit Card', 'Car Loan', 'Student Loan', 'Mortgage', 'Other Debt']
+    INCOME: {
+      'Employment': ['Salary', 'Bonus', 'Overtime'],
+      'Side Income': ['Freelance', 'Side Business'],
+      'Passive Income': ['Dividends', 'Rental Income', 'Interest'],
+      'Other': ['Other Income']
+    },
+    EXPENSES: {
+      'Housing': ['Rent', 'Maintenance', 'Home Insurance'],
+      'Food & Dining': ['Groceries', 'Dining Out', 'Coffee & Snacks'],
+      'Transport': ['Fuel', 'Parking', 'Public Transport', 'Car Insurance', 'Car Maintenance'],
+      'Utilities': ['Electricity', 'Water', 'Internet', 'Phone'],
+      'Health': ['Medical', 'Pharmacy', 'Gym & Fitness'],
+      'Shopping': ['Clothing', 'Electronics', 'Home & Garden'],
+      'Entertainment': ['Streaming', 'Movies & Events', 'Hobbies'],
+      'Education': ['Courses', 'Books', 'Tuition'],
+      'Personal Care': ['Grooming', 'Skincare'],
+      'Travel': ['Flights', 'Hotels', 'Activities'],
+      'Gifts & Donations': ['Gifts', 'Charity'],
+      'Subscriptions': ['Software', 'Memberships'],
+      'Other': ['Other Expenses']
+    },
+    SAVINGS: {
+      'Emergency': ['Emergency Fund'],
+      'Investments': ['Stock Portfolio', 'Crypto', 'Real Estate Fund'],
+      'Goals': ['Vacation Fund', 'Wedding Fund', 'Home Down Payment'],
+      'Retirement': ['Retirement Fund', 'Pension'],
+      'Other': ['Other Savings']
+    },
+    DEBT: {
+      'Loans': ['Car Loan', 'Student Loan', 'Personal Loan'],
+      'Mortgage': ['Mortgage Payment'],
+      'Credit Cards': ['Credit Card Payment'],
+      'Other': ['Other Debt']
+    }
   };
+
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
+  const periodKey = year + '-' + String(month).padStart(2, '0');
   const rows = [];
-  for (const [type, cats] of Object.entries(defaults)) {
-    for (const cat of cats) {
-      rows.push({ user_id: uid, type, category: cat, year, month, amount: 0 });
-      const key = type + ':' + cat;
-      if (!budgetCategories[type]) budgetCategories[type] = [];
-      budgetCategories[type].push(key);
-      budgetData[key] = {};
-      budgetData[key][year + '-' + String(month).padStart(2, '0')] = 0;
+  if (!window._budgetDisplayNames) window._budgetDisplayNames = {};
+
+  for (const [type, parents] of Object.entries(defaults)) {
+    if (!budgetCategories[type]) budgetCategories[type] = [];
+    const parentSet = new Set();
+    for (const [parentCat, subcats] of Object.entries(parents)) {
+      parentSet.add(parentCat);
+      for (const cat of subcats) {
+        rows.push({ user_id: uid, type, category: cat, parent_category: parentCat, year, month, amount: 0 });
+        const key = type + ':' + cat;
+        budgetCategories[type].push(key);
+        budgetData[key] = {};
+        budgetData[key][periodKey] = 0;
+        categoryParentMap[key] = parentCat;
+        window._budgetDisplayNames[key] = cat;
+      }
     }
+    parentBudgetCategories[type] = [...parentSet];
   }
+
   try {
     await sb.from('budget_items').insert(rows);
   } catch (e) {
@@ -10933,6 +10976,8 @@ async function fetchSupabaseData() {
     // Process budget
     budgetData = {};
     budgetCategories = { INCOME: [], EXPENSES: [], SAVINGS: [], DEBT: [] };
+    if (!window._budgetDisplayNames) window._budgetDisplayNames = {};
+    const _parentSets = { INCOME: new Set(), EXPENSES: new Set(), SAVINGS: new Set(), DEBT: new Set() };
     if (budgetRes.data && budgetRes.data.length > 0) {
       budgetRes.data.forEach(b => {
         const key = b.type + ':' + b.category;
@@ -10942,8 +10987,15 @@ async function fetchSupabaseData() {
         if (budgetCategories[b.type] && !budgetCategories[b.type].includes(key)) {
           budgetCategories[b.type].push(key);
         }
-        if (b.parent_category) categoryParentMap[key] = b.parent_category;
+        window._budgetDisplayNames[key] = b.category;
+        if (b.parent_category) {
+          categoryParentMap[key] = b.parent_category;
+          if (_parentSets[b.type]) _parentSets[b.type].add(b.parent_category);
+        }
       });
+      for (const [type, pset] of Object.entries(_parentSets)) {
+        parentBudgetCategories[type] = [...pset];
+      }
     } else {
       // First login — seed default categories so dropdowns aren't empty
       await seedDefaultCategories(sb, uid);
