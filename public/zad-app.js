@@ -10698,45 +10698,58 @@ window.handleSupabaseSignIn = async function handleSupabaseSignIn() {
 
 // Called on page load to check for Supabase session (after OAuth redirect)
 async function trySupabaseAutoLogin() {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return false;
-  if (typeof supabase === 'undefined' || !supabase.createClient) return false;
+  // Temporary debug: show what URL we landed on after redirect
+  var _dbg = [];
+  _dbg.push('URL: ' + window.location.href);
+  _dbg.push('Hash: ' + (window.location.hash ? window.location.hash.substring(0, 60) + '...' : '(none)'));
+  _dbg.push('Search: ' + (window.location.search || '(none)'));
+  _dbg.push('SB_URL: ' + (SUPABASE_URL ? 'set' : 'MISSING'));
+  _dbg.push('SB_KEY: ' + (SUPABASE_ANON_KEY ? 'set' : 'MISSING'));
+  _dbg.push('supabase global: ' + (typeof supabase !== 'undefined' ? 'loaded' : 'MISSING'));
 
-  // Set up auth listener BEFORE creating client so we catch the token exchange
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) { _dbg.push('BAIL: no config'); _showDbg(_dbg); return false; }
+  if (typeof supabase === 'undefined' || !supabase.createClient) { _dbg.push('BAIL: no SDK'); _showDbg(_dbg); return false; }
+
+  // Create client
+  if (!supabaseClient) {
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { detectSessionInUrl: true, flowType: 'implicit' }
+    });
+  }
+  const sb = supabaseClient;
+
   return new Promise((resolve) => {
     let resolved = false;
-    function done(val) { if (!resolved) { resolved = true; resolve(val); } }
+    function done(val) { if (!resolved) { resolved = true; _showDbg(_dbg); resolve(val); } }
 
-    // Create client — this triggers URL token detection & exchange
-    if (!supabaseClient) {
-      supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          detectSessionInUrl: true,
-          flowType: 'implicit'
-        }
-      });
-    }
-    const sb = supabaseClient;
-
-    // Listen for auth events (fires when OAuth tokens are exchanged)
     const { data: { subscription } } = sb.auth.onAuthStateChange(async (event, session) => {
+      _dbg.push('Event: ' + event + ' session: ' + (session ? 'YES' : 'no'));
       if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
         subscription.unsubscribe();
-        // Clean up URL hash if present
         if (window.location.hash && window.location.hash.includes('access_token')) {
           window.history.replaceState({}, '', window.location.pathname);
         }
         await handleSupabaseSession(session);
         done(true);
       } else if (event === 'INITIAL_SESSION' && !session) {
-        // No session found after initial check
         subscription.unsubscribe();
         done(false);
       }
     });
 
-    // Safety timeout
-    setTimeout(() => { subscription.unsubscribe(); done(false); }, 6000);
+    setTimeout(() => { _dbg.push('TIMEOUT'); subscription.unsubscribe(); done(false); }, 6000);
   });
+}
+
+function _showDbg(lines) {
+  var el = document.getElementById('_sbDbg');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '_sbDbg';
+    el.style.cssText = 'position:fixed;bottom:60px;left:8px;right:8px;background:rgba(0,0,0,0.9);color:#0f0;font:11px/1.5 monospace;padding:12px;border-radius:8px;z-index:99999;max-height:40vh;overflow:auto;white-space:pre-wrap;';
+    document.body.appendChild(el);
+  }
+  el.textContent = lines.join('\n');
 }
 
 async function handleSupabaseSession(session) {
