@@ -7149,6 +7149,30 @@
       font-weight: 600;
       color: var(--text-1);
     }
+    .nw-update-bar {
+      margin-bottom: 20px;
+    }
+    .nw-update-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px;
+      background: var(--glass-bg);
+      border: 1px solid var(--divider);
+      border-radius: 12px;
+      color: var(--blue);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: opacity var(--duration-fast) ease, color var(--duration-normal) ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nw-update-btn:active {
+      opacity: 0.6;
+    }
     .nw-plan-item {
       display: flex;
       align-items: center;
@@ -7208,24 +7232,6 @@
     .nw-plan-input::-webkit-outer-spin-button {
       -webkit-appearance: none;
       margin: 0;
-    }
-    .nw-autofill-btn {
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: none;
-      background: var(--hover-bg);
-      color: var(--blue);
-      cursor: pointer;
-      border-radius: 6px;
-      transition: background var(--duration-fast) ease, opacity var(--duration-fast) ease;
-      -webkit-tap-highlight-color: transparent;
-      flex-shrink: 0;
-    }
-    .nw-autofill-btn:active {
-      opacity: 0.6;
     }
 
     /* Page transition */

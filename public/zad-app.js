@@ -9431,9 +9431,6 @@ function renderNwPlanning() {
               <input class="nw-plan-input" type="number" inputmode="decimal" value="${val}" placeholder="—"
                 data-row="${item.sheetRow}" data-type="${type}"
                 onchange="updateNwItemValue(this, '${type}', ${item.sheetRow}, ${nwFilterYear}, ${nwFilterMonth})" />
-              ${hasFlow ? `<button class="nw-autofill-btn" title="Auto-fill: ${NW_MONTH_NAMES[prevMo - 1]} value + ${NW_MONTH_NAMES[prevMo - 1]} flow" onclick="autoFillNwItem(this, '${type}', ${item.sheetRow}, ${nwFilterYear}, ${nwFilterMonth})">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-              </button>` : ''}
             </div>
           </div>`;
         }).join('')}
@@ -9441,7 +9438,17 @@ function renderNwPlanning() {
     }).join('');
   };
 
+  const now = new Date();
+  const nextMo = now.getMonth() === 11 ? 1 : now.getMonth() + 2;
+  const nextYr = now.getMonth() === 11 ? now.getFullYear() + 1 : now.getFullYear();
+
   container.innerHTML = `
+    <div class="nw-update-bar">
+      <button class="nw-update-btn" id="nwProjectBtn" onclick="runProjectNextMonth()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        Update ${NW_MONTH_NAMES[nextMo - 1]} ${nextYr}
+      </button>
+    </div>
     <div class="nw-plan-section">
       <div class="nw-plan-header">
         <span class="nw-plan-title">Assets</span>
@@ -9502,83 +9509,15 @@ window.updateNwItemValue = async function updateNwItemValue(input, type, sheetRo
   }
 };
 
-window.autoFillNwItem = async function autoFillNwItem(btn, type, sheetRow, year, month) {
-  const items = type === 'asset' ? nwAssets : nwLiabilities;
-  const item = items.find(i => i.sheetRow === sheetRow);
-  if (!item || !accessToken) return;
 
-  const accountFlows = getMonthlyAccountFlows();
-  const debtFlows = getMonthlyDebtFlows();
-  const itemFlows = getItemFlows(item, type, accountFlows, debtFlows);
 
-  // Build a sorted list of all year-month periods across all available years
-  const allPeriods = [];
-  const sortedYears = [...nwYears].sort((a, b) => a.year - b.year);
-  for (const yb of sortedYears) {
-    for (let m = 1; m <= 12; m++) {
-      allPeriods.push({ year: yb.year, month: m });
-    }
-  }
-
-  // Seed from the month before the current month
-  // e.g. if today is April, seed from March; if May, seed from April
-  const now = new Date();
-  const seedMonth = now.getMonth() === 0 ? 12 : now.getMonth(); // getMonth() is 0-based, so April=3 → seedMonth=3 (March)
-  const seedYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
-  let seedIdx = -1;
-  for (let i = 0; i < allPeriods.length; i++) {
-    if (allPeriods[i].year === seedYear && allPeriods[i].month === seedMonth) {
-      seedIdx = i;
-      break;
-    }
-  }
-  if (seedIdx === -1) seedIdx = 0;
-
-  // Compute values for all months after the seed
-  const writeData = []; // { range, value }
-  let runningVal = item.values[allPeriods[seedIdx].year + '-' + allPeriods[seedIdx].month] || 0;
-
-  for (let i = seedIdx + 1; i < allPeriods.length; i++) {
-    const prev = allPeriods[i - 1];
-    const cur = allPeriods[i];
-    const prevKey = prev.year + '-' + prev.month;
-    const curKey = cur.year + '-' + cur.month;
-    const prevFlow = itemFlows[prevKey] || 0;
-    runningVal = runningVal + prevFlow;
-    item.values[curKey] = runningVal;
-
-    const col = getNwSheetCol(cur.year, cur.month);
-    if (col) {
-      writeData.push({
-        range: `Net Worth Planning!${col}${sheetRow}`,
-        values: [[runningVal]]
-      });
-    }
-  }
-
-  if (writeData.length === 0) return;
-
-  // Batch write all values to sheet
-  try {
-    await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`,
-      {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          valueInputOption: 'USER_ENTERED',
-          data: writeData
-        })
-      }
-    );
-    // Flash the button green to confirm
-    btn.style.color = 'var(--emerald)';
-    setTimeout(() => { btn.style.color = ''; }, 1000);
-    // Re-render planning to show updated values
-    renderNwPlanning();
-  } catch (err) {
-    console.error('Net worth auto-fill write error:', err);
-  }
+window.runProjectNextMonth = async function runProjectNextMonth() {
+  const btn = document.getElementById('nwProjectBtn');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; }
+  await projectNextMonth();
+  if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.color = 'var(--emerald)'; setTimeout(() => { btn.style.color = ''; }, 1200); }
+  renderNwPlanning();
+  renderNwDashboard();
 };
 
 window.closeNwModal = function closeNwModal() {
