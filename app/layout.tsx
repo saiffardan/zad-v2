@@ -37,7 +37,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap"
           rel="stylesheet"
         />
-        <link rel="stylesheet" href="/zad-app.css?v=20260329l" />
+        <link rel="stylesheet" href="/zad-app.css?v=20260329m" />
       </head>
       <body>{children}</body>
     </html>

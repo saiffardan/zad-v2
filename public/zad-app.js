@@ -44,6 +44,10 @@
   }
   const CLIENT_ID = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.clientId) || '1008350848317-2pul4n12msbg606khco6h91mrnftv69j.apps.googleusercontent.com';
   const SHEET_ID = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.sheetId) || '1NNOt_RCDxKyZ-E0YYN1cpvDji_bhRC8sZvoLV0pWX48';
+  const SUPABASE_URL = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.supabaseUrl) || '';
+  const SUPABASE_ANON_KEY = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.supabaseAnonKey) || '';
+  let supabaseClient = null;
+  let supabaseMode = false; // true when logged in via Supabase
   const SHEET_RANGE = 'Investments!G14:M';
   const TXN_RANGE = 'Transactions!B14:G';
   const BUDGET_RANGE = 'Budget Planning!C5:AZ424';
@@ -509,6 +513,12 @@
     txnDemoMode = false;
     realData = null;
     realTxnData = null;
+    // Supabase sign-out
+    if (supabaseMode && supabaseClient) {
+      supabaseClient.auth.signOut().catch(() => {});
+      supabaseMode = false;
+      localStorage.removeItem('supabaseMode');
+    }
     // Revoke the token with Google (skip if demo session)
     if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
       google.accounts.oauth2.revoke && google.accounts.oauth2.revoke(accessToken);
@@ -9178,15 +9188,19 @@
     });
   }, { passive: true });
 
-  // Auto-login with cached token if still valid
-  (function tryAutoLogin() {
+  // Auto-login: try Supabase first (handles OAuth redirect), then Google cached token
+  (async function tryAutoLogin() {
+    // Check Supabase session (handles OAuth redirect callback too)
+    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+      const didLogin = await trySupabaseAutoLogin();
+      if (didLogin) return;
+    }
+    // Fall back to cached Google token
     const cached = localStorage.getItem('cachedToken');
     const expiresAt = parseInt(localStorage.getItem('tokenExpiresAt') || '0', 10);
-    // Require at least 2 min remaining to avoid mid-session expiry
     if (cached && Date.now() < expiresAt - 120000) {
       accessToken = cached;
       userFirstName = localStorage.getItem('userName') || '';
-      // Hide sign-in, show loading
       hideSignInScreen();
       document.getElementById('appSidebar').classList.remove('hidden');
       document.getElementById('loadingScreen').classList.remove('hidden');
@@ -10647,5 +10661,192 @@ async function saveBudgetCategory(type, cat) {
     closeTxnModal();
     renderBudgetPage();
   }
+}
+
+// ═══════════════════════════════════════════════
+// SUPABASE MODE — Auth + Data Fetching
+// ═══════════════════════════════════════════════
+
+function initSupabase() {
+  if (supabaseClient) return supabaseClient;
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
+  if (typeof supabase === 'undefined' || !supabase.createClient) return null;
+  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  return supabaseClient;
+}
+
+window.handleSupabaseSignIn = async function handleSupabaseSignIn() {
+  const sb = initSupabase();
+  if (!sb) {
+    showSignInError('Supabase is not configured.');
+    return;
+  }
+  const btn = document.getElementById('supabaseSignInBtn');
+  if (btn) btn.classList.add('loading');
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin }
+  });
+  if (error) {
+    if (btn) btn.classList.remove('loading');
+    showSignInError('Supabase sign-in failed: ' + error.message);
+  }
+  // OAuth will redirect — no further action needed here
+};
+
+// Called on page load to check for Supabase session (after OAuth redirect)
+async function trySupabaseAutoLogin() {
+  const sb = initSupabase();
+  if (!sb) return false;
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return false;
+  supabaseMode = true;
+  localStorage.setItem('supabaseMode', 'true');
+  const meta = session.user.user_metadata || {};
+  userFirstName = (meta.full_name || meta.name || '').split(' ')[0];
+  localStorage.setItem('userName', userFirstName);
+  hideSignInScreen();
+  document.getElementById('appSidebar').classList.remove('hidden');
+  document.getElementById('loadingScreen').classList.remove('hidden');
+  await fetchSupabaseData();
+  return true;
+}
+
+async function fetchSupabaseData() {
+  const sb = supabaseClient;
+  if (!sb) return;
+  const uid = (await sb.auth.getUser()).data.user?.id;
+  if (!uid) return;
+
+  try {
+    _startLoadingRotation('portfolio');
+    // Fetch all data in parallel
+    const [tradesRes, txnRes, accountsRes, budgetRes, nwItemsRes, nwSnapRes, prefsRes] = await Promise.all([
+      sb.from('portfolio_trades').select('*').eq('user_id', uid).order('date', { ascending: true }),
+      sb.from('transactions').select('*').eq('user_id', uid).order('date', { ascending: false }),
+      sb.from('accounts').select('*').eq('user_id', uid),
+      sb.from('budget_items').select('*').eq('user_id', uid),
+      sb.from('net_worth_items').select('*').eq('user_id', uid),
+      sb.from('net_worth_snapshots').select('*').eq('user_id', uid),
+      sb.from('user_preferences').select('*').eq('user_id', uid).single()
+    ]);
+
+    // Process portfolio trades
+    if (tradesRes.data) {
+      allTrades = [];
+      holdings = {};
+      tradesRes.data.forEach(t => {
+        const trade = {
+          date: formatDateForDisplay(t.date),
+          ticker: t.ticker.toUpperCase(),
+          action: t.action,
+          shares: parseFloat(t.shares),
+          price: parseFloat(t.price),
+          type: t.asset_type || 'Stock',
+          total: parseFloat(t.total || t.shares * t.price)
+        };
+        allTrades.push(trade);
+        if (!holdings[trade.ticker]) {
+          holdings[trade.ticker] = { ticker: trade.ticker, type: trade.type, shares: 0, totalSpent: 0, totalSold: 0, buys: 0, sells: 0, netInvested: 0, avgCost: 0 };
+        }
+        const h = holdings[trade.ticker];
+        if (trade.action === 'BUY') { h.shares += trade.shares; h.totalSpent += trade.total; h.buys++; }
+        else { h.shares -= trade.shares; h.totalSold += trade.total; h.sells++; }
+        h.netInvested = h.totalSpent - h.totalSold;
+        h.avgCost = h.shares > 0 ? h.totalSpent / h.shares : 0;
+      });
+    }
+
+    // Fetch live prices
+    _startLoadingRotation('prices');
+    await fetchLivePrices();
+
+    // Process transactions
+    if (txnRes.data) {
+      const accountMap = {};
+      if (accountsRes.data) accountsRes.data.forEach(a => { accountMap[a.id] = a.name; });
+      allTransactions = txnRes.data.map(t => ({
+        date: formatDateForDisplay(t.date),
+        type: t.type,
+        category: t.category,
+        account: accountMap[t.account_id] || '--',
+        amount: parseFloat(t.amount),
+        description: t.description || '',
+        isRefund: t.is_refund || false,
+        supabaseId: t.id
+      }));
+      txnDataLoaded = true;
+    }
+
+    // Process budget
+    if (budgetRes.data) {
+      budgetData = {};
+      budgetCategories = { INCOME: [], EXPENSES: [], SAVINGS: [], DEBT: [] };
+      budgetRes.data.forEach(b => {
+        const key = b.type + ':' + b.category;
+        const periodKey = b.year + '-' + String(b.month).padStart(2, '0');
+        if (!budgetData[key]) budgetData[key] = {};
+        budgetData[key][periodKey] = parseFloat(b.amount);
+        if (budgetCategories[b.type] && !budgetCategories[b.type].includes(key)) {
+          budgetCategories[b.type].push(key);
+        }
+        if (b.parent_category) categoryParentMap[key] = b.parent_category;
+      });
+      budgetDataLoaded = true;
+    }
+
+    // Process net worth
+    if (nwItemsRes.data && nwSnapRes.data) {
+      nwAssets = [];
+      nwLiabilities = [];
+      const snapMap = {};
+      nwSnapRes.data.forEach(s => {
+        if (!snapMap[s.item_id]) snapMap[s.item_id] = {};
+        snapMap[s.item_id][s.year + '-' + s.month] = parseFloat(s.value);
+      });
+      nwItemsRes.data.forEach(item => {
+        const nwItem = {
+          category: item.category,
+          name: item.name,
+          sheetRow: 0,
+          values: snapMap[item.id] || {}
+        };
+        if (item.type === 'asset') nwAssets.push(nwItem);
+        else nwLiabilities.push(nwItem);
+      });
+      // Extract years from snapshots
+      const yearSet = new Set();
+      nwSnapRes.data.forEach(s => yearSet.add(s.year));
+      nwYears = [...yearSet].sort().map((y, i) => ({ year: y, colOffset: 3 + i * 13 }));
+      nwDataLoaded = true;
+      populateNwFilters();
+    }
+
+    // Process preferences
+    if (prefsRes.data) {
+      if (prefsRes.data.theme) {
+        document.documentElement.setAttribute('data-theme', prefsRes.data.theme);
+      }
+      if (prefsRes.data.currency) currentCurrency = prefsRes.data.currency;
+    }
+
+    // Done — render
+    document.getElementById('loadingScreen').classList.add('hidden');
+    renderDashboard();
+
+  } catch (err) {
+    console.error('[Zad] Supabase fetch error:', err);
+    showSignInError('Failed to load data: ' + err.message);
+    document.getElementById('loadingScreen').classList.add('hidden');
+    handleSignOut();
+  }
+}
+
+// Convert ISO date (YYYY-MM-DD) to display format (DD/MM/YYYY)
+function formatDateForDisplay(isoDate) {
+  if (!isoDate) return '';
+  const parts = isoDate.split('-');
+  if (parts.length === 3) return parts[2] + '/' + parts[1] + '/' + parts[0];
+  return isoDate;
 }
 

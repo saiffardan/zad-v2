@@ -1453,6 +1453,9 @@
     [data-theme="light"] .btn-demo:hover { color: rgba(0,0,0,0.65); }
     [data-theme="light"] .btn-demo:focus-visible { outline-color: rgba(0,0,0,0.2); }
 
+    .btn-supabase { margin-top: 8px; }
+    .supabase-icon { width: 20px; height: 20px; flex-shrink: 0; }
+
     .sign-in-error {
       font-family: var(--font-sans);
       font-size: 12px;

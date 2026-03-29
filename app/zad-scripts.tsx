@@ -4,6 +4,8 @@ import Script from "next/script"
 
 const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""
 const sheetId = process.env.NEXT_PUBLIC_SHEET_ID || ""
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 
 export function ZadScripts() {
   return (
@@ -19,10 +21,11 @@ export function ZadScripts() {
         id="zad-config"
         strategy="beforeInteractive"
         dangerouslySetInnerHTML={{
-          __html: `window.__ZAD_CONFIG={clientId:${JSON.stringify(clientId)},sheetId:${JSON.stringify(sheetId)}};`,
+          __html: `window.__ZAD_CONFIG={clientId:${JSON.stringify(clientId)},sheetId:${JSON.stringify(sheetId)},supabaseUrl:${JSON.stringify(supabaseUrl)},supabaseAnonKey:${JSON.stringify(supabaseAnonKey)}};`,
         }}
       />
-      <Script src="/zad-app.js?v=20260329ae" strategy="afterInteractive" />
+      <Script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" strategy="beforeInteractive" />
+      <Script src="/zad-app.js?v=20260329af" strategy="afterInteractive" />
     </>
   )
 }
