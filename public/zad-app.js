@@ -6646,7 +6646,7 @@
   }
 
   async function addNewTxn() {
-    if (!accessToken) { alert('Not signed in'); return; }
+    if (!accessToken && !supabaseMode) { alert('Not signed in'); return; }
 
     const statusEl = document.getElementById('txnEditStatus');
     const saveBtn = document.getElementById('txnSaveBtn');
@@ -6679,6 +6679,57 @@
     const rowValues = [newDate, newType, newCategory, newAccount, sheetAmount, newDesc];
 
     try {
+      if (supabaseMode) {
+        // Supabase write path
+        const sb = supabaseClient;
+        const uid = (await sb.auth.getUser()).data.user?.id;
+        if (!uid) throw new Error('Not authenticated');
+
+        // Find or create account
+        let accountId = null;
+        if (newAccount && newAccount !== '--') {
+          const { data: existingAcct } = await sb.from('accounts').select('id').eq('user_id', uid).eq('name', newAccount).maybeSingle();
+          if (existingAcct) {
+            accountId = existingAcct.id;
+          } else {
+            const { data: newAcct, error: acctErr } = await sb.from('accounts').insert({ user_id: uid, name: newAccount, type: 'checking' }).select('id').single();
+            if (acctErr) throw acctErr;
+            accountId = newAcct.id;
+          }
+        }
+
+        // Convert date from DD/MM/YYYY to YYYY-MM-DD
+        const dateParts = newDate.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+        const isoDate = dateParts ? `${dateParts[3]}-${dateParts[2].padStart(2,'0')}-${dateParts[1].padStart(2,'0')}` : newDate;
+
+        const { data: inserted, error: insertErr } = await sb.from('transactions').insert({
+          user_id: uid,
+          date: isoDate,
+          type: newType,
+          category: newCategory,
+          account_id: accountId,
+          amount: Math.abs(sheetAmount),
+          description: newDesc,
+          is_refund: isRefund
+        }).select('id').single();
+        if (insertErr) throw insertErr;
+
+        statusEl.textContent = 'Added';
+        statusEl.style.color = 'var(--emerald)';
+
+        const isExpenseRefund = (newType === 'EXPENSES' && sheetAmount > 0);
+        allTransactions.push({
+          date: normalizeDateStr(newDate),
+          type: newType,
+          category: newCategory,
+          account: newAccount,
+          amount: isExpenseRefund ? -Math.abs(newAmount) : Math.abs(newAmount),
+          isRefund: isExpenseRefund,
+          description: newDesc,
+          supabaseId: inserted.id
+        });
+      } else {
+      // Google Sheets write path
       const res = await fetch(
         `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent('Transactions!B:G')}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
         {
@@ -6697,7 +6748,6 @@
       }
 
       const result = await res.json();
-      // Parse the updated range to get the new row number
       const updatedRange = result.updates?.updatedRange || '';
       const rowMatch = updatedRange.match(/(\d+)$/);
       const newSheetRow = rowMatch ? parseInt(rowMatch[1]) : allTransactions.length + 14;
@@ -6705,7 +6755,6 @@
       statusEl.textContent = 'Added';
       statusEl.style.color = 'var(--emerald)';
 
-      // Add to local data
       const isExpenseRefund = (newType === 'EXPENSES' && sheetAmount > 0);
       allTransactions.push({
         date: normalizeDateStr(newDate),
@@ -6718,6 +6767,7 @@
         sheetRow: newSheetRow,
         rawAmount: sheetAmount
       });
+      } // end Sheets path
 
       // Re-sort so new transaction merges into correct date group
       allTransactions.sort((a, b) => parseTxnDate(b.date) - parseTxnDate(a.date));
@@ -6846,7 +6896,7 @@
   }
 
   async function addNewTrade() {
-    if (!accessToken) { alert('Not signed in'); return; }
+    if (!accessToken && !supabaseMode) { alert('Not signed in'); return; }
 
     const statusEl = document.getElementById('tradeEditStatus');
     const saveBtn = document.getElementById('tradeSaveBtn');
@@ -7025,7 +7075,7 @@
   }
 
   async function executeSell() {
-    if (!accessToken) { alert('Not signed in'); return; }
+    if (!accessToken && !supabaseMode) { alert('Not signed in'); return; }
 
     const statusEl = document.getElementById('sellEditStatus');
     const saveBtn = document.getElementById('sellSaveBtn');
@@ -9255,7 +9305,7 @@ window.switchNwTab = function switchNwTab(tab, el) {
 //   index 0=C, 1=D, 2=E(empty), 3=F(Jan yr1), 14=Q(Dec yr1), 15=R(gap), 16=S(Jan yr2), ...
 
 async function fetchNetWorthData() {
-  if (!accessToken) return;
+  if (!accessToken && !supabaseMode) return;
   try {
     const ranges = [
       'Net Worth Planning!C5:ZZ5',
@@ -9829,7 +9879,7 @@ const LOCKED_TRANSFERS = ['Credit Card Payment (Out)', 'Credit Card Payment (In)
 let categoriesData = {};
 
 async function fetchAndRenderCategories(targetId) {
-  if (!accessToken) return;
+  if (!accessToken && !supabaseMode) return;
   const cid = targetId || 'categoriesContent';
   const container = document.getElementById(cid);
   if (container) container.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-3);font-size:14px;">Loading categories...</div>';
@@ -9936,7 +9986,7 @@ function deleteCategory(type, index) {
 }
 
 async function writeCategoryColumn(type) {
-  if (!accessToken) return;
+  if (!accessToken && !supabaseMode) return;
   const col = CAT_WRITE_COLS[type];
   if (!col) return;
 
@@ -10326,7 +10376,7 @@ async function fetchAndRenderBudget() {
   const loadingMsg = '<div style="text-align:center;padding:40px 0;color:var(--text-3);font-size:14px;">Loading budget data...</div>';
   if (overview && !overview.classList.contains('hidden')) overview.innerHTML = loadingMsg;
   if (edit && !edit.classList.contains('hidden')) edit.innerHTML = loadingMsg;
-  if (!accessToken) return;
+  if (!accessToken && !supabaseMode) return;
   try {
     const res = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent('Budget Planning!C5:AZ424')}?valueRenderOption=UNFORMATTED_VALUE`,
@@ -10489,7 +10539,7 @@ function updateBudgetAmount(input) {
 }
 
 async function writeBudgetCell(category, key, value) {
-  if (!accessToken) return;
+  if (!accessToken && !supabaseMode) return;
   const sheetRow = window._budgetCatRowMap?.[category];
   const colLetter = window._budgetKeyToCol?.[key];
   if (!sheetRow || !colLetter) {
