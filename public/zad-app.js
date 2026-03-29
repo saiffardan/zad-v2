@@ -598,13 +598,14 @@
       processData(data.values || []);
       setLoadingPhase('prices');
 
-      // Fetch live prices + transactions in parallel
+      // Fetch live prices + transactions + net worth in parallel
       await Promise.all([
         fetchLivePrices(),
         fetchTransactions().then(() => {
           setLoadingPhase('transactions');
         }).catch(e => console.warn('Txn fetch:', e)),
-        fetchBudgetData().catch(e => console.warn('Budget fetch:', e))
+        fetchBudgetData().catch(e => console.warn('Budget fetch:', e)),
+        fetchNetWorthData().catch(e => console.warn('NW fetch:', e))
       ]);
 
       stopLoadingMessages();
@@ -4133,15 +4134,21 @@
       }
     }
 
-    // Net worth = cash remaining + portfolio value
+    // Net worth — use Net Worth Planning sheet data if available, else fall back to transaction-based
     const netWorthEl = document.getElementById('homeNetWorth');
     if (netWorthEl) {
-      const totalIncome = allTransactions.filter(t => t.type === 'INCOME').reduce((s, t) => s + t.amount, 0);
-      const totalExpenses = allTransactions.filter(t => t.type === 'EXPENSES').reduce((s, t) => s + t.amount, 0);
-      const totalSavings = allTransactions.filter(t => t.type === 'SAVINGS').reduce((s, t) => s + t.amount, 0);
-      const totalDebt = allTransactions.filter(t => t.type === 'DEBT').reduce((s, t) => s + t.amount, 0);
-      const cashRemaining = totalIncome - totalExpenses - totalSavings - totalDebt;
-      const netWorth = cashRemaining + portfolioTotal;
+      let netWorth;
+      if (nwDataLoaded && (nwAssets.length > 0 || nwLiabilities.length > 0)) {
+        const now = new Date();
+        const data = calculateNwForPeriod(now.getFullYear(), now.getMonth() + 1);
+        netWorth = data.netWorth;
+      } else {
+        const totalIncome = allTransactions.filter(t => t.type === 'INCOME').reduce((s, t) => s + t.amount, 0);
+        const totalExpenses = allTransactions.filter(t => t.type === 'EXPENSES').reduce((s, t) => s + t.amount, 0);
+        const totalSavings = allTransactions.filter(t => t.type === 'SAVINGS').reduce((s, t) => s + t.amount, 0);
+        const totalDebt = allTransactions.filter(t => t.type === 'DEBT').reduce((s, t) => s + t.amount, 0);
+        netWorth = totalIncome - totalExpenses - totalSavings - totalDebt + portfolioTotal;
+      }
       netWorthEl.textContent = formatMoney(netWorth);
       netWorthEl.style.color = netWorth >= 0 ? 'var(--text-1)' : 'var(--red)';
     }
