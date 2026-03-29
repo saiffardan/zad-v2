@@ -9230,10 +9230,10 @@
     });
   }, { passive: true });
 
-  // Auto-login: try Supabase first (handles OAuth redirect), then Google cached token
+  // Auto-login: only handle Supabase OAuth redirect, then Google cached token
   (async function tryAutoLogin() {
-    // Check Supabase session (handles OAuth redirect callback too)
-    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    // Only check Supabase if returning from OAuth redirect (hash has tokens)
+    if (SUPABASE_URL && SUPABASE_ANON_KEY && window.location.hash && window.location.hash.includes('access_token')) {
       const didLogin = await trySupabaseAutoLogin();
       if (didLogin) return;
     }
