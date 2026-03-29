@@ -10698,8 +10698,36 @@ window.handleSupabaseSignIn = async function handleSupabaseSignIn() {
 async function trySupabaseAutoLogin() {
   const sb = initSupabase();
   if (!sb) return false;
+
+  // Check if URL has OAuth tokens (redirect from Supabase auth)
+  const hasAuthInHash = window.location.hash && window.location.hash.includes('access_token');
+  const hasAuthInQuery = window.location.search && window.location.search.includes('code=');
+
+  if (hasAuthInHash || hasAuthInQuery) {
+    // Wait for Supabase to process the OAuth callback tokens
+    return new Promise((resolve) => {
+      const { data: { subscription } } = sb.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          subscription.unsubscribe();
+          // Clean up URL
+          window.history.replaceState({}, '', window.location.pathname);
+          await handleSupabaseSession(session);
+          resolve(true);
+        }
+      });
+      // Timeout fallback in case event doesn't fire
+      setTimeout(() => { subscription.unsubscribe(); resolve(false); }, 5000);
+    });
+  }
+
+  // No OAuth redirect — check for existing session
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return false;
+  await handleSupabaseSession(session);
+  return true;
+}
+
+async function handleSupabaseSession(session) {
   supabaseMode = true;
   localStorage.setItem('supabaseMode', 'true');
   const meta = session.user.user_metadata || {};
@@ -10709,7 +10737,6 @@ async function trySupabaseAutoLogin() {
   document.getElementById('appSidebar').classList.remove('hidden');
   document.getElementById('loadingScreen').classList.remove('hidden');
   await fetchSupabaseData();
-  return true;
 }
 
 async function fetchSupabaseData() {
