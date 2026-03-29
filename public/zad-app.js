@@ -7279,12 +7279,18 @@
 
     // Use NW sheet data if available
     if (nwDataLoaded && nwAssets.length > 0) {
+      const accountFlows = getMonthlyAccountFlows();
+      const debtFlows = getMonthlyDebtFlows();
+      const curKey = curYear + '-' + curMonth;
       const grouped = {};
       let grandTotal = 0;
       nwAssets.forEach(item => {
         const cat = item.category || 'Uncategorized';
         if (!grouped[cat]) grouped[cat] = { items: [], total: 0 };
-        const val = getNwValueForPeriod(item, curYear, curMonth);
+        const startVal = getNwValueForPeriod(item, curYear, curMonth);
+        const itemFlow = getItemFlows(item, 'asset', accountFlows, debtFlows);
+        const flow = Object.keys(itemFlow).length > 0 ? (itemFlow[curKey] || 0) : 0;
+        const val = startVal + flow;
         grouped[cat].items.push({ name: item.name, balance: val });
         grouped[cat].total += val;
         grandTotal += val;
