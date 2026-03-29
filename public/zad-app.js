@@ -5008,12 +5008,13 @@
       const type = (row[1] || '').toUpperCase().trim();
       // For EXPENSES: positive in sheet = refund (money back), negative = normal expense (money out)
       const isExpenseRefund = (type === 'EXPENSES' && amount > 0);
+      const isTransfer = (type === 'TRANSFER');
       allTransactions.push({
         date: normalizeDateStr(row[0]),
         type: type,
         category: row[2] || 'Uncategorized',
         account: row[3] || '--',
-        amount: isExpenseRefund ? -Math.abs(amount) : Math.abs(amount),
+        amount: isTransfer ? amount : (isExpenseRefund ? -Math.abs(amount) : Math.abs(amount)),
         isRefund: isExpenseRefund,
         description: row[5] || '',
         sheetRow: i + 14, // TXN_RANGE starts at row 14, so row index i = sheet row i+14
@@ -9197,6 +9198,7 @@ function getMonthlyAccountFlows() {
     else if (t.type === 'EXPENSES') flows[t.account][key] -= t.amount;
     else if (t.type === 'SAVINGS') flows[t.account][key] -= t.amount;
     else if (t.type === 'DEBT') flows[t.account][key] -= t.amount;
+    else if (t.type === 'TRANSFER') flows[t.account][key] += t.amount; // sign preserved: - = out, + = in
   });
   return flows;
 }
