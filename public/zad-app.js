@@ -9257,7 +9257,10 @@ function calculateNwForPeriod(year, month) {
     const cat = item.category || 'Uncategorized';
     if (!assetsByCategory[cat]) assetsByCategory[cat] = [];
     assetsByCategory[cat].push({ ...item, periodValue: val });
-    totalAssets += val;
+    // Skip "Investment Account" category — use live portfolio value instead
+    if (cat.toLowerCase() !== 'investment account') {
+      totalAssets += val;
+    }
   });
 
   // Group liabilities by category
