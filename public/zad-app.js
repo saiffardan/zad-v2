@@ -9435,42 +9435,74 @@ window.updateNwItemValue = async function updateNwItemValue(input, type, sheetRo
 window.autoFillNwItem = async function autoFillNwItem(btn, type, sheetRow, year, month) {
   const items = type === 'asset' ? nwAssets : nwLiabilities;
   const item = items.find(i => i.sheetRow === sheetRow);
-  if (!item) return;
+  if (!item || !accessToken) return;
 
   const flows = getMonthlyAccountFlows();
-  // Use previous month's value + previous month's flow = current month's starting value
-  const prevMonth = month === 1 ? 12 : month - 1;
-  const prevYear = month === 1 ? year - 1 : year;
-  const prevPeriodKey = prevYear + '-' + prevMonth;
-  const prevVal = item.values[prevPeriodKey] || 0;
-  const prevFlow = (flows[item.name] && flows[item.name][prevPeriodKey]) || 0;
+  const accountFlows = flows[item.name] || {};
 
-  const periodKey = year + '-' + month;
-  const newVal = prevVal + prevFlow;
-  item.values[periodKey] = newVal;
+  // Build a sorted list of all year-month periods across all available years
+  const allPeriods = [];
+  const sortedYears = [...nwYears].sort((a, b) => a.year - b.year);
+  for (const yb of sortedYears) {
+    for (let m = 1; m <= 12; m++) {
+      allPeriods.push({ year: yb.year, month: m });
+    }
+  }
 
-  // Update the input next to this button
-  const planItem = btn.closest('.nw-plan-item');
-  const input = planItem.querySelector('.nw-plan-input');
-  if (input) input.value = newVal;
+  // Find the first period that already has a value (seed)
+  // Walk forward from there: each month = prev value + prev month flow
+  let seedIdx = -1;
+  for (let i = 0; i < allPeriods.length; i++) {
+    const key = allPeriods[i].year + '-' + allPeriods[i].month;
+    if (item.values[key] !== undefined && item.values[key] !== 0) {
+      seedIdx = i;
+      break;
+    }
+  }
+  if (seedIdx === -1) seedIdx = 0; // no seed found, start from beginning
 
-  // Write to sheet
-  const col = getNwSheetCol(year, month);
-  if (!col || !accessToken) return;
-  const range = `Net Worth Planning!${col}${sheetRow}`;
+  // Compute values for all months after the seed
+  const writeData = []; // { range, value }
+  let runningVal = item.values[allPeriods[seedIdx].year + '-' + allPeriods[seedIdx].month] || 0;
+
+  for (let i = seedIdx + 1; i < allPeriods.length; i++) {
+    const prev = allPeriods[i - 1];
+    const cur = allPeriods[i];
+    const prevKey = prev.year + '-' + prev.month;
+    const curKey = cur.year + '-' + cur.month;
+    const prevFlow = accountFlows[prevKey] || 0;
+    runningVal = runningVal + prevFlow;
+    item.values[curKey] = runningVal;
+
+    const col = getNwSheetCol(cur.year, cur.month);
+    if (col) {
+      writeData.push({
+        range: `Net Worth Planning!${col}${sheetRow}`,
+        values: [[runningVal]]
+      });
+    }
+  }
+
+  if (writeData.length === 0) return;
+
+  // Batch write all values to sheet
   try {
     await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`,
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`,
       {
-        method: 'PUT',
+        method: 'POST',
         headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ values: [[newVal]] })
+        body: JSON.stringify({
+          valueInputOption: 'USER_ENTERED',
+          data: writeData
+        })
       }
     );
-    if (input) {
-      input.classList.add('nw-input-saved');
-      setTimeout(() => input.classList.remove('nw-input-saved'), 800);
-    }
+    // Flash the button green to confirm
+    btn.style.color = 'var(--emerald)';
+    setTimeout(() => { btn.style.color = ''; }, 1000);
+    // Re-render planning to show updated values
+    renderNwPlanning();
   } catch (err) {
     console.error('Net worth auto-fill write error:', err);
   }
