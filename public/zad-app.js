@@ -9268,7 +9268,17 @@ function getItemFlows(item, type, accountFlows, debtFlows) {
 
 // ── Calculation ──
 function getNwValueForPeriod(item, year, month) {
-  return item.values[year + '-' + month] || 0;
+  const val = item.values[year + '-' + month];
+  if (val !== undefined && val !== null) return val;
+  // Fall back to most recent previous month's value
+  for (let y = year; y >= Math.min(...nwYears.map(yb => yb.year)); y--) {
+    const maxM = y === year ? month - 1 : 12;
+    for (let m = maxM; m >= 1; m--) {
+      const v = item.values[y + '-' + m];
+      if (v !== undefined && v !== null) return v;
+    }
+  }
+  return 0;
 }
 
 function calculateNwForPeriod(year, month) {
