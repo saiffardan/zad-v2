@@ -11,6 +11,13 @@ export function ZadScripts() {
   return (
     <>
       <Script
+        id="zad-sw-nuke"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(reg){reg.unregister()})});caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})})}`,
+        }}
+      />
+      <Script
         id="zad-config"
         strategy="beforeInteractive"
         dangerouslySetInnerHTML={{
@@ -18,7 +25,7 @@ export function ZadScripts() {
         }}
       />
       <Script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" strategy="beforeInteractive" />
-      <Script src="/zad-app.js?v=20260329c" strategy="afterInteractive" />
+      <Script src="/zad-app.js?v=20260329d" strategy="afterInteractive" />
     </>
   )
 }

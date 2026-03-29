@@ -48,17 +48,6 @@
   const SUPABASE_ANON_KEY = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.supabaseAnonKey) || '';
   let supabaseClient = null;
   let supabaseMode = false; // true when logged in via Supabase
-
-  // Promise that resolves when Supabase SDK is loaded (handles race condition with CDN)
-  const _supabaseReady = new Promise(function(resolve) {
-    if (typeof supabase !== 'undefined' && supabase.createClient) { resolve(); return; }
-    var _sdkChecks = 0;
-    var _sdkTimer = setInterval(function() {
-      _sdkChecks++;
-      if (typeof supabase !== 'undefined' && supabase.createClient) { clearInterval(_sdkTimer); resolve(); }
-      else if (_sdkChecks > 100) { clearInterval(_sdkTimer); resolve(); } // 5s max wait
-    }, 50);
-  });
   const SHEET_RANGE = 'Investments!G14:M';
   const TXN_RANGE = 'Transactions!B14:G';
   const BUDGET_RANGE = 'Budget Planning!C5:AZ424';
@@ -4821,8 +4810,7 @@
     });
   }
 
-  // Register Service Worker
-  // Register service worker (noop pass-through, no caching)
+  // Register Service Worker (noop network-only SW)
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).catch(() => {});
   }
@@ -6448,10 +6436,8 @@
 
     const catOptions = buildCatOptions(t.type, t.category);
 
-    // Gather known accounts (from transactions + Supabase accounts table)
-    const _txnAccts = allTransactions.filter(tx => tx.account && tx.account !== '--').map(tx => tx.account);
-    const _sbAccts = window._supabaseAccounts || [];
-    const allAccounts = [...new Set([..._txnAccts, ..._sbAccts])].sort();
+    // Gather known accounts
+    const allAccounts = [...new Set(allTransactions.filter(tx => tx.account && tx.account !== '--').map(tx => tx.account))].sort();
     const acctOptions = allAccounts.map(a => `<option value="${a}" ${a === t.account ? 'selected' : ''}>${a}</option>`).join('')
       + '<option value="__custom__">+ Custom...</option>';
 
@@ -6605,9 +6591,7 @@
 
     const catOptions = buildCatOptions('INCOME', '');
 
-    const txnAccounts = allTransactions.filter(tx => tx.account && tx.account !== '--').map(tx => tx.account);
-    const sbAccounts = window._supabaseAccounts || [];
-    const allAccounts = [...new Set([...txnAccounts, ...sbAccounts])].sort();
+    const allAccounts = [...new Set(allTransactions.filter(tx => tx.account && tx.account !== '--').map(tx => tx.account))].sort();
     const acctOptions = allAccounts.map(a => `<option value="${a}">${a}</option>`).join('')
       + '<option value="__custom__">+ Custom...</option>';
 
@@ -9241,21 +9225,14 @@
     });
   }, { passive: true });
 
-  // Auto-login: Supabase OAuth redirect → Supabase session restore → Google cached token
+  // Auto-login: try Supabase first (handles OAuth redirect), then Google cached token
   (async function tryAutoLogin() {
-    // 1. Check Supabase if returning from OAuth redirect (hash has tokens)
-    if (SUPABASE_URL && SUPABASE_ANON_KEY && window.location.hash && window.location.hash.includes('access_token')) {
-      await _supabaseReady; // Wait for Supabase SDK to load
+    // Check Supabase session (handles OAuth redirect callback too)
+    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
       const didLogin = await trySupabaseAutoLogin();
       if (didLogin) return;
     }
-    // 2. Restore existing Supabase session (e.g. PWA reopened)
-    if (SUPABASE_URL && SUPABASE_ANON_KEY && localStorage.getItem('supabaseMode') === 'true') {
-      await _supabaseReady; // Wait for Supabase SDK to load
-      const didRestore = await trySupabaseSessionRestore();
-      if (didRestore) return;
-    }
-    // 3. Fall back to cached Google token
+    // Fall back to cached Google token
     const cached = localStorage.getItem('cachedToken');
     const expiresAt = parseInt(localStorage.getItem('tokenExpiresAt') || '0', 10);
     if (cached && Date.now() < expiresAt - 120000) {
@@ -10783,6 +10760,11 @@ window.handleSupabaseSignIn = async function handleSupabaseSignIn() {
 // Called on page load to check for Supabase session (after OAuth redirect)
 async function trySupabaseAutoLogin() {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return false;
+
+  // Wait for Supabase SDK to load (CDN may still be loading)
+  for (var _i = 0; _i < 100 && (typeof supabase === 'undefined' || !supabase.createClient); _i++) {
+    await new Promise(function(r) { setTimeout(r, 50); });
+  }
   if (typeof supabase === 'undefined' || !supabase.createClient) return false;
 
   // Create client
@@ -10792,7 +10774,6 @@ async function trySupabaseAutoLogin() {
     });
   }
   const sb = supabaseClient;
-
   const hashHasToken = window.location.hash && window.location.hash.includes('access_token');
 
   return new Promise((resolve) => {
@@ -10809,15 +10790,14 @@ async function trySupabaseAutoLogin() {
           await handleSupabaseSession(session);
           done(true);
         } else if (event === 'INITIAL_SESSION' && !session && !hashHasToken) {
-          // Only bail on INITIAL_SESSION with no session if we're NOT
-          // waiting for hash token processing. When hash has access_token,
-          // the SDK fires INITIAL_SESSION(null) first, then SIGNED_IN after
-          // processing the hash — so we must keep listening.
+          // Only bail if we're NOT waiting for hash token processing.
+          // When hash has access_token, SDK fires INITIAL_SESSION(null) first,
+          // then SIGNED_IN after processing — so we must keep listening.
           subscription.unsubscribe();
           done(false);
         }
       } catch (err) {
-        console.error('[Zad] Supabase auto-login error:', err);
+        console.error('[Zad] Supabase auth error:', err);
         document.getElementById('loadingScreen')?.classList.add('hidden');
         done(false);
       }
@@ -10825,36 +10805,6 @@ async function trySupabaseAutoLogin() {
 
     setTimeout(() => { subscription.unsubscribe(); done(false); }, 8000);
   });
-}
-
-async function trySupabaseSessionRestore() {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return false;
-  if (typeof supabase === 'undefined' || !supabase.createClient) return false;
-
-  if (!supabaseClient) {
-    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { detectSessionInUrl: false, flowType: 'implicit' }
-    });
-  }
-
-  try {
-    // Timeout getSession to prevent indefinite hangs
-    const result = await Promise.race([
-      supabaseClient.auth.getSession(),
-      new Promise(function(_, reject) { setTimeout(function() { reject(new Error('getSession timeout')); }, 5000); })
-    ]);
-    const session = result.data && result.data.session;
-    if (result.error || !session) {
-      localStorage.removeItem('supabaseMode');
-      return false;
-    }
-    await handleSupabaseSession(session);
-    return true;
-  } catch (err) {
-    console.error('[Zad] Supabase session restore error:', err);
-    localStorage.removeItem('supabaseMode');
-    return false;
-  }
 }
 
 async function handleSupabaseSession(session) {
@@ -10866,262 +10816,20 @@ async function handleSupabaseSession(session) {
   hideSignInScreen();
   document.getElementById('appSidebar').classList.remove('hidden');
   document.getElementById('loadingScreen').classList.remove('hidden');
-
-  // Safety timeout — force-hide loading after 12s no matter what
-  const _loadTimeout = setTimeout(function() {
-    console.warn('[Zad] Loading timeout — forcing hide');
-    document.getElementById('loadingScreen').classList.add('hidden');
-    try { showSetupScreen(); } catch(e) { try { renderDashboard(); } catch(e2) { console.error(e2); } }
-  }, 12000);
-
   try {
     await fetchSupabaseData();
   } catch (err) {
     console.error('[Zad] fetchSupabaseData failed:', err);
-  }
-  clearTimeout(_loadTimeout);
-  document.getElementById('loadingScreen').classList.add('hidden');
-  showSetupScreen();
-}
-
-function showSetupScreen() {
-  var overlay = document.getElementById('setupOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'setupOverlay';
-    document.body.appendChild(overlay);
-  }
-
-  var _setupType = 'EXPENSES';
-  var _typeLabels = { INCOME: 'Income', EXPENSES: 'Expenses', SAVINGS: 'Savings', DEBT: 'Debt' };
-
-  function renderSetup(type) {
-    _setupType = type;
-    var cats = budgetCategories[type] || [];
-    var grouped = {};
-    var ungrouped = [];
-    for (var i = 0; i < cats.length; i++) {
-      var key = cats[i];
-      var parent = categoryParentMap[key] || null;
-      var name = (window._budgetDisplayNames && window._budgetDisplayNames[key]) || key.replace(/^[A-Z]+:/, '');
-      if (parent) {
-        if (!grouped[parent]) grouped[parent] = [];
-        grouped[parent].push({ key: key, name: name });
-      } else {
-        ungrouped.push({ key: key, name: name });
-      }
-    }
-
-    var html = '<div class="setup-container">';
-    html += '<div class="setup-header"><div class="setup-title">Setup Categories</div>';
-    html += '<div class="setup-subtitle">Review and customize your budget categories</div></div>';
-
-    // Type tabs
-    html += '<div class="setup-type-tabs">';
-    var types = ['INCOME', 'EXPENSES', 'SAVINGS', 'DEBT'];
-    for (var t = 0; t < types.length; t++) {
-      html += '<button class="setup-type-tab' + (types[t] === type ? ' active' : '') + '" data-setup-type="' + types[t] + '">' + _typeLabels[types[t]] + '</button>';
-    }
-    html += '</div>';
-
-    // Categories
-    html += '<div class="setup-categories">';
-    var parents = Object.keys(grouped);
-    if (parents.length === 0 && ungrouped.length === 0) {
-      html += '<div class="setup-empty">No categories yet</div>';
-    }
-    for (var p = 0; p < parents.length; p++) {
-      var par = parents[p];
-      var items = grouped[par];
-      html += '<div class="setup-group"><div class="setup-group-header">';
-      html += '<span class="setup-group-name">' + par + '</span>';
-      html += '<button class="setup-add-sub-btn" data-add-parent="' + escapeHTML(par) + '">+ Add</button>';
-      html += '</div>';
-      for (var j = 0; j < items.length; j++) {
-        html += '<div class="setup-item"><span class="setup-item-name">' + escapeHTML(items[j].name) + '</span>';
-        html += '<button class="setup-remove-btn" data-remove-key="' + escapeHTML(items[j].key) + '">\u00d7</button></div>';
-      }
-      html += '</div>';
-    }
-    for (var u = 0; u < ungrouped.length; u++) {
-      html += '<div class="setup-item setup-item-ungrouped"><span class="setup-item-name">' + escapeHTML(ungrouped[u].name) + '</span>';
-      html += '<button class="setup-remove-btn" data-remove-key="' + escapeHTML(ungrouped[u].key) + '">\u00d7</button></div>';
-    }
-    html += '</div>';
-
-    // Actions
-    html += '<div class="setup-actions"><button class="setup-add-parent-btn" id="setupAddParentBtn">+ Add Category Group</button></div>';
-    html += '<div class="setup-footer"><button class="setup-done-btn" id="setupDoneBtn">Continue to App \u2192</button></div>';
-    html += '</div>';
-
-    overlay.innerHTML = html;
-    overlay.classList.add('open');
-
-    // Bind events via delegation
-    overlay.onclick = function(e) {
-      var el = e.target;
-      if (el.dataset.setupType) { renderSetup(el.dataset.setupType); return; }
-      if (el.dataset.addParent) { addSubcategory(type, el.dataset.addParent); return; }
-      if (el.dataset.removeKey) { removeCategory(type, el.dataset.removeKey); return; }
-      if (el.id === 'setupAddParentBtn') { addParentGroup(type); return; }
-      if (el.id === 'setupDoneBtn') { closeSetup(); return; }
-    };
-  }
-
-  function saveToSupabase(type, category, parentCat) {
-    if (!supabaseClient) return;
-    supabaseClient.auth.getUser().then(function(r) {
-      var uid = r.data.user && r.data.user.id;
-      if (uid) {
-        var now = new Date();
-        supabaseClient.from('budget_items').insert({
-          user_id: uid, type: type, category: category, parent_category: parentCat,
-          year: now.getFullYear(), month: now.getMonth() + 1, amount: 0
-        });
-      }
-    });
-  }
-
-  function addParentGroup(type) {
-    var parent = prompt('New category group name (e.g. "Car", "Food & Dining"):');
-    if (!parent || !parent.trim()) return;
-    var sub = prompt('First subcategory under "' + parent.trim() + '" (e.g. "Fuel"):');
-    if (!sub || !sub.trim()) return;
-    var key = type + ':' + sub.trim();
-    if (!budgetCategories[type]) budgetCategories[type] = [];
-    if (budgetCategories[type].indexOf(key) >= 0) { alert('Already exists'); return; }
-    budgetCategories[type].push(key);
-    if (!budgetData[key]) budgetData[key] = {};
-    categoryParentMap[key] = parent.trim();
-    if (!window._budgetDisplayNames) window._budgetDisplayNames = {};
-    window._budgetDisplayNames[key] = sub.trim();
-    if (!parentBudgetCategories[type]) parentBudgetCategories[type] = [];
-    if (parentBudgetCategories[type].indexOf(parent.trim()) < 0) parentBudgetCategories[type].push(parent.trim());
-    saveToSupabase(type, sub.trim(), parent.trim());
-    renderSetup(type);
-  }
-
-  function addSubcategory(type, parent) {
-    var sub = prompt('New subcategory under "' + parent + '":');
-    if (!sub || !sub.trim()) return;
-    var key = type + ':' + sub.trim();
-    if (budgetCategories[type] && budgetCategories[type].indexOf(key) >= 0) { alert('Already exists'); return; }
-    if (!budgetCategories[type]) budgetCategories[type] = [];
-    budgetCategories[type].push(key);
-    if (!budgetData[key]) budgetData[key] = {};
-    categoryParentMap[key] = parent;
-    if (!window._budgetDisplayNames) window._budgetDisplayNames = {};
-    window._budgetDisplayNames[key] = sub.trim();
-    saveToSupabase(type, sub.trim(), parent);
-    renderSetup(type);
-  }
-
-  function removeCategory(type, key) {
-    var name = (window._budgetDisplayNames && window._budgetDisplayNames[key]) || key.replace(/^[A-Z]+:/, '');
-    if (!confirm('Remove "' + name + '"?')) return;
-    var idx = budgetCategories[type] ? budgetCategories[type].indexOf(key) : -1;
-    if (idx >= 0) budgetCategories[type].splice(idx, 1);
-    delete budgetData[key];
-    delete categoryParentMap[key];
-    if (window._budgetDisplayNames) delete window._budgetDisplayNames[key];
-    if (supabaseClient) {
-      supabaseClient.auth.getUser().then(function(r) {
-        var uid = r.data.user && r.data.user.id;
-        if (uid) {
-          supabaseClient.from('budget_items').delete()
-            .eq('user_id', uid).eq('type', type).eq('category', name);
-        }
-      });
-    }
-    renderSetup(type);
-  }
-
-  function closeSetup() {
-    overlay.classList.remove('open');
-    setTimeout(function() { overlay.remove(); }, 300);
+    document.getElementById('loadingScreen').classList.add('hidden');
     renderDashboard();
-  }
-
-  renderSetup('EXPENSES');
-}
-
-async function seedDefaultCategories(sb, uid) {
-  // Structure: { TYPE: { 'Parent Category': ['Subcategory1', 'Subcategory2', ...] } }
-  const defaults = {
-    INCOME: {
-      'Employment': ['Salary', 'Bonus', 'Overtime'],
-      'Side Income': ['Freelance', 'Side Business'],
-      'Passive Income': ['Dividends', 'Rental Income', 'Interest'],
-      'Other': ['Other Income']
-    },
-    EXPENSES: {
-      'Housing': ['Rent', 'Maintenance', 'Home Insurance'],
-      'Food & Dining': ['Groceries', 'Dining Out', 'Coffee & Snacks'],
-      'Transport': ['Fuel', 'Parking', 'Public Transport', 'Car Insurance', 'Car Maintenance'],
-      'Utilities': ['Electricity', 'Water', 'Internet', 'Phone'],
-      'Health': ['Medical', 'Pharmacy', 'Gym & Fitness'],
-      'Shopping': ['Clothing', 'Electronics', 'Home & Garden'],
-      'Entertainment': ['Streaming', 'Movies & Events', 'Hobbies'],
-      'Education': ['Courses', 'Books', 'Tuition'],
-      'Personal Care': ['Grooming', 'Skincare'],
-      'Travel': ['Flights', 'Hotels', 'Activities'],
-      'Gifts & Donations': ['Gifts', 'Charity'],
-      'Subscriptions': ['Software', 'Memberships'],
-      'Other': ['Other Expenses']
-    },
-    SAVINGS: {
-      'Emergency': ['Emergency Fund'],
-      'Investments': ['Stock Portfolio', 'Crypto', 'Real Estate Fund'],
-      'Goals': ['Vacation Fund', 'Wedding Fund', 'Home Down Payment'],
-      'Retirement': ['Retirement Fund', 'Pension'],
-      'Other': ['Other Savings']
-    },
-    DEBT: {
-      'Loans': ['Car Loan', 'Student Loan', 'Personal Loan'],
-      'Mortgage': ['Mortgage Payment'],
-      'Credit Cards': ['Credit Card Payment'],
-      'Other': ['Other Debt']
-    }
-  };
-
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-  const periodKey = year + '-' + String(month).padStart(2, '0');
-  const rows = [];
-  if (!window._budgetDisplayNames) window._budgetDisplayNames = {};
-
-  for (const [type, parents] of Object.entries(defaults)) {
-    if (!budgetCategories[type]) budgetCategories[type] = [];
-    const parentSet = new Set();
-    for (const [parentCat, subcats] of Object.entries(parents)) {
-      parentSet.add(parentCat);
-      for (const cat of subcats) {
-        rows.push({ user_id: uid, type, category: cat, parent_category: parentCat, year, month, amount: 0 });
-        const key = type + ':' + cat;
-        budgetCategories[type].push(key);
-        budgetData[key] = {};
-        budgetData[key][periodKey] = 0;
-        categoryParentMap[key] = parentCat;
-        window._budgetDisplayNames[key] = cat;
-      }
-    }
-    parentBudgetCategories[type] = [...parentSet];
-  }
-
-  try {
-    await sb.from('budget_items').insert(rows);
-  } catch (e) {
-    console.warn('[Zad] Seed categories error:', e);
   }
 }
 
 async function fetchSupabaseData() {
   const sb = supabaseClient;
-  if (!sb) { console.warn('[Zad] fetchSupabaseData: no client'); return; }
+  if (!sb) return;
   const uid = (await sb.auth.getUser()).data.user?.id;
-  if (!uid) { console.warn('[Zad] fetchSupabaseData: no uid'); return; }
-  console.log('[Zad] fetchSupabaseData: starting queries for uid', uid);
+  if (!uid) return;
 
   try {
 
@@ -11173,15 +10881,9 @@ async function fetchSupabaseData() {
       });
     }
 
-    // Fetch live prices (with 8s timeout so loading doesn't hang)
-    try {
-      await Promise.race([
-        fetchLivePrices(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Price fetch timeout')), 8000))
-      ]);
-    } catch (e) {
-      console.warn('[Zad] Live prices skipped:', e.message);
-    }
+    // Fetch live prices
+
+    await fetchLivePrices();
 
     // Process transactions
     if (txnRes.data) {
@@ -11201,11 +10903,9 @@ async function fetchSupabaseData() {
     }
 
     // Process budget
-    budgetData = {};
-    budgetCategories = { INCOME: [], EXPENSES: [], SAVINGS: [], DEBT: [] };
-    if (!window._budgetDisplayNames) window._budgetDisplayNames = {};
-    const _parentSets = { INCOME: new Set(), EXPENSES: new Set(), SAVINGS: new Set(), DEBT: new Set() };
-    if (budgetRes.data && budgetRes.data.length > 0) {
+    if (budgetRes.data) {
+      budgetData = {};
+      budgetCategories = { INCOME: [], EXPENSES: [], SAVINGS: [], DEBT: [] };
       budgetRes.data.forEach(b => {
         const key = b.type + ':' + b.category;
         const periodKey = b.year + '-' + String(b.month).padStart(2, '0');
@@ -11214,24 +10914,9 @@ async function fetchSupabaseData() {
         if (budgetCategories[b.type] && !budgetCategories[b.type].includes(key)) {
           budgetCategories[b.type].push(key);
         }
-        window._budgetDisplayNames[key] = b.category;
-        if (b.parent_category) {
-          categoryParentMap[key] = b.parent_category;
-          if (_parentSets[b.type]) _parentSets[b.type].add(b.parent_category);
-        }
+        if (b.parent_category) categoryParentMap[key] = b.parent_category;
       });
-      for (const [type, pset] of Object.entries(_parentSets)) {
-        parentBudgetCategories[type] = [...pset];
-      }
-    } else {
-      // First login — seed default categories so dropdowns aren't empty
-      await seedDefaultCategories(sb, uid);
-    }
-    budgetDataLoaded = true;
-
-    // Store Supabase accounts for transaction dropdown
-    if (accountsRes.data) {
-      window._supabaseAccounts = accountsRes.data.map(a => a.name);
+      budgetDataLoaded = true;
     }
 
     // Process net worth
