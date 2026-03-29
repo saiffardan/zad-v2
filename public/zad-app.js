@@ -10820,9 +10820,171 @@ async function handleSupabaseSession(session) {
     await fetchSupabaseData();
   } catch (err) {
     console.error('[Zad] fetchSupabaseData failed:', err);
-    document.getElementById('loadingScreen').classList.add('hidden');
-    renderDashboard();
   }
+  document.getElementById('loadingScreen').classList.add('hidden');
+  // Show setup screen for Supabase mode
+  showSetupScreen();
+}
+
+function showSetupScreen() {
+  let overlay = document.getElementById('setupOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'setupOverlay';
+    document.body.appendChild(overlay);
+  }
+
+  const types = ['INCOME', 'EXPENSES', 'SAVINGS', 'DEBT'];
+  const typeLabels = { INCOME: 'Income', EXPENSES: 'Expenses', SAVINGS: 'Savings', DEBT: 'Debt' };
+  let currentSetupType = 'EXPENSES';
+
+  function renderSetup(activeType) {
+    currentSetupType = activeType;
+    // Group categories by parent
+    const cats = budgetCategories[activeType] || [];
+    const grouped = {};
+    const ungrouped = [];
+    cats.forEach(key => {
+      const parent = categoryParentMap[key] || null;
+      const name = window._budgetDisplayNames?.[key] || key.replace(/^[A-Z]+:/, '');
+      if (parent) {
+        if (!grouped[parent]) grouped[parent] = [];
+        grouped[parent].push({ key, name });
+      } else {
+        ungrouped.push({ key, name });
+      }
+    });
+
+    let catHtml = '';
+    for (const [parent, items] of Object.entries(grouped)) {
+      catHtml += `<div class="setup-group">
+        <div class="setup-group-header">
+          <span class="setup-group-name">${parent}</span>
+          <button class="setup-add-sub-btn" onclick="setupAddSubcategory('${activeType}', '${parent.replace(/'/g, "\\'")}')">+ Add</button>
+        </div>`;
+      items.forEach(item => {
+        catHtml += `<div class="setup-item">
+          <span class="setup-item-name">${item.name}</span>
+          <button class="setup-remove-btn" onclick="setupRemoveCategory('${activeType}', '${item.key.replace(/'/g, "\\'")}')">×</button>
+        </div>`;
+      });
+      catHtml += '</div>';
+    }
+    ungrouped.forEach(item => {
+      catHtml += `<div class="setup-item setup-item-ungrouped">
+        <span class="setup-item-name">${item.name}</span>
+        <button class="setup-remove-btn" onclick="setupRemoveCategory('${activeType}', '${item.key.replace(/'/g, "\\'")}')">×</button>
+      </div>`;
+    });
+
+    const typeTabs = types.map(t =>
+      `<button class="setup-type-tab ${t === activeType ? 'active' : ''}" onclick="window._renderSetup('${t}')">${typeLabels[t]}</button>`
+    ).join('');
+
+    overlay.innerHTML = `
+      <div class="setup-container">
+        <div class="setup-header">
+          <div class="setup-title">Setup Categories</div>
+          <div class="setup-subtitle">Review and customize your budget categories</div>
+        </div>
+        <div class="setup-type-tabs">${typeTabs}</div>
+        <div class="setup-categories">${catHtml || '<div class="setup-empty">No categories yet</div>'}</div>
+        <div class="setup-actions">
+          <button class="setup-add-parent-btn" onclick="setupAddParent('${activeType}')">+ Add Category Group</button>
+        </div>
+        <div class="setup-footer">
+          <button class="setup-done-btn" onclick="closeSetupScreen()">Continue to App →</button>
+        </div>
+      </div>`;
+    overlay.classList.add('open');
+  }
+
+  window._renderSetup = renderSetup;
+
+  window.setupAddParent = function(type) {
+    const parent = prompt('New category group name (e.g., "Car", "Food & Dining"):');
+    if (!parent || !parent.trim()) return;
+    const sub = prompt('First subcategory under "' + parent.trim() + '" (e.g., "Fuel"):');
+    if (!sub || !sub.trim()) return;
+    const key = type + ':' + sub.trim();
+    if (!budgetCategories[type]) budgetCategories[type] = [];
+    if (budgetCategories[type].includes(key)) { alert('Already exists'); return; }
+    budgetCategories[type].push(key);
+    if (!budgetData[key]) budgetData[key] = {};
+    categoryParentMap[key] = parent.trim();
+    if (!window._budgetDisplayNames) window._budgetDisplayNames = {};
+    window._budgetDisplayNames[key] = sub.trim();
+    if (!parentBudgetCategories[type]) parentBudgetCategories[type] = [];
+    if (!parentBudgetCategories[type].includes(parent.trim())) parentBudgetCategories[type].push(parent.trim());
+    // Save to Supabase
+    if (supabaseClient) {
+      supabaseClient.auth.getUser().then(r => {
+        const uid = r.data.user?.id;
+        if (uid) {
+          const now = new Date();
+          supabaseClient.from('budget_items').insert({
+            user_id: uid, type, category: sub.trim(), parent_category: parent.trim(),
+            year: now.getFullYear(), month: now.getMonth() + 1, amount: 0
+          });
+        }
+      });
+    }
+    renderSetup(type);
+  };
+
+  window.setupAddSubcategory = function(type, parent) {
+    const sub = prompt('New subcategory under "' + parent + '":');
+    if (!sub || !sub.trim()) return;
+    const key = type + ':' + sub.trim();
+    if (budgetCategories[type]?.includes(key)) { alert('Already exists'); return; }
+    if (!budgetCategories[type]) budgetCategories[type] = [];
+    budgetCategories[type].push(key);
+    if (!budgetData[key]) budgetData[key] = {};
+    categoryParentMap[key] = parent;
+    if (!window._budgetDisplayNames) window._budgetDisplayNames = {};
+    window._budgetDisplayNames[key] = sub.trim();
+    if (supabaseClient) {
+      supabaseClient.auth.getUser().then(r => {
+        const uid = r.data.user?.id;
+        if (uid) {
+          const now = new Date();
+          supabaseClient.from('budget_items').insert({
+            user_id: uid, type, category: sub.trim(), parent_category: parent,
+            year: now.getFullYear(), month: now.getMonth() + 1, amount: 0
+          });
+        }
+      });
+    }
+    renderSetup(type);
+  };
+
+  window.setupRemoveCategory = function(type, key) {
+    const name = window._budgetDisplayNames?.[key] || key.replace(/^[A-Z]+:/, '');
+    if (!confirm('Remove "' + name + '"?')) return;
+    const idx = budgetCategories[type]?.indexOf(key);
+    if (idx >= 0) budgetCategories[type].splice(idx, 1);
+    delete budgetData[key];
+    delete categoryParentMap[key];
+    delete window._budgetDisplayNames?.[key];
+    if (supabaseClient) {
+      supabaseClient.auth.getUser().then(r => {
+        const uid = r.data.user?.id;
+        if (uid) {
+          supabaseClient.from('budget_items').delete()
+            .eq('user_id', uid).eq('type', type).eq('category', name);
+        }
+      });
+    }
+    renderSetup(type);
+  };
+
+  window.closeSetupScreen = function() {
+    overlay.classList.remove('open');
+    setTimeout(() => { overlay.remove(); }, 300);
+    renderDashboard();
+  };
+
+  renderSetup('EXPENSES');
 }
 
 async function seedDefaultCategories(sb, uid) {
