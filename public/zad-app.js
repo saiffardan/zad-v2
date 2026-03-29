@@ -10812,8 +10812,19 @@ async function fetchSupabaseData() {
       sb.from('user_preferences').select('*').eq('user_id', uid).maybeSingle()
     ]);
 
+    // Log any query errors
+    [tradesRes, txnRes, accountsRes, budgetRes, nwItemsRes, nwSnapRes, prefsRes].forEach((r, i) => {
+      if (r.error) console.warn('[Zad] Supabase query error (index ' + i + '):', r.error);
+    });
+
+    // Initialize empty data
+    allTrades = [];
+    holdings = {};
+    allTransactions = [];
+    txnDataLoaded = true;
+
     // Process portfolio trades
-    if (tradesRes.data) {
+    if (tradesRes.data && tradesRes.data.length) {
       allTrades = [];
       holdings = {};
       tradesRes.data.forEach(t => {
@@ -10917,9 +10928,9 @@ async function fetchSupabaseData() {
 
   } catch (err) {
     console.error('[Zad] Supabase fetch error:', err);
-    showSignInError('Failed to load data: ' + err.message);
+    // Still render dashboard with whatever data we have
     document.getElementById('loadingScreen').classList.add('hidden');
-    handleSignOut();
+    renderDashboard();
   }
 }
 
