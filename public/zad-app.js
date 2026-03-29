@@ -1,8 +1,3 @@
-// Capture raw URL before any SDK processes it
-var _rawUrlOnLoad = window.location.href;
-var _rawHashOnLoad = window.location.hash;
-var _rawSearchOnLoad = window.location.search;
-
 // === Script Block 1 ===
   // ── SUL Logo SVG generator ──
   // Zad logo — theme-aware (light logo on dark bg, dark logo on light bg)
@@ -10703,18 +10698,8 @@ window.handleSupabaseSignIn = async function handleSupabaseSignIn() {
 
 // Called on page load to check for Supabase session (after OAuth redirect)
 async function trySupabaseAutoLogin() {
-  // Temporary debug: show what URL we landed on after redirect
-  var _dbg = [];
-  _dbg.push('RAW URL: ' + (_rawUrlOnLoad || '(not captured)'));
-  _dbg.push('RAW Hash: ' + (_rawHashOnLoad ? _rawHashOnLoad.substring(0, 80) : '(none)'));
-  _dbg.push('RAW Search: ' + (_rawSearchOnLoad || '(none)'));
-  _dbg.push('NOW URL: ' + window.location.href);
-  _dbg.push('SB_URL: ' + (SUPABASE_URL ? 'set' : 'MISSING'));
-  _dbg.push('SB_KEY: ' + (SUPABASE_ANON_KEY ? 'set' : 'MISSING'));
-  _dbg.push('supabase global: ' + (typeof supabase !== 'undefined' ? 'loaded' : 'MISSING'));
-
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) { _dbg.push('BAIL: no config'); _showDbg(_dbg); return false; }
-  if (typeof supabase === 'undefined' || !supabase.createClient) { _dbg.push('BAIL: no SDK'); _showDbg(_dbg); return false; }
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return false;
+  if (typeof supabase === 'undefined' || !supabase.createClient) return false;
 
   // Create client
   if (!supabaseClient) {
@@ -10726,10 +10711,9 @@ async function trySupabaseAutoLogin() {
 
   return new Promise((resolve) => {
     let resolved = false;
-    function done(val) { if (!resolved) { resolved = true; _showDbg(_dbg); resolve(val); } }
+    function done(val) { if (!resolved) { resolved = true; resolve(val); } }
 
     const { data: { subscription } } = sb.auth.onAuthStateChange(async (event, session) => {
-      _dbg.push('Event: ' + event + ' session: ' + (session ? 'YES' : 'no'));
       if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
         subscription.unsubscribe();
         if (window.location.hash && window.location.hash.includes('access_token')) {
@@ -10743,20 +10727,8 @@ async function trySupabaseAutoLogin() {
       }
     });
 
-    setTimeout(() => { _dbg.push('TIMEOUT'); subscription.unsubscribe(); done(false); }, 6000);
+    setTimeout(() => { subscription.unsubscribe(); done(false); }, 6000);
   });
-}
-
-function _showDbg(lines) {
-  var el = document.getElementById('_sbDbg');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = '_sbDbg';
-    el.style.cssText = 'position:fixed;top:8px;left:8px;right:8px;background:rgba(0,0,0,0.9);color:#0f0;font:11px/1.5 monospace;padding:12px;border-radius:8px;z-index:99999;max-height:30vh;overflow:auto;white-space:pre-wrap;';
-    el.onclick = function() { el.remove(); };
-    document.body.appendChild(el);
-  }
-  el.textContent = lines.join('\n');
 }
 
 async function handleSupabaseSession(session) {
@@ -10787,7 +10759,7 @@ async function fetchSupabaseData() {
       sb.from('budget_items').select('*').eq('user_id', uid),
       sb.from('net_worth_items').select('*').eq('user_id', uid),
       sb.from('net_worth_snapshots').select('*').eq('user_id', uid),
-      sb.from('user_preferences').select('*').eq('user_id', uid).single()
+      sb.from('user_preferences').select('*').eq('user_id', uid).maybeSingle()
     ]);
 
     // Process portfolio trades
