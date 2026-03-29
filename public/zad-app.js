@@ -9544,11 +9544,72 @@ window.closeNwModal = function closeNwModal() {
   if (overlay) overlay.remove();
 };
 
+// ── Monthly auto-refresh ──
+// On the 1st of a new month (or first visit that month), auto-fill current month
+// for all account-linked items: prev month value + prev month flow
+async function checkMonthlyAutoFill() {
+  if (!accessToken || nwYears.length === 0) return;
+  const now = new Date();
+  const curKey = now.getFullYear() + '-' + (now.getMonth() + 1);
+  const lastFill = localStorage.getItem('nw_autofill_month');
+  if (lastFill === curKey) return; // already done this month
+
+  const flows = getMonthlyAccountFlows();
+  const allAccounts = Object.keys(flows);
+  if (allAccounts.length === 0) return;
+
+  const curYear = now.getFullYear();
+  const curMonth = now.getMonth() + 1;
+  const prevMonth = curMonth === 1 ? 12 : curMonth - 1;
+  const prevYear = curMonth === 1 ? curYear - 1 : curYear;
+  const prevKey = prevYear + '-' + prevMonth;
+
+  const writeData = [];
+  const allItems = [...nwAssets, ...nwLiabilities];
+
+  allItems.forEach(item => {
+    // Only auto-fill items that match a transaction account
+    if (!flows[item.name]) return;
+    const prevVal = item.values[prevKey] || 0;
+    const prevFlow = flows[item.name][prevKey] || 0;
+    const newVal = prevVal + prevFlow;
+    item.values[curKey] = newVal;
+
+    const col = getNwSheetCol(curYear, curMonth);
+    if (col) {
+      writeData.push({
+        range: `Net Worth Planning!${col}${item.sheetRow}`,
+        values: [[newVal]]
+      });
+    }
+  });
+
+  if (writeData.length > 0) {
+    try {
+      await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`,
+        {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data: writeData })
+        }
+      );
+      console.log(`[NW] Auto-filled ${writeData.length} items for ${curKey}`);
+    } catch (err) {
+      console.error('Monthly auto-fill error:', err);
+      return; // don't mark as done if write failed
+    }
+  }
+
+  localStorage.setItem('nw_autofill_month', curKey);
+}
+
 async function renderNetWorthPage() {
   if (!nwDataLoaded && accessToken) {
     const container = document.getElementById('nwDashboardContent');
     if (container) container.innerHTML = '<div class="nw-empty">Loading...</div>';
     await fetchNetWorthData();
+    await checkMonthlyAutoFill();
   }
   populateNwFilters();
   if (currentNwTab === 'dashboard') renderNwDashboard();
