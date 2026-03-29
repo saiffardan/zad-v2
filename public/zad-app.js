@@ -9347,17 +9347,21 @@ function renderNwPlanning() {
         </div>
         ${catItems.map(item => {
           const val = item.values[periodKey] || '';
-          const flow = accountFlows[item.name] ? (accountFlows[item.name][periodKey] || 0) : null;
+          const prevMo = nwFilterMonth === 1 ? 12 : nwFilterMonth - 1;
+          const prevYr = nwFilterMonth === 1 ? nwFilterYear - 1 : nwFilterYear;
+          const prevKey = prevYr + '-' + prevMo;
+          const prevFlow = accountFlows[item.name] ? (accountFlows[item.name][prevKey] || 0) : null;
+          const hasAccount = accountFlows[item.name] !== undefined;
           return `<div class="nw-plan-item">
             <div class="nw-plan-item-left">
               <span class="nw-plan-item-name">${escapeHTML(item.name)}</span>
-              ${flow !== null ? `<span class="nw-plan-item-flow" style="color: ${flow >= 0 ? 'var(--emerald)' : 'var(--red)'}">Txn flow: ${flow >= 0 ? '+' : ''}${formatMoney(flow)}</span>` : ''}
+              ${hasAccount ? `<span class="nw-plan-item-flow" style="color: ${prevFlow >= 0 ? 'var(--emerald)' : 'var(--red)'}">${NW_MONTH_NAMES[prevMo - 1]} flow: ${prevFlow >= 0 ? '+' : ''}${formatMoney(prevFlow)}</span>` : ''}
             </div>
             <div class="nw-plan-item-right">
               <input class="nw-plan-input" type="number" inputmode="decimal" value="${val}" placeholder="—"
                 data-row="${item.sheetRow}" data-type="${type}"
                 onchange="updateNwItemValue(this, '${type}', ${item.sheetRow}, ${nwFilterYear}, ${nwFilterMonth})" />
-              ${flow !== null ? `<button class="nw-autofill-btn" title="Auto-fill from transactions" onclick="autoFillNwItem(this, '${type}', ${item.sheetRow}, ${nwFilterYear}, ${nwFilterMonth})">
+              ${hasAccount ? `<button class="nw-autofill-btn" title="Auto-fill: ${NW_MONTH_NAMES[prevMo - 1]} value + ${NW_MONTH_NAMES[prevMo - 1]} flow" onclick="autoFillNwItem(this, '${type}', ${item.sheetRow}, ${nwFilterYear}, ${nwFilterMonth})">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
               </button>` : ''}
             </div>
@@ -9434,17 +9438,15 @@ window.autoFillNwItem = async function autoFillNwItem(btn, type, sheetRow, year,
   if (!item) return;
 
   const flows = getMonthlyAccountFlows();
-  const periodKey = year + '-' + month;
-  const flow = flows[item.name] && flows[item.name][periodKey];
-  if (flow === undefined || flow === null) return;
-
-  // Get previous month value as baseline
-  let prevVal = 0;
+  // Use previous month's value + previous month's flow = current month's starting value
   const prevMonth = month === 1 ? 12 : month - 1;
   const prevYear = month === 1 ? year - 1 : year;
-  prevVal = item.values[prevYear + '-' + prevMonth] || 0;
+  const prevPeriodKey = prevYear + '-' + prevMonth;
+  const prevVal = item.values[prevPeriodKey] || 0;
+  const prevFlow = (flows[item.name] && flows[item.name][prevPeriodKey]) || 0;
 
-  const newVal = prevVal + flow;
+  const periodKey = year + '-' + month;
+  const newVal = prevVal + prevFlow;
   item.values[periodKey] = newVal;
 
   // Update the input next to this button
