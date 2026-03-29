@@ -9449,17 +9449,16 @@ window.autoFillNwItem = async function autoFillNwItem(btn, type, sheetRow, year,
     }
   }
 
-  // Find the first period that already has a value (seed)
+  // Find March of the first year as the default seed month
   // Walk forward from there: each month = prev value + prev month flow
   let seedIdx = -1;
   for (let i = 0; i < allPeriods.length; i++) {
-    const key = allPeriods[i].year + '-' + allPeriods[i].month;
-    if (item.values[key] !== undefined && item.values[key] !== 0) {
+    if (allPeriods[i].month === 3) {
       seedIdx = i;
       break;
     }
   }
-  if (seedIdx === -1) seedIdx = 0; // no seed found, start from beginning
+  if (seedIdx === -1) seedIdx = 0;
 
   // Compute values for all months after the seed
   const writeData = []; // { range, value }
