@@ -10671,7 +10671,9 @@ function initSupabase() {
   if (supabaseClient) return supabaseClient;
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
   if (typeof supabase === 'undefined' || !supabase.createClient) return null;
-  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { detectSessionInUrl: true, flowType: 'implicit' }
+  });
   return supabaseClient;
 }
 
@@ -10696,35 +10698,45 @@ window.handleSupabaseSignIn = async function handleSupabaseSignIn() {
 
 // Called on page load to check for Supabase session (after OAuth redirect)
 async function trySupabaseAutoLogin() {
-  const sb = initSupabase();
-  if (!sb) return false;
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return false;
+  if (typeof supabase === 'undefined' || !supabase.createClient) return false;
 
-  // Check if URL has OAuth tokens (redirect from Supabase auth)
-  const hasAuthInHash = window.location.hash && window.location.hash.includes('access_token');
-  const hasAuthInQuery = window.location.search && window.location.search.includes('code=');
+  // Set up auth listener BEFORE creating client so we catch the token exchange
+  return new Promise((resolve) => {
+    let resolved = false;
+    function done(val) { if (!resolved) { resolved = true; resolve(val); } }
 
-  if (hasAuthInHash || hasAuthInQuery) {
-    // Wait for Supabase to process the OAuth callback tokens
-    return new Promise((resolve) => {
-      const { data: { subscription } } = sb.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          subscription.unsubscribe();
-          // Clean up URL
-          window.history.replaceState({}, '', window.location.pathname);
-          await handleSupabaseSession(session);
-          resolve(true);
+    // Create client — this triggers URL token detection & exchange
+    if (!supabaseClient) {
+      supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          detectSessionInUrl: true,
+          flowType: 'implicit'
         }
       });
-      // Timeout fallback in case event doesn't fire
-      setTimeout(() => { subscription.unsubscribe(); resolve(false); }, 5000);
-    });
-  }
+    }
+    const sb = supabaseClient;
 
-  // No OAuth redirect — check for existing session
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) return false;
-  await handleSupabaseSession(session);
-  return true;
+    // Listen for auth events (fires when OAuth tokens are exchanged)
+    const { data: { subscription } } = sb.auth.onAuthStateChange(async (event, session) => {
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
+        subscription.unsubscribe();
+        // Clean up URL hash if present
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          window.history.replaceState({}, '', window.location.pathname);
+        }
+        await handleSupabaseSession(session);
+        done(true);
+      } else if (event === 'INITIAL_SESSION' && !session) {
+        // No session found after initial check
+        subscription.unsubscribe();
+        done(false);
+      }
+    });
+
+    // Safety timeout
+    setTimeout(() => { subscription.unsubscribe(); done(false); }, 6000);
+  });
 }
 
 async function handleSupabaseSession(session) {
