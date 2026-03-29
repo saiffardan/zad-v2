@@ -10750,7 +10750,7 @@ async function fetchSupabaseData() {
   if (!uid) return;
 
   try {
-    _startLoadingRotation('portfolio');
+
     // Fetch all data in parallel
     const [tradesRes, txnRes, accountsRes, budgetRes, nwItemsRes, nwSnapRes, prefsRes] = await Promise.all([
       sb.from('portfolio_trades').select('*').eq('user_id', uid).order('date', { ascending: true }),
@@ -10789,7 +10789,7 @@ async function fetchSupabaseData() {
     }
 
     // Fetch live prices
-    _startLoadingRotation('prices');
+
     await fetchLivePrices();
 
     // Process transactions
