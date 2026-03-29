@@ -4810,9 +4810,14 @@
     });
   }
 
-  // Register Service Worker (noop network-only SW)
+  // Register Service Worker
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).catch(() => {});
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(r => r.unregister());
+    }).then(() => {
+      caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+      navigator.serviceWorker.register('./sw.js?v=401', { updateViaCache: 'none' }).catch(() => {});
+    });
   }
 
   // Init tab underline + all sliding pills after fonts/layout settle
@@ -10760,11 +10765,6 @@ window.handleSupabaseSignIn = async function handleSupabaseSignIn() {
 // Called on page load to check for Supabase session (after OAuth redirect)
 async function trySupabaseAutoLogin() {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return false;
-
-  // Wait for Supabase SDK to load (CDN may still be loading)
-  for (var _i = 0; _i < 100 && (typeof supabase === 'undefined' || !supabase.createClient); _i++) {
-    await new Promise(function(r) { setTimeout(r, 50); });
-  }
   if (typeof supabase === 'undefined' || !supabase.createClient) return false;
 
   // Create client
@@ -10774,36 +10774,26 @@ async function trySupabaseAutoLogin() {
     });
   }
   const sb = supabaseClient;
-  const hashHasToken = window.location.hash && window.location.hash.includes('access_token');
 
   return new Promise((resolve) => {
     let resolved = false;
     function done(val) { if (!resolved) { resolved = true; resolve(val); } }
 
     const { data: { subscription } } = sb.auth.onAuthStateChange(async (event, session) => {
-      try {
-        if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
-          subscription.unsubscribe();
-          if (hashHasToken) {
-            window.history.replaceState({}, '', window.location.pathname);
-          }
-          await handleSupabaseSession(session);
-          done(true);
-        } else if (event === 'INITIAL_SESSION' && !session && !hashHasToken) {
-          // Only bail if we're NOT waiting for hash token processing.
-          // When hash has access_token, SDK fires INITIAL_SESSION(null) first,
-          // then SIGNED_IN after processing — so we must keep listening.
-          subscription.unsubscribe();
-          done(false);
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
+        subscription.unsubscribe();
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          window.history.replaceState({}, '', window.location.pathname);
         }
-      } catch (err) {
-        console.error('[Zad] Supabase auth error:', err);
-        document.getElementById('loadingScreen')?.classList.add('hidden');
+        await handleSupabaseSession(session);
+        done(true);
+      } else if (event === 'INITIAL_SESSION' && !session) {
+        subscription.unsubscribe();
         done(false);
       }
     });
 
-    setTimeout(() => { subscription.unsubscribe(); done(false); }, 8000);
+    setTimeout(() => { subscription.unsubscribe(); done(false); }, 6000);
   });
 }
 
@@ -10816,13 +10806,7 @@ async function handleSupabaseSession(session) {
   hideSignInScreen();
   document.getElementById('appSidebar').classList.remove('hidden');
   document.getElementById('loadingScreen').classList.remove('hidden');
-  try {
-    await fetchSupabaseData();
-  } catch (err) {
-    console.error('[Zad] fetchSupabaseData failed:', err);
-    document.getElementById('loadingScreen').classList.add('hidden');
-    renderDashboard();
-  }
+  await fetchSupabaseData();
 }
 
 async function fetchSupabaseData() {
