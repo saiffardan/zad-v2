@@ -9066,25 +9066,30 @@
 
 // === Net Worth Page ===
 let currentNwTab = 'dashboard';
-let nwItems = []; // { name, type: 'asset'|'liability', source: 'account'|'manual', value }
-const NW_RANGE = 'Net Worth!A2:D';
+let nwDataLoaded = false;
+// Parsed data from "Net Worth Planning" sheet
+let nwYears = [];        // [{ year: 2026, colOffset: 3 }, ...] colOffset relative to range start (col F)
+let nwAssets = [];        // [{ category, name, row, values: { '2026-1': 300000, ... } }, ...]
+let nwLiabilities = [];   // same structure
+// Filter state
+let nwFilterYear = new Date().getFullYear();
+let nwFilterMonth = new Date().getMonth() + 1; // 1-12
+
+const NW_MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 window.switchNwTab = function switchNwTab(tab, el) {
   currentNwTab = tab;
   const indicator = document.getElementById('nwTabIndicator');
   if (indicator) indicator.textContent = tab === 'dashboard' ? 'Dashboard' : 'Planning';
-  // Update tab active state
   const tabs = el.parentElement.querySelectorAll('.tab');
   tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
   el.classList.add('active');
   el.setAttribute('aria-selected', 'true');
-  // Move underline
   const underline = document.getElementById('nwTabUnderline');
   if (underline) {
     underline.style.width = el.offsetWidth + 'px';
     underline.style.transform = `translateX(${el.offsetLeft}px)`;
   }
-  // Toggle content
   const dashboard = document.getElementById('nwDashboardContent');
   const planning = document.getElementById('nwPlanningContent');
   if (tab === 'dashboard') {
@@ -9098,104 +9103,190 @@ window.switchNwTab = function switchNwTab(tab, el) {
   }
 };
 
+// ── Data Fetching ──
+// Sheet layout:
+//   Row 5: year headers at F5, S5, AF5, ... (every 13 cols: 12 months + 1 gap)
+//   Rows 14-114: Assets — C=category, D=name, F-Q=Jan-Dec year1, S-AD=Jan-Dec year2, ...
+//   Rows 118-219: Liabilities — same column layout
+// We read starting from col C so:
+//   index 0=C, 1=D, 2=E(empty), 3=F(Jan yr1), 14=Q(Dec yr1), 15=R(gap), 16=S(Jan yr2), ...
+
 async function fetchNetWorthData() {
   if (!accessToken) return;
   try {
+    const ranges = [
+      'Net Worth Planning!C5:ZZ5',
+      'Net Worth Planning!C14:ZZ114',
+      'Net Worth Planning!C118:ZZ219'
+    ].map(r => 'ranges=' + encodeURIComponent(r)).join('&');
     const res = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(NW_RANGE)}?valueRenderOption=UNFORMATTED_VALUE`,
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchGet?${ranges}&valueRenderOption=UNFORMATTED_VALUE`,
       { headers: { 'Authorization': `Bearer ${accessToken}` } }
     );
     if (!res.ok) return;
     const data = await res.json();
-    const rows = data.values || [];
-    nwItems = rows.filter(r => r[0]).map(r => ({
-      name: r[0] || '',
-      type: (r[1] || 'asset').toLowerCase(),
-      source: (r[2] || 'manual').toLowerCase(),
-      value: typeof r[3] === 'number' ? r[3] : parseFloat(r[3]) || 0
-    }));
+    const vr = data.valueRanges || [];
+    const yearRow = (vr[0] && vr[0].values && vr[0].values[0]) || [];
+    const assetRows = (vr[1] && vr[1].values) || [];
+    const liabRows = (vr[2] && vr[2].values) || [];
+    parseNwSheetData(yearRow, assetRows, liabRows);
+    nwDataLoaded = true;
   } catch (err) {
     console.error('Net worth fetch error:', err);
+    nwDataLoaded = true;
   }
 }
 
-async function writeNetWorthData() {
-  if (!accessToken) return;
-  const values = nwItems.map(item => [item.name, item.type, item.source, item.value]);
-  // Clear and rewrite
-  try {
-    // Clear existing
-    await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(NW_RANGE)}:clear`,
-      { method: 'POST', headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' }, body: '{}' }
-    );
-    if (values.length > 0) {
-      await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent('Net Worth!A2:D')}?valueInputOption=USER_ENTERED`,
-        {
-          method: 'PUT',
-          headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ values })
-        }
-      );
+function parseNwSheetData(yearRow, assetRows, liabRows) {
+  // Parse year blocks from row 5
+  // yearRow index 0=C5, 1=D5, 2=E5, 3=F5(year1), 16=S5(year2), 29=AF5(year3)
+  // Each year block starts at offset 3 + n*13 from the range start
+  nwYears = [];
+  for (let i = 3; i < yearRow.length; i++) {
+    if (yearRow[i] && typeof yearRow[i] === 'number') {
+      nwYears.push({ year: yearRow[i], colOffset: i });
     }
-  } catch (err) {
-    console.error('Net worth write error:', err);
   }
+  nwYears.sort((a, b) => a.year - b.year);
+
+  // Parse asset rows
+  nwAssets = parseNwItemRows(assetRows, 14);
+  // Parse liability rows
+  nwLiabilities = parseNwItemRows(liabRows, 118);
 }
 
-function getAccountBalances() {
-  // Calculate balance per account from all transactions
-  const balances = {};
+function parseNwItemRows(rows, startRow) {
+  const items = [];
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row) continue;
+    const name = (row[1] || '').toString().trim(); // Column D (index 1)
+    if (!name) continue;
+    const category = (row[0] || '').toString().trim(); // Column C (index 0)
+    // Extract monthly values for each year
+    const values = {};
+    for (const yb of nwYears) {
+      for (let m = 0; m < 12; m++) {
+        const colIdx = yb.colOffset + m;
+        const val = row[colIdx];
+        if (val !== undefined && val !== null && val !== '') {
+          const numVal = typeof val === 'number' ? val : parseFloat(val.toString().replace(/[^0-9.\-]/g, ''));
+          if (!isNaN(numVal)) {
+            values[yb.year + '-' + (m + 1)] = numVal;
+          }
+        }
+      }
+    }
+    items.push({ category, name, sheetRow: startRow + i, values });
+  }
+  return items;
+}
+
+// ── Transaction-based auto-fill ──
+// Calculates monthly net flow per account from allTransactions
+function getMonthlyAccountFlows() {
+  const flows = {}; // { 'ENBD': { '2026-3': 5000, ... } }
   allTransactions.forEach(t => {
     if (!t.account || t.account === '--') return;
-    if (!balances[t.account]) balances[t.account] = 0;
-    if (t.type === 'INCOME') balances[t.account] += t.amount;
-    else if (t.type === 'EXPENSES') balances[t.account] -= t.amount;
-    else if (t.type === 'SAVINGS') balances[t.account] -= t.amount;
-    else if (t.type === 'DEBT') balances[t.account] -= t.amount;
+    const d = parseTxnDate(t.date);
+    if (!d || d.getTime() === 0) return;
+    const key = d.getFullYear() + '-' + (d.getMonth() + 1);
+    if (!flows[t.account]) flows[t.account] = {};
+    if (!flows[t.account][key]) flows[t.account][key] = 0;
+    if (t.type === 'INCOME') flows[t.account][key] += t.amount;
+    else if (t.type === 'EXPENSES') flows[t.account][key] -= t.amount;
+    else if (t.type === 'SAVINGS') flows[t.account][key] -= t.amount;
+    else if (t.type === 'DEBT') flows[t.account][key] -= t.amount;
   });
-  return balances;
+  return flows;
 }
 
-function calculateNetWorth() {
-  const accountBalances = getAccountBalances();
-  const portfolioTotal = getActiveHoldings().reduce((s, h) => s + (h.currentValue || 0), 0);
+// ── Calculation ──
+function getNwValueForPeriod(item, year, month) {
+  return item.values[year + '-' + month] || 0;
+}
+
+function calculateNwForPeriod(year, month) {
+  const portfolioTotal = (year === new Date().getFullYear() && month === new Date().getMonth() + 1)
+    ? getActiveHoldings().reduce((s, h) => s + (h.currentValue || 0), 0)
+    : 0;
 
   let totalAssets = portfolioTotal;
   let totalLiabilities = 0;
 
-  // Account-based items (baseline + transaction flow)
-  const accountItems = [];
-  nwItems.filter(i => i.source === 'account').forEach(item => {
-    const txnFlow = accountBalances[item.name] || 0;
-    const balance = item.value + txnFlow; // baseline + transaction flow
-    accountItems.push({ ...item, calculatedValue: balance });
-    if (item.type === 'asset') totalAssets += balance;
-    else totalLiabilities += Math.abs(balance);
+  // Group assets by category
+  const assetsByCategory = {};
+  nwAssets.forEach(item => {
+    const val = getNwValueForPeriod(item, year, month);
+    const cat = item.category || 'Uncategorized';
+    if (!assetsByCategory[cat]) assetsByCategory[cat] = [];
+    assetsByCategory[cat].push({ ...item, periodValue: val });
+    totalAssets += val;
   });
 
-  // Manual items
-  const manualItems = nwItems.filter(i => i.source === 'manual');
-  manualItems.forEach(item => {
-    if (item.type === 'asset') totalAssets += item.value;
-    else totalLiabilities += Math.abs(item.value);
+  // Group liabilities by category
+  const liabsByCategory = {};
+  nwLiabilities.forEach(item => {
+    const val = getNwValueForPeriod(item, year, month);
+    const cat = item.category || 'Uncategorized';
+    if (!liabsByCategory[cat]) liabsByCategory[cat] = [];
+    liabsByCategory[cat].push({ ...item, periodValue: val });
+    totalLiabilities += Math.abs(val);
   });
 
-  return { totalAssets, totalLiabilities, netWorth: totalAssets - totalLiabilities, accountItems, manualItems, portfolioTotal };
+  return { totalAssets, totalLiabilities, netWorth: totalAssets - totalLiabilities, assetsByCategory, liabsByCategory, portfolioTotal };
 }
 
+// ── Filter bar rendering ──
+function renderNwFilterBar() {
+  const yearOptions = nwYears.length > 0
+    ? nwYears.map(y => `<option value="${y.year}" ${y.year === nwFilterYear ? 'selected' : ''}>${y.year}</option>`).join('')
+    : `<option value="${nwFilterYear}">${nwFilterYear}</option>`;
+  const monthOptions = NW_MONTH_NAMES.map((m, i) =>
+    `<option value="${i + 1}" ${(i + 1) === nwFilterMonth ? 'selected' : ''}>${m}</option>`
+  ).join('');
+
+  return `<div class="nw-filter-bar">
+    <select class="nw-filter-select" id="nwFilterYear" onchange="nwFilterYear = parseInt(this.value); ${currentNwTab === 'dashboard' ? 'renderNwDashboard()' : 'renderNwPlanning()'}">
+      ${yearOptions}
+    </select>
+    <select class="nw-filter-select" id="nwFilterMonth" onchange="nwFilterMonth = parseInt(this.value); ${currentNwTab === 'dashboard' ? 'renderNwDashboard()' : 'renderNwPlanning()'}">
+      ${monthOptions}
+    </select>
+  </div>`;
+}
+
+// ── Dashboard Tab ──
 function renderNwDashboard() {
   const container = document.getElementById('nwDashboardContent');
   if (!container) return;
-  const data = calculateNetWorth();
+  const data = calculateNwForPeriod(nwFilterYear, nwFilterMonth);
 
-  const assetItems = [...data.accountItems.filter(i => i.type === 'asset'), ...data.manualItems.filter(i => i.type === 'asset')];
-  const liabilityItems = [...data.accountItems.filter(i => i.type === 'liability'), ...data.manualItems.filter(i => i.type === 'liability')];
+  const renderCategorySection = (groupedItems, colorVar, emptyMsg) => {
+    const cats = Object.keys(groupedItems);
+    if (cats.length === 0) return `<div class="nw-empty">${emptyMsg}</div>`;
+    return cats.map(cat => {
+      const items = groupedItems[cat];
+      const catTotal = items.reduce((s, i) => s + Math.abs(i.periodValue), 0);
+      return `<div class="nw-cat-group">
+        <div class="nw-cat-header">
+          <span class="nw-cat-name">${escapeHTML(cat)}</span>
+          <span class="nw-cat-total" style="color: ${colorVar}">${formatMoney(catTotal)}</span>
+        </div>
+        ${items.map(item => `<div class="nw-item">
+          <div class="nw-item-left">
+            <span class="nw-item-name">${escapeHTML(item.name)}</span>
+          </div>
+          <span class="nw-item-value" style="color: ${colorVar}">${formatMoney(Math.abs(item.periodValue))}</span>
+        </div>`).join('')}
+      </div>`;
+    }).join('');
+  };
 
   container.innerHTML = `
+    ${renderNwFilterBar()}
     <div class="nw-hero">
-      <div class="nw-hero-label">Net Worth</div>
+      <div class="nw-hero-label">Net Worth · ${NW_MONTH_NAMES[nwFilterMonth - 1]} ${nwFilterYear}</div>
       <div class="nw-hero-value" style="color: ${data.netWorth >= 0 ? 'var(--text-1)' : 'var(--red)'}">${formatMoney(data.netWorth)}</div>
     </div>
     <div class="nw-summary-row">
@@ -9216,127 +9307,172 @@ function renderNwDashboard() {
       ${data.portfolioTotal > 0 ? `<div class="nw-item">
         <div class="nw-item-left">
           <span class="nw-item-name">Portfolio</span>
-          <span class="nw-item-meta">Live • Auto-tracked</span>
+          <span class="nw-item-meta">Live · Auto-tracked</span>
         </div>
         <span class="nw-item-value" style="color: var(--emerald)">${formatMoney(data.portfolioTotal)}</span>
       </div>` : ''}
-      ${assetItems.map(item => `<div class="nw-item">
-        <div class="nw-item-left">
-          <span class="nw-item-name">${escapeHTML(item.name)}</span>
-          <span class="nw-item-meta">${item.source === 'account' ? 'Account • Auto-tracked' : 'Manual'}</span>
-        </div>
-        <span class="nw-item-value" style="color: var(--emerald)">${formatMoney(item.calculatedValue != null ? item.calculatedValue : item.value)}</span>
-      </div>`).join('')}
-      ${assetItems.length === 0 && data.portfolioTotal <= 0 ? '<div class="nw-empty">No assets added yet</div>' : ''}
+      ${renderCategorySection(data.assetsByCategory, 'var(--emerald)', 'No assets for this period')}
     </div>
     <div class="nw-section">
       <div class="nw-section-header">
         <span class="nw-section-title">Liabilities</span>
         <span class="nw-section-total" style="color: var(--red)">${formatMoney(data.totalLiabilities)}</span>
       </div>
-      ${liabilityItems.map(item => `<div class="nw-item">
-        <div class="nw-item-left">
-          <span class="nw-item-name">${escapeHTML(item.name)}</span>
-          <span class="nw-item-meta">${item.source === 'account' ? 'Account • Auto-tracked' : 'Manual'}</span>
-        </div>
-        <span class="nw-item-value" style="color: var(--red)">${formatMoney(Math.abs(item.calculatedValue != null ? item.calculatedValue : item.value))}</span>
-      </div>`).join('')}
-      ${liabilityItems.length === 0 ? '<div class="nw-empty">No liabilities added yet</div>' : ''}
+      ${renderCategorySection(data.liabsByCategory, 'var(--red)', 'No liabilities for this period')}
     </div>`;
 }
 
+// ── Planning Tab ──
 function renderNwPlanning() {
   const container = document.getElementById('nwPlanningContent');
   if (!container) return;
 
-  const assets = nwItems.filter(i => i.type === 'asset');
-  const liabilities = nwItems.filter(i => i.type === 'liability');
+  const periodKey = nwFilterYear + '-' + nwFilterMonth;
+  const accountFlows = getMonthlyAccountFlows();
+
+  const renderPlanItems = (items, type) => {
+    if (items.length === 0) return `<div class="nw-empty">No ${type}s defined in the sheet.</div>`;
+    // Group by category
+    const grouped = {};
+    items.forEach(item => {
+      const cat = item.category || 'Uncategorized';
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(item);
+    });
+    return Object.keys(grouped).map(cat => {
+      const catItems = grouped[cat];
+      return `<div class="nw-cat-group">
+        <div class="nw-cat-header">
+          <span class="nw-cat-name">${escapeHTML(cat)}</span>
+        </div>
+        ${catItems.map(item => {
+          const val = item.values[periodKey] || '';
+          const flow = accountFlows[item.name] ? (accountFlows[item.name][periodKey] || 0) : null;
+          return `<div class="nw-plan-item">
+            <div class="nw-plan-item-left">
+              <span class="nw-plan-item-name">${escapeHTML(item.name)}</span>
+              ${flow !== null ? `<span class="nw-plan-item-flow" style="color: ${flow >= 0 ? 'var(--emerald)' : 'var(--red)'}">Txn flow: ${flow >= 0 ? '+' : ''}${formatMoney(flow)}</span>` : ''}
+            </div>
+            <div class="nw-plan-item-right">
+              <input class="nw-plan-input" type="number" inputmode="decimal" value="${val}" placeholder="—"
+                data-row="${item.sheetRow}" data-type="${type}"
+                onchange="updateNwItemValue(this, '${type}', ${item.sheetRow}, ${nwFilterYear}, ${nwFilterMonth})" />
+              ${flow !== null ? `<button class="nw-autofill-btn" title="Auto-fill from transactions" onclick="autoFillNwItem(this, '${type}', ${item.sheetRow}, ${nwFilterYear}, ${nwFilterMonth})">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              </button>` : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }).join('');
+  };
 
   container.innerHTML = `
+    ${renderNwFilterBar()}
     <div class="nw-plan-section">
       <div class="nw-plan-header">
         <span class="nw-plan-title">Assets</span>
-        <button class="nw-add-btn" onclick="openNwAddModal('asset')">+ Add Asset</button>
       </div>
-      ${assets.map((item, i) => {
-        const idx = nwItems.indexOf(item);
-        return `<div class="nw-plan-item">
-          <div class="nw-plan-item-left">
-            <span class="nw-plan-item-name">${escapeHTML(item.name)}</span>
-            <span class="nw-plan-item-type">${item.source === 'account' ? 'Account baseline' : 'Manual value'}</span>
-          </div>
-          <div class="nw-plan-item-right">
-            <span class="nw-plan-item-value">${formatMoney(item.value)}</span>
-            <button class="nw-plan-item-delete" onclick="deleteNwItem(${idx})">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-        </div>`;
-      }).join('')}
-      ${assets.length === 0 ? '<div class="nw-empty">No assets yet. Add accounts or manual assets.</div>' : ''}
+      ${renderPlanItems(nwAssets, 'asset')}
     </div>
     <div class="nw-plan-section">
       <div class="nw-plan-header">
         <span class="nw-plan-title">Liabilities</span>
-        <button class="nw-add-btn" onclick="openNwAddModal('liability')">+ Add Liability</button>
       </div>
-      ${liabilities.map((item, i) => {
-        const idx = nwItems.indexOf(item);
-        return `<div class="nw-plan-item">
-          <div class="nw-plan-item-left">
-            <span class="nw-plan-item-name">${escapeHTML(item.name)}</span>
-            <span class="nw-plan-item-type">${item.source === 'account' ? 'Account baseline' : 'Manual value'}</span>
-          </div>
-          <div class="nw-plan-item-right">
-            <span class="nw-plan-item-value">${formatMoney(item.value)}</span>
-            <button class="nw-plan-item-delete" onclick="deleteNwItem(${idx})">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-        </div>`;
-      }).join('')}
-      ${liabilities.length === 0 ? '<div class="nw-empty">No liabilities yet.</div>' : ''}
+      ${renderPlanItems(nwLiabilities, 'liability')}
     </div>`;
 }
 
-window.openNwAddModal = function openNwAddModal(type) {
-  const allAccounts = [...new Set(allTransactions.filter(tx => tx.account && tx.account !== '--').map(tx => tx.account))].sort();
-  const accountOptions = allAccounts.map(a => `<option value="${a}">${a}</option>`).join('');
+// ── Write single cell back to sheet ──
+function getNwSheetCol(year, month) {
+  // Find the year block and compute the column letter
+  const yb = nwYears.find(y => y.year === year);
+  if (!yb) return null;
+  // colOffset is relative to C (index 0 in our range), so actual sheet column = C + offset
+  // C=3(1-based), so sheet col = 3 + colOffset + (month-1)
+  const sheetColNum = 3 + yb.colOffset + (month - 1); // 1-based column number
+  return colNumToLetter(sheetColNum);
+}
 
-  const overlay = document.createElement('div');
-  overlay.className = 'nw-modal-overlay';
-  overlay.id = 'nwModalOverlay';
-  overlay.onclick = function(e) { if (e.target === overlay) closeNwModal(); };
-  overlay.innerHTML = `
-    <div class="nw-modal">
-      <div class="nw-modal-title">Add ${type === 'asset' ? 'Asset' : 'Liability'}</div>
-      <div class="nw-modal-field">
-        <label class="nw-modal-label">Source</label>
-        <select class="nw-modal-select" id="nwAddSource" onchange="document.getElementById('nwAddAccountRow').style.display = this.value === 'account' ? '' : 'none'; document.getElementById('nwAddNameRow').style.display = this.value === 'manual' ? '' : 'none';">
-          <option value="manual">Manual (custom name)</option>
-          <option value="account">Linked Account</option>
-        </select>
-      </div>
-      <div class="nw-modal-field" id="nwAddNameRow">
-        <label class="nw-modal-label">Name</label>
-        <input class="nw-modal-input" id="nwAddName" type="text" placeholder="e.g. Car, Property, Savings Account">
-      </div>
-      <div class="nw-modal-field" id="nwAddAccountRow" style="display:none">
-        <label class="nw-modal-label">Account</label>
-        <select class="nw-modal-select" id="nwAddAccount">
-          ${accountOptions}
-        </select>
-      </div>
-      <div class="nw-modal-field">
-        <label class="nw-modal-label">${type === 'asset' ? 'Current Value' : 'Amount Owed'}</label>
-        <input class="nw-modal-input" id="nwAddValue" type="number" inputmode="decimal" placeholder="0.00">
-      </div>
-      <div class="nw-modal-actions">
-        <button class="nw-modal-btn nw-modal-btn-cancel" onclick="closeNwModal()">Cancel</button>
-        <button class="nw-modal-btn nw-modal-btn-save" onclick="saveNwItem('${type}')">Add</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
+function colNumToLetter(num) {
+  let s = '';
+  while (num > 0) {
+    num--;
+    s = String.fromCharCode(65 + (num % 26)) + s;
+    num = Math.floor(num / 26);
+  }
+  return s;
+}
+
+window.updateNwItemValue = async function updateNwItemValue(input, type, sheetRow, year, month) {
+  const val = parseFloat(input.value) || 0;
+  const items = type === 'asset' ? nwAssets : nwLiabilities;
+  const item = items.find(i => i.sheetRow === sheetRow);
+  if (item) item.values[year + '-' + month] = val;
+
+  const col = getNwSheetCol(year, month);
+  if (!col || !accessToken) return;
+  const range = `Net Worth Planning!${col}${sheetRow}`;
+  try {
+    await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`,
+      {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values: [[val]] })
+      }
+    );
+    input.classList.add('nw-input-saved');
+    setTimeout(() => input.classList.remove('nw-input-saved'), 800);
+  } catch (err) {
+    console.error('Net worth write error:', err);
+  }
+};
+
+window.autoFillNwItem = async function autoFillNwItem(btn, type, sheetRow, year, month) {
+  const items = type === 'asset' ? nwAssets : nwLiabilities;
+  const item = items.find(i => i.sheetRow === sheetRow);
+  if (!item) return;
+
+  const flows = getMonthlyAccountFlows();
+  const periodKey = year + '-' + month;
+  const flow = flows[item.name] && flows[item.name][periodKey];
+  if (flow === undefined || flow === null) return;
+
+  // Get previous month value as baseline
+  let prevVal = 0;
+  const prevMonth = month === 1 ? 12 : month - 1;
+  const prevYear = month === 1 ? year - 1 : year;
+  prevVal = item.values[prevYear + '-' + prevMonth] || 0;
+
+  const newVal = prevVal + flow;
+  item.values[periodKey] = newVal;
+
+  // Update the input next to this button
+  const planItem = btn.closest('.nw-plan-item');
+  const input = planItem.querySelector('.nw-plan-input');
+  if (input) input.value = newVal;
+
+  // Write to sheet
+  const col = getNwSheetCol(year, month);
+  if (!col || !accessToken) return;
+  const range = `Net Worth Planning!${col}${sheetRow}`;
+  try {
+    await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`,
+      {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values: [[newVal]] })
+      }
+    );
+    if (input) {
+      input.classList.add('nw-input-saved');
+      setTimeout(() => input.classList.remove('nw-input-saved'), 800);
+    }
+  } catch (err) {
+    console.error('Net worth auto-fill write error:', err);
+  }
 };
 
 window.closeNwModal = function closeNwModal() {
@@ -9344,31 +9480,8 @@ window.closeNwModal = function closeNwModal() {
   if (overlay) overlay.remove();
 };
 
-window.saveNwItem = async function saveNwItem(type) {
-  const source = document.getElementById('nwAddSource').value;
-  const name = source === 'account'
-    ? document.getElementById('nwAddAccount').value
-    : document.getElementById('nwAddName').value.trim();
-  const value = parseFloat(document.getElementById('nwAddValue').value) || 0;
-
-  if (!name) return;
-
-  nwItems.push({ name, type, source, value });
-  await writeNetWorthData();
-  closeNwModal();
-  renderNwPlanning();
-  renderNwDashboard();
-};
-
-window.deleteNwItem = async function deleteNwItem(index) {
-  nwItems.splice(index, 1);
-  await writeNetWorthData();
-  renderNwPlanning();
-  renderNwDashboard();
-};
-
 async function renderNetWorthPage() {
-  if (nwItems.length === 0 && accessToken) {
+  if (!nwDataLoaded && accessToken) {
     const container = document.getElementById('nwDashboardContent');
     if (container) container.innerHTML = '<div class="nw-empty">Loading...</div>';
     await fetchNetWorthData();
