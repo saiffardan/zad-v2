@@ -9589,72 +9589,57 @@ window.closeNwModal = function closeNwModal() {
 // ── Monthly auto-refresh ──
 // On the 1st of a new month (or first visit that month), auto-fill current month
 // for all account-linked items: prev month value + prev month flow
-async function checkMonthlyAutoFill() {
+// Projects next month's values based on current month's starting value + current month's flow so far.
+// e.g. During March: April = March value + March flow. Once April starts, May = April value + April flow.
+async function projectNextMonth() {
   if (!accessToken || nwYears.length === 0) return;
+
   const now = new Date();
-  const curKey = now.getFullYear() + '-' + (now.getMonth() + 1);
-  const lastFill = localStorage.getItem('nw_autofill_month');
-  if (lastFill === curKey) return; // already done this month
+  const curYear = now.getFullYear();
+  const curMonth = now.getMonth() + 1;
+  const curKey = curYear + '-' + curMonth;
+  const nextMonth = curMonth === 12 ? 1 : curMonth + 1;
+  const nextYear = curMonth === 12 ? curYear + 1 : curYear;
+  const nextKey = nextYear + '-' + nextMonth;
+
+  // Only project if next month's year exists in the sheet
+  if (!nwYears.find(y => y.year === nextYear)) return;
 
   const accountFlows = getMonthlyAccountFlows();
   const debtFlows = getMonthlyDebtFlows();
-
-  const curYear = now.getFullYear();
-  const curMonth = now.getMonth() + 1;
-  const prevMonth = curMonth === 1 ? 12 : curMonth - 1;
-  const prevYear = curMonth === 1 ? curYear - 1 : curYear;
-  const prevKey = prevYear + '-' + prevMonth;
-
   const writeData = [];
 
-  // Auto-fill assets (matched by account name)
-  nwAssets.forEach(item => {
-    const itemFlow = getItemFlows(item, 'asset', accountFlows, debtFlows);
-    if (Object.keys(itemFlow).length === 0) return;
-    const prevVal = item.values[prevKey] || 0;
-    const prevFlow = itemFlow[prevKey] || 0;
-    const newVal = prevVal + prevFlow;
-    item.values[curKey] = newVal;
-    const col = getNwSheetCol(curYear, curMonth);
-    if (col) writeData.push({ range: `Net Worth Planning!${col}${item.sheetRow}`, values: [[newVal]] });
-  });
+  const processItems = (items, type) => {
+    items.forEach(item => {
+      const itemFlow = getItemFlows(item, type, accountFlows, debtFlows);
+      if (Object.keys(itemFlow).length === 0) return;
+      const curVal = item.values[curKey] || 0;
+      const curFlow = itemFlow[curKey] || 0;
+      const newVal = curVal + curFlow;
+      item.values[nextKey] = newVal;
+      const col = getNwSheetCol(nextYear, nextMonth);
+      if (col) writeData.push({ range: `Net Worth Planning!${col}${item.sheetRow}`, values: [[newVal]] });
+    });
+  };
 
-  // Auto-fill liabilities (matched by debt transaction category)
-  nwLiabilities.forEach(item => {
-    const itemFlow = getItemFlows(item, 'liability', accountFlows, debtFlows);
-    if (Object.keys(itemFlow).length === 0) return;
-    const prevVal = item.values[prevKey] || 0;
-    const prevFlow = itemFlow[prevKey] || 0;
-    const newVal = prevVal + prevFlow;
-    item.values[curKey] = newVal;
+  processItems(nwAssets, 'asset');
+  processItems(nwLiabilities, 'liability');
 
-    const col = getNwSheetCol(curYear, curMonth);
-    if (col) {
-      writeData.push({
-        range: `Net Worth Planning!${col}${item.sheetRow}`,
-        values: [[newVal]]
-      });
-    }
-  });
+  if (writeData.length === 0) return;
 
-  if (writeData.length > 0) {
-    try {
-      await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`,
-        {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data: writeData })
-        }
-      );
-      console.log(`[NW] Auto-filled ${writeData.length} items for ${curKey}`);
-    } catch (err) {
-      console.error('Monthly auto-fill error:', err);
-      return; // don't mark as done if write failed
-    }
+  try {
+    await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`,
+      {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data: writeData })
+      }
+    );
+    console.log(`[NW] Projected ${writeData.length} items for ${NW_MONTH_NAMES[nextMonth - 1]} ${nextYear}`);
+  } catch (err) {
+    console.error('NW projection error:', err);
   }
-
-  localStorage.setItem('nw_autofill_month', curKey);
 }
 
 async function renderNetWorthPage() {
@@ -9662,7 +9647,7 @@ async function renderNetWorthPage() {
     const container = document.getElementById('nwDashboardContent');
     if (container) container.innerHTML = '<div class="nw-empty">Loading...</div>';
     await fetchNetWorthData();
-    await checkMonthlyAutoFill();
+    await projectNextMonth();
   }
   populateNwFilters();
   if (currentNwTab === 'dashboard') renderNwDashboard();
