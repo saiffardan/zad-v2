@@ -9550,8 +9550,20 @@ async function projectNextMonth() {
 
   const processItems = (items, type) => {
     items.forEach(item => {
-      const curVal = item.values[curKey];
-      if (curVal === undefined || curVal === null) return; // no current month value to carry forward
+      // Use current month value, or fall back to most recent available value
+      let curVal = item.values[curKey];
+      if (curVal === undefined || curVal === null) {
+        // Find the most recent month with a value
+        for (let y = curYear; y >= Math.min(...nwYears.map(yb => yb.year)); y--) {
+          const maxM = y === curYear ? curMonth : 12;
+          for (let m = maxM; m >= 1; m--) {
+            const v = item.values[y + '-' + m];
+            if (v !== undefined && v !== null) { curVal = v; break; }
+          }
+          if (curVal !== undefined && curVal !== null) break;
+        }
+      }
+      if (curVal === undefined || curVal === null) return; // truly no data at all
       const itemFlow = getItemFlows(item, type, accountFlows, debtFlows);
       const curFlow = Object.keys(itemFlow).length > 0 ? (itemFlow[curKey] || 0) : 0;
       const newVal = Math.round((curVal + curFlow) * 100) / 100;
