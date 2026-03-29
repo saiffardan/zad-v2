@@ -10746,7 +10746,8 @@ function _showDbg(lines) {
   if (!el) {
     el = document.createElement('div');
     el.id = '_sbDbg';
-    el.style.cssText = 'position:fixed;bottom:60px;left:8px;right:8px;background:rgba(0,0,0,0.9);color:#0f0;font:11px/1.5 monospace;padding:12px;border-radius:8px;z-index:99999;max-height:40vh;overflow:auto;white-space:pre-wrap;';
+    el.style.cssText = 'position:fixed;top:8px;left:8px;right:8px;background:rgba(0,0,0,0.9);color:#0f0;font:11px/1.5 monospace;padding:12px;border-radius:8px;z-index:99999;max-height:30vh;overflow:auto;white-space:pre-wrap;';
+    el.onclick = function() { el.remove(); };
     document.body.appendChild(el);
   }
   el.textContent = lines.join('\n');
