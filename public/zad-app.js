@@ -9237,24 +9237,25 @@ function calculateNwForPeriod(year, month) {
   return { totalAssets, totalLiabilities, netWorth: totalAssets - totalLiabilities, assetsByCategory, liabsByCategory, portfolioTotal };
 }
 
-// ── Filter bar rendering ──
-function renderNwFilterBar() {
-  const yearOptions = nwYears.length > 0
-    ? nwYears.map(y => `<option value="${y.year}" ${y.year === nwFilterYear ? 'selected' : ''}>${y.year}</option>`).join('')
-    : `<option value="${nwFilterYear}">${nwFilterYear}</option>`;
-  const monthOptions = NW_MONTH_NAMES.map((m, i) =>
-    `<option value="${i + 1}" ${(i + 1) === nwFilterMonth ? 'selected' : ''}>${m}</option>`
-  ).join('');
-
-  return `<div class="nw-filter-bar">
-    <select class="nw-filter-select" id="nwFilterYear" onchange="nwFilterYear = parseInt(this.value); ${currentNwTab === 'dashboard' ? 'renderNwDashboard()' : 'renderNwPlanning()'}">
-      ${yearOptions}
-    </select>
-    <select class="nw-filter-select" id="nwFilterMonth" onchange="nwFilterMonth = parseInt(this.value); ${currentNwTab === 'dashboard' ? 'renderNwDashboard()' : 'renderNwPlanning()'}">
-      ${monthOptions}
-    </select>
-  </div>`;
+// ── Filter bar ──
+function populateNwFilters() {
+  const yearSelect = document.getElementById('nwYearSelect');
+  const monthSelect = document.getElementById('nwMonthSelect');
+  if (yearSelect) {
+    const years = nwYears.length > 0 ? nwYears : [{ year: nwFilterYear }];
+    yearSelect.innerHTML = years.map(y => `<option value="${y.year}" ${y.year === nwFilterYear ? 'selected' : ''}>${y.year}</option>`).join('');
+  }
+  if (monthSelect) monthSelect.value = nwFilterMonth;
 }
+
+window.changeNwFilter = function changeNwFilter() {
+  const ys = document.getElementById('nwYearSelect');
+  const ms = document.getElementById('nwMonthSelect');
+  if (ys) nwFilterYear = parseInt(ys.value);
+  if (ms) nwFilterMonth = parseInt(ms.value);
+  if (currentNwTab === 'dashboard') renderNwDashboard();
+  else renderNwPlanning();
+};
 
 // ── Dashboard Tab ──
 function renderNwDashboard() {
@@ -9284,7 +9285,6 @@ function renderNwDashboard() {
   };
 
   container.innerHTML = `
-    ${renderNwFilterBar()}
     <div class="nw-hero">
       <div class="nw-hero-label">Net Worth · ${NW_MONTH_NAMES[nwFilterMonth - 1]} ${nwFilterYear}</div>
       <div class="nw-hero-value" style="color: ${data.netWorth >= 0 ? 'var(--text-1)' : 'var(--red)'}">${formatMoney(data.netWorth)}</div>
@@ -9368,7 +9368,6 @@ function renderNwPlanning() {
   };
 
   container.innerHTML = `
-    ${renderNwFilterBar()}
     <div class="nw-plan-section">
       <div class="nw-plan-header">
         <span class="nw-plan-title">Assets</span>
@@ -9486,6 +9485,7 @@ async function renderNetWorthPage() {
     if (container) container.innerHTML = '<div class="nw-empty">Loading...</div>';
     await fetchNetWorthData();
   }
+  populateNwFilters();
   if (currentNwTab === 'dashboard') renderNwDashboard();
   else renderNwPlanning();
   // Init tab underline
