@@ -10780,15 +10780,21 @@ async function trySupabaseAutoLogin() {
     function done(val) { if (!resolved) { resolved = true; resolve(val); } }
 
     const { data: { subscription } } = sb.auth.onAuthStateChange(async (event, session) => {
-      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
-        subscription.unsubscribe();
-        if (window.location.hash && window.location.hash.includes('access_token')) {
-          window.history.replaceState({}, '', window.location.pathname);
+      try {
+        if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
+          subscription.unsubscribe();
+          if (window.location.hash && window.location.hash.includes('access_token')) {
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+          await handleSupabaseSession(session);
+          done(true);
+        } else if (event === 'INITIAL_SESSION' && !session) {
+          subscription.unsubscribe();
+          done(false);
         }
-        await handleSupabaseSession(session);
-        done(true);
-      } else if (event === 'INITIAL_SESSION' && !session) {
-        subscription.unsubscribe();
+      } catch (err) {
+        console.error('[Zad] Supabase auto-login error:', err);
+        document.getElementById('loadingScreen')?.classList.add('hidden');
         done(false);
       }
     });
@@ -10806,7 +10812,13 @@ async function handleSupabaseSession(session) {
   hideSignInScreen();
   document.getElementById('appSidebar').classList.remove('hidden');
   document.getElementById('loadingScreen').classList.remove('hidden');
-  await fetchSupabaseData();
+  try {
+    await fetchSupabaseData();
+  } catch (err) {
+    console.error('[Zad] fetchSupabaseData failed:', err);
+    document.getElementById('loadingScreen').classList.add('hidden');
+    renderDashboard();
+  }
 }
 
 async function fetchSupabaseData() {
