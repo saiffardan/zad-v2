@@ -1,6 +1,7 @@
   let gisLoadFailed = false;
 
   function loadGIS() {
+    if (BACKEND_MODE !== 'sheets') return; // Skip GIS when using Supabase
     if (!CLIENT_ID) {
       gisLoadFailed = true;
       console.warn('[Zad] No CLIENT_ID configured — Google Sign-In disabled.');
@@ -37,6 +38,11 @@
   }
 
   function handleSignIn() {
+    if (BACKEND_MODE === 'supabase') {
+      handleSupabaseSignIn();
+      return;
+    }
+    // Google Sheets mode
     if (tokenClient) {
       const btn = document.getElementById('signInBtn');
       if (btn) btn.classList.add('loading');

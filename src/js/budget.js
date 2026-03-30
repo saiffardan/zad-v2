@@ -737,23 +737,36 @@ function updateBudgetAmount(input) {
 }
 
 async function writeBudgetCell(category, key, value) {
-  if (!accessToken) return;
-  const sheetRow = window._budgetCatRowMap?.[category];
-  const colLetter = window._budgetKeyToCol?.[key];
-  if (!sheetRow || !colLetter) {
-    console.warn('Budget write: no mapping for', category, key);
-    return;
-  }
-  const cellRef = `'Budget Planning'!${colLetter}${sheetRow}`;
   try {
-    await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(cellRef)}?valueInputOption=USER_ENTERED`,
-      {
-        method: 'PUT',
-        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ values: [[value || 0]] })
+    if (BACKEND_MODE === 'supabase') {
+      // Determine parent and type from categoryParentMap
+      const parentCat = categoryParentMap[category] || category;
+      const type = Object.entries(budgetCategories).find(([t, cats]) => cats.includes(category))?.[0] || 'EXPENSES';
+      await sbUpsertBudget({
+        category,
+        parentCategory: parentCat,
+        type,
+        monthKey: key,
+        amount: value || 0,
+      });
+    } else {
+      if (!accessToken) return;
+      const sheetRow = window._budgetCatRowMap?.[category];
+      const colLetter = window._budgetKeyToCol?.[key];
+      if (!sheetRow || !colLetter) {
+        console.warn('Budget write: no mapping for', category, key);
+        return;
       }
-    );
+      const cellRef = `'Budget Planning'!${colLetter}${sheetRow}`;
+      await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(cellRef)}?valueInputOption=USER_ENTERED`,
+        {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ values: [[value || 0]] })
+        }
+      );
+    }
   } catch (err) {
     console.error('Budget write error:', err);
   }

@@ -20,6 +20,7 @@ const SOURCE_FILES = [
   'config.js',        // Constants, globals, state
   'ui-utils.js',      // Theme, animations, formatters, pills, layout sync
   'demo.js',          // Demo mode (portfolio + transactions)
+  'supabase.js',      // Supabase client, auth, and data layer
   'auth.js',          // Google Identity Services, sign in/out, data fetching
   'portfolio.js',     // Price fetching, dashboard, holdings, trades, allocation
   'advisor.js',       // Advisor engine + UI

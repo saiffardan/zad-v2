@@ -42,12 +42,22 @@
       }); });
     });
   }
+  // ── Backend Mode ──
+  // 'sheets' = Google Sheets API (original), 'supabase' = Supabase backend
+  const BACKEND_MODE = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.backendMode) || 'supabase';
+
+  // ── Google Sheets Config (active when BACKEND_MODE === 'sheets') ──
   const CLIENT_ID = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.clientId) || '1008350848317-2pul4n12msbg606khco6h91mrnftv69j.apps.googleusercontent.com';
   const SHEET_ID = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.sheetId) || '1NNOt_RCDxKyZ-E0YYN1cpvDji_bhRC8sZvoLV0pWX48';
   const SHEET_RANGE = 'Investments!G14:M';
   const TXN_RANGE = 'Transactions!B14:G';
   const BUDGET_RANGE = 'Budget Planning!C5:AZ424';
   const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.profile';
+
+  // ── Supabase Config (active when BACKEND_MODE === 'supabase') ──
+  const SUPABASE_URL = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.supabaseUrl) || '';
+  const SUPABASE_ANON_KEY = (window.__ZAD_CONFIG && window.__ZAD_CONFIG.supabaseAnonKey) || '';
+
   const AED_USD_RATE = 3.6725; // AED is pegged to USD
 
   let tokenClient;

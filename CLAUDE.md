@@ -37,6 +37,15 @@ App logic is split into source modules that get concatenated into `public/zad-ap
 
 Source of truth is `src/js/`. Never edit `public/zad-app.js` directly — it is a build artifact.
 
+### Backend Modes
+
+The app supports two backends, controlled by `NEXT_PUBLIC_BACKEND_MODE`:
+
+- **`supabase`** (default) — Supabase for auth (Google OAuth via Supabase) and data storage. Requires `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+- **`sheets`** — Google Sheets API for data, Google Identity Services for auth. Requires `NEXT_PUBLIC_GOOGLE_CLIENT_ID` and `NEXT_PUBLIC_SHEET_ID`.
+
+The `BACKEND_MODE` constant in `config.js` gates all auth and data operations. Supabase client/auth lives in `supabase.js`. Google Sheets auth lives in `auth.js`. The database schema is in `supabase/schema.sql`.
+
 ### Static Assets
 
 - `public/zad-app.css` — All styles

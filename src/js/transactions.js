@@ -10,6 +10,7 @@
   }
 
   async function fetchTransactions() {
+    if (BACKEND_MODE === 'supabase') return; // Handled by loadSupabaseData
     try {
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(TXN_RANGE)}?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING`;
       const res = await fetch(url, {
@@ -19,11 +20,9 @@
       const data = await res.json();
       processTransactions(data.values || []);
       txnDataLoaded = true;
-      // Update home page with transaction data
       if (!document.getElementById('homePage').classList.contains('hidden')) {
         updateHomePage();
       }
-      // Only render if transactions screen is visible
       if (currentNavSection === 'transactions') {
         renderTransactionsDashboard();
       }
@@ -33,6 +32,7 @@
   }
 
   async function fetchBudgetData() {
+    if (BACKEND_MODE === 'supabase') return; // Handled by loadSupabaseData
     try {
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(BUDGET_RANGE)}`;
       const res = await fetch(url, {
@@ -1644,7 +1644,8 @@
 
   async function saveTxnEdit() {
     const t = displayedTxns[editingTxnIdx];
-    if (!t || !t.sheetRow || !accessToken) return;
+    if (!t) return;
+    if (BACKEND_MODE === 'sheets' && (!t.sheetRow || !accessToken)) return;
 
     const statusEl = document.getElementById('txnEditStatus');
     const saveBtn = document.getElementById('txnSaveBtn');
@@ -1666,33 +1667,38 @@
       return;
     }
 
-    // For EXPENSES: negative in sheet (money out). Positive = refund.
-    // For TRANSFER: direction determines sign.
     const isRefund = document.getElementById('txnRefundToggle')?.checked || false;
     const transferDir = document.getElementById('txnTransferDir')?.value || 'out';
     let sheetAmount = newAmount;
     if (newType === 'EXPENSES' && !isRefund) sheetAmount = -newAmount;
     if (newType === 'TRANSFER' && transferDir === 'out') sheetAmount = -newAmount;
 
-    const rowValues = [newDate, newType, newCategory, newAccount, sheetAmount, newDesc];
-    const range = `Transactions!B${t.sheetRow}:G${t.sheetRow}`;
-
     try {
-      const res = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`,
-        {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ range, majorDimension: 'ROWS', values: [rowValues] })
+      if (BACKEND_MODE === 'supabase') {
+        await sbUpsertTransaction({
+          id: t.id,
+          date: newDate,
+          type: newType,
+          category: newCategory,
+          account: newAccount,
+          amount: sheetAmount,
+          description: newDesc,
+        });
+      } else {
+        const rowValues = [newDate, newType, newCategory, newAccount, sheetAmount, newDesc];
+        const range = `Transactions!B${t.sheetRow}:G${t.sheetRow}`;
+        const res = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`,
+          {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ range, majorDimension: 'ROWS', values: [rowValues] })
+          }
+        );
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error?.message || 'Update failed');
         }
-      );
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error?.message || 'Update failed');
       }
 
       statusEl.textContent = 'Saved';
@@ -1708,8 +1714,9 @@
       t.isRefund = isExpenseRefund;
       t.description = newDesc;
 
-      // Also update in allTransactions
-      const mainIdx = allTransactions.findIndex(tx => tx.sheetRow === t.sheetRow);
+      const mainIdx = allTransactions.findIndex(tx =>
+        BACKEND_MODE === 'supabase' ? tx.id === t.id : tx.sheetRow === t.sheetRow
+      );
       if (mainIdx >= 0) {
         Object.assign(allTransactions[mainIdx], t);
       }
@@ -1793,7 +1800,8 @@
   }
 
   async function addNewTxn() {
-    if (!accessToken) { alert('Not signed in'); return; }
+    if (BACKEND_MODE === 'sheets' && !accessToken) { alert('Not signed in'); return; }
+    if (BACKEND_MODE === 'supabase' && !supabaseUser) { alert('Not signed in'); return; }
 
     const statusEl = document.getElementById('txnEditStatus');
     const saveBtn = document.getElementById('txnSaveBtn');
@@ -1823,31 +1831,39 @@
     if (newType === 'EXPENSES' && !isRefund) sheetAmount = -newAmount;
     if (newType === 'TRANSFER' && transferDir === 'out') sheetAmount = -newAmount;
 
-    const rowValues = [newDate, newType, newCategory, newAccount, sheetAmount, newDesc];
-
     try {
-      const res = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent('Transactions!B:G')}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ majorDimension: 'ROWS', values: [rowValues] })
+      let newId = null;
+      let newSheetRow = null;
+
+      if (BACKEND_MODE === 'supabase') {
+        const result = await sbUpsertTransaction({
+          date: newDate,
+          type: newType,
+          category: newCategory,
+          account: newAccount,
+          amount: sheetAmount,
+          description: newDesc,
+        });
+        newId = result.id;
+      } else {
+        const rowValues = [newDate, newType, newCategory, newAccount, sheetAmount, newDesc];
+        const res = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent('Transactions!B:G')}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+          {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ majorDimension: 'ROWS', values: [rowValues] })
+          }
+        );
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error?.message || 'Add failed');
         }
-      );
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error?.message || 'Add failed');
+        const result = await res.json();
+        const updatedRange = result.updates?.updatedRange || '';
+        const rowMatch = updatedRange.match(/(\d+)$/);
+        newSheetRow = rowMatch ? parseInt(rowMatch[1]) : allTransactions.length + 14;
       }
-
-      const result = await res.json();
-      // Parse the updated range to get the new row number
-      const updatedRange = result.updates?.updatedRange || '';
-      const rowMatch = updatedRange.match(/(\d+)$/);
-      const newSheetRow = rowMatch ? parseInt(rowMatch[1]) : allTransactions.length + 14;
 
       statusEl.textContent = 'Added';
       statusEl.style.color = 'var(--emerald)';
@@ -1855,6 +1871,7 @@
       // Add to local data
       const isExpenseRefund = (newType === 'EXPENSES' && sheetAmount > 0);
       allTransactions.push({
+        id: newId,
         date: normalizeDateStr(newDate),
         type: newType,
         category: newCategory,
@@ -1993,7 +2010,8 @@
   }
 
   async function addNewTrade() {
-    if (!accessToken) { alert('Not signed in'); return; }
+    if (BACKEND_MODE === 'sheets' && !accessToken) { alert('Not signed in'); return; }
+    if (BACKEND_MODE === 'supabase' && !supabaseUser) { alert('Not signed in'); return; }
 
     const statusEl = document.getElementById('tradeEditStatus');
     const saveBtn = document.getElementById('tradeSaveBtn');
@@ -2016,24 +2034,23 @@
       return;
     }
 
-    const rowValues = [date, ticker, action, shares, price, type, total];
-
     try {
-      const res = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent('Investments!G:M')}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ majorDimension: 'ROWS', values: [rowValues] })
+      if (BACKEND_MODE === 'supabase') {
+        await sbUpsertTrade({ date, ticker, action, shares, price, type, total });
+      } else {
+        const rowValues = [date, ticker, action, shares, price, type, total];
+        const res = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent('Investments!G:M')}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+          {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ majorDimension: 'ROWS', values: [rowValues] })
+          }
+        );
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error?.message || 'Add failed');
         }
-      );
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error?.message || 'Add failed');
       }
 
       statusEl.textContent = 'Trade added';
@@ -2172,7 +2189,8 @@
   }
 
   async function executeSell() {
-    if (!accessToken) { alert('Not signed in'); return; }
+    if (BACKEND_MODE === 'sheets' && !accessToken) { alert('Not signed in'); return; }
+    if (BACKEND_MODE === 'supabase' && !supabaseUser) { alert('Not signed in'); return; }
 
     const statusEl = document.getElementById('sellEditStatus');
     const saveBtn = document.getElementById('sellSaveBtn');
@@ -2203,24 +2221,24 @@
 
     const type = h.type || 'Other';
     const total = shares * price;
-    const rowValues = [date, ticker, 'SELL', shares, price, type, total];
 
     try {
-      const res = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent('Investments!G:M')}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ majorDimension: 'ROWS', values: [rowValues] })
+      if (BACKEND_MODE === 'supabase') {
+        await sbUpsertTrade({ date, ticker, action: 'SELL', shares, price, type, total });
+      } else {
+        const rowValues = [date, ticker, 'SELL', shares, price, type, total];
+        const res = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent('Investments!G:M')}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+          {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ majorDimension: 'ROWS', values: [rowValues] })
+          }
+        );
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error?.message || 'Sell failed');
         }
-      );
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error?.message || 'Sell failed');
       }
 
       statusEl.textContent = 'Sold';
@@ -4297,7 +4315,12 @@
   // Loading screen logo (full wordmark)
   const loadLogoEl = document.getElementById('loadingLogo');
   if (loadLogoEl) loadLogoEl.innerHTML = zadFullLogo(120);
-  loadGIS();
+  // Initialize auth based on backend mode
+  if (BACKEND_MODE === 'supabase') {
+    initSupabase();
+  } else {
+    loadGIS();
+  }
 
   // Tab swipe removed — users switch tabs by tapping
 
@@ -4335,19 +4358,29 @@
     });
   }, { passive: true });
 
-  // Auto-login with cached token if still valid
-  (function tryAutoLogin() {
-    const cached = localStorage.getItem('cachedToken');
-    const expiresAt = parseInt(localStorage.getItem('tokenExpiresAt') || '0', 10);
-    // Require at least 2 min remaining to avoid mid-session expiry
-    if (cached && Date.now() < expiresAt - 120000) {
-      accessToken = cached;
-      userFirstName = localStorage.getItem('userName') || '';
-      // Hide sign-in, show loading
-      hideSignInScreen();
-      document.getElementById('appSidebar').classList.remove('hidden');
-      document.getElementById('loadingScreen').classList.remove('hidden');
-      fetchSheetData();
+  // Auto-login: check for existing session
+  (async function tryAutoLogin() {
+    if (BACKEND_MODE === 'supabase') {
+      // Check for existing Supabase session (handles OAuth redirect callback too)
+      const hasSession = await checkSupabaseSession();
+      if (hasSession) {
+        hideSignInScreen();
+        document.getElementById('appSidebar').classList.remove('hidden');
+        document.getElementById('loadingScreen').classList.remove('hidden');
+        loadSupabaseData();
+      }
+    } else {
+      // Google Sheets: check cached token
+      const cached = localStorage.getItem('cachedToken');
+      const expiresAt = parseInt(localStorage.getItem('tokenExpiresAt') || '0', 10);
+      if (cached && Date.now() < expiresAt - 120000) {
+        accessToken = cached;
+        userFirstName = localStorage.getItem('userName') || '';
+        hideSignInScreen();
+        document.getElementById('appSidebar').classList.remove('hidden');
+        document.getElementById('loadingScreen').classList.remove('hidden');
+        fetchSheetData();
+      }
     }
   })();
 
