@@ -39,7 +39,7 @@ export function ZadScripts() {
           strategy="beforeInteractive"
         />
       )}
-      <Script src="/zad-app.js?v=20260330a" strategy="afterInteractive" />
+      <Script src="/zad-app.js?v=20260330b" strategy="afterInteractive" />
     </>
   )
 }

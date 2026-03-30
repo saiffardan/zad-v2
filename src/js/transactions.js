@@ -4305,8 +4305,10 @@
   }
 
   // Init
-  document.getElementById('signInLogo').innerHTML = zadFullLogo(Math.min(window.innerWidth * 0.28, 120));
-  document.getElementById('sidebarLogo').innerHTML = zadLogo(28);
+  const signInLogoEl = document.getElementById('signInLogo');
+  if (signInLogoEl) signInLogoEl.innerHTML = zadFullLogo(Math.min(window.innerWidth * 0.28, 120));
+  const sidebarLogoEl = document.getElementById('sidebarLogo');
+  if (sidebarLogoEl) sidebarLogoEl.innerHTML = zadLogo(28);
   // Mobile header logos
   const mld = document.getElementById('mobileLogoDash');
   const mlp = document.getElementById('mobileLogoPort');
