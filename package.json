@@ -4,8 +4,10 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
+    "dev": "node scripts/build.mjs --watch & next dev --turbopack",
+    "build": "node scripts/build.mjs && next build",
+    "build:js": "node scripts/build.mjs",
+    "build:js:watch": "node scripts/build.mjs --watch",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit"
@@ -20,6 +22,7 @@
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "esbuild": "^0.27.4",
     "eslint": "^9.39.4",
     "eslint-config-next": "16.1.7",
     "typescript": "^5.9.3"

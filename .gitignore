@@ -18,6 +18,9 @@
 # production
 /build
 
+# build artifacts (generated from src/js/)
+/public/zad-app.js
+
 # misc
 .DS_Store
 *.pem

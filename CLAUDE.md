@@ -2,14 +2,47 @@
 
 ## Architecture
 
-Single-page finance dashboard running on Next.js App Router. The UI is vanilla HTML/CSS/JS served through a server component:
+Single-page finance dashboard running on Next.js App Router. The UI is vanilla HTML/CSS/JS served through a server component.
+
+### Next.js Shell
 
 - `app/layout.tsx` — Root layout, loads fonts + CSS
 - `app/page.tsx` — Server component, reads and renders `public/zad-body.html`
 - `app/zad-scripts.tsx` — Client component, injects config + loads JS
+
+### Source Modules (`src/js/`)
+
+App logic is split into source modules that get concatenated into `public/zad-app.js` at build time. All code shares one global scope — no ES module boundaries.
+
+| Module | Purpose |
+|--------|---------|
+| `config.js` | Constants, globals, state declarations, API config |
+| `ui-utils.js` | Theme toggle, animations, formatters, pills, layout sync |
+| `demo.js` | Demo mode (fake portfolio + transaction data) |
+| `auth.js` | Google Identity Services, sign in/out, data fetching |
+| `portfolio.js` | Price fetching, dashboard, holdings, trades, allocation |
+| `advisor.js` | Investment advisor engine + UI |
+| `nav.js` | Sidebar, hub navigation, home page |
+| `charts.js` | Chart.js rendering (pie, waterfall, historical) |
+| `transactions.js` | Transactions dashboard, calendar, insights, heatmap |
+| `net-worth.js` | Net worth page |
+| `budget.js` | Budget page, categories management |
+
+### Build System
+
+- `npm run build:js` — Concatenates `src/js/*.js` → `public/zad-app.js`
+- `npm run build:js:watch` — Watch mode for development
+- `npm run build` — Builds JS then runs Next.js build
+- `npm run dev` — Watch JS + Next.js dev server in parallel
+
+Source of truth is `src/js/`. Never edit `public/zad-app.js` directly — it is a build artifact.
+
+### Static Assets
+
 - `public/zad-app.css` — All styles
-- `public/zad-app.js` — All app logic (portfolio, transactions, budget, charts, Google Sheets API)
 - `public/zad-body.html` — HTML body content
+- `public/sw.js` — Service worker (cache management)
+- `public/manifest.json` — PWA manifest
 
 ## Design System
 
