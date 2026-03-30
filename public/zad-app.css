@@ -1446,7 +1446,7 @@
       .brand-mark::after { opacity: 0.5; }
       .sign-in-container.exiting { animation: none; opacity: 0; }
       .loading-logo { animation: none; opacity: 1; }
-      .loading-dot { animation: none; opacity: 0.6; }
+
     }
 
     /* ── Loading ── */
@@ -1477,25 +1477,6 @@
       transition: opacity var(--duration-slow) ease;
     }
 
-    .loading-dots {
-      display: flex;
-      gap: 6px;
-      margin-top: 16px;
-    }
-    .loading-dot {
-      width: 4px;
-      height: 4px;
-      border-radius: 6px;
-      background: var(--text-3);
-      animation: dotBounce 1.2s ease-in-out infinite;
-    }
-    .loading-dot:nth-child(2) { animation-delay: 0.15s; }
-    .loading-dot:nth-child(3) { animation-delay: 0.3s; }
-
-    @keyframes dotBounce {
-      0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
-      40% { transform: scale(1.2); opacity: 1; }
-    }
 
     @keyframes loadTextFade {
       from { opacity: 0; transform: translateY(4px); }
@@ -1862,21 +1843,6 @@
       font-weight: 600;
       color: var(--text-2);
     }
-    .insight-bar-track {
-      height: 4px;
-      background: rgba(255,255,255,0.06);
-      border-radius: 6px;
-      overflow: visible;
-      position: relative;
-      border: 1px solid rgba(255,255,255,0.04);
-    }
-    .insight-bar-fill {
-      height: 100%;
-      border-radius: 10px;
-      width: 0;
-      transition: width 1.2s var(--ease-out);
-      background-blend-mode: screen;
-    }
 
     /* ── Tick bar (vertical bars progress) ── */
     .tick-bar {
@@ -1901,18 +1867,6 @@
     }
     [data-theme="light"] .tick-bar .tick {
       background: rgba(0,0,0,0.06);
-    }
-    .insight-bar-days {
-      background: var(--text-3);
-    }
-    .insight-bar-tick {
-      position: absolute;
-      top: -3px;
-      bottom: -3px;
-      width: 2px;
-      background: var(--text-2);
-      border-radius: 2px;
-      transition: left 1.2s var(--ease-out);
     }
     .insight-pace-line {
       position: absolute;
@@ -3674,27 +3628,6 @@
       border-radius: 12px;
       overflow: hidden;
     }
-    .advisor-selector-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 16px;
-      cursor: pointer;
-    }
-    .advisor-selector-preview {
-      font-size: 14px;
-      color: var(--text-2);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      flex: 1;
-    }
-    .advisor-selector-chevron {
-      color: var(--text-3);
-      transition: transform var(--duration-normal) ease;
-      flex-shrink: 0;
-    }
-    .advisor-selector-chevron.open { transform: rotate(180deg); }
     .advisor-selector-body {
       border-top: 1px solid var(--divider);
       padding: 10px 16px 16px;
@@ -3821,53 +3754,6 @@
       margin-bottom: 12px;
       animation: fadeUp 0.4s ease both;
     }
-    .advisor-result-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-    .advisor-result-ticker {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text-1);
-      font-family: var(--font-mono);
-    }
-    .advisor-result-name {
-      font-size: 10px;
-      color: var(--text-3);
-      margin-top: 2px;
-    }
-    .advisor-result-amount {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--emerald);
-      font-family: var(--font-mono);
-    }
-    .advisor-result-pct {
-      font-size: 12px;
-      color: var(--text-3);
-      text-align: right;
-    }
-    .advisor-factors {
-      display: flex;
-      gap: 4px;
-      margin: 8px 0 6px;
-      height: 4px;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    .advisor-factor-seg {
-      height: 100%;
-      border-radius: 4px;
-      transition: width var(--duration-slow) ease;
-    }
-    .advisor-signals {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-      margin-top: 6px;
-    }
     .advisor-signal {
       font-size: 9px;
       font-weight: 600;
@@ -3879,7 +3765,7 @@
     }
     .advisor-signal.value { background: rgba(74,222,128,0.1); color: #4ade80; }
     .advisor-signal.rebalance { background: rgba(10,132,255,0.1); color: #0a84ff; }
-    .advisor-signal.dip { background: rgba(255,159,10,0.1); color: #ff9f0a; }
+
     .advisor-signal.conviction { background: rgba(167,139,250,0.1); color: #a78bfa; }
     .advisor-signal.hold { background: rgba(255,255,255,0.04); color: var(--text-3); }
 
@@ -4225,16 +4111,6 @@
     }
     .advisor-sum-badge.ok { color: var(--emerald); background: rgba(74,222,128,0.1); }
     .advisor-sum-badge.warn { color: var(--red); background: rgba(248,113,113,0.1); }
-    .advisor-fallback-badge {
-      font-size: 9px;
-      font-weight: 600;
-      padding: 2px 6px;
-      border-radius: 10px;
-      background: rgba(255,159,10,0.1);
-      color: #ff9f0a;
-      font-family: var(--font-mono);
-      white-space: nowrap;
-    }
     .advisor-signal.momentum { background: rgba(251,146,60,0.1); color: #fb923c; }
     .advisor-signal.technical { background: rgba(255,159,10,0.1); color: #ff9f0a; }
     .advisor-signal.concentration { background: rgba(34,211,238,0.1); color: #22d3ee; }
